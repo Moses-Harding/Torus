@@ -99,6 +99,8 @@ extension MovementManager { //Torus Movement
         if !decoding {
             ChangeManager.register.move(torus, to: newTile)
             //ChangeManager.register.syncPowers(for: torus)
+        } else {
+            print("Is currently decoding")
         }
     }
 }

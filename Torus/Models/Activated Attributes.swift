@@ -19,3 +19,34 @@ struct ActivatedAttributes: Codable {
     var isTripWired = false
     var isSpyTapped = false
 }
+
+extension ActivatedAttributes: CustomStringConvertible {
+    var description: String {
+        var description = ""
+        if hasMoveDiagonal {
+            description += "MoveDiagonal; "
+        }
+        if hasClimbTile {
+            description += "ClimbTile; "
+        }
+        if hasJumpProof {
+            description += "JumpProof; "
+        }
+        if hasInvisibility {
+            description += "Invisible; "
+        }
+        if hasFlatToSphere {
+            description += "FlatToSphere; "
+        }
+        if isInhibited {
+            description += "Inhibited; "
+        }
+        if isTripWired {
+            description += "Tripwired; "
+        }
+        if isSpyTapped {
+            description += "SpyTapped"
+        }
+        return description
+    }
+}

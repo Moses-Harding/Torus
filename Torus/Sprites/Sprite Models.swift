@@ -171,8 +171,8 @@ class UserMessage: SKNode {
     typealias ActionBlock = (() -> ())
     
     var actionBlock: ActionBlock
-    var label: LabelSprite
-    var background: SKSpriteNode
+    var label: SKLabelNode
+    var background: SKShapeNode
     
     override var isUserInteractionEnabled: Bool {
         get {
@@ -183,15 +183,33 @@ class UserMessage: SKNode {
         }
     }
     
-    init(_ text: String, size: CGSize, actionBlock: ActionBlock?) {
+    init(_ text: String, fontName: String = "KohinoorDevanagari-Medium", fontSize: CGFloat? = nil, size: CGSize, parent: SKNode, position: CGPoint, actionBlock: ActionBlock? = nil) {
         
         self.actionBlock = actionBlock ?? { print("Message to user - \(text)") }
-        self.background = SKSpriteNode(texture: SKTexture.pillBackgroundTexture(of: size, color: nil), color: UIColor.clear, size: size)
-        self.label = LabelSprite(parentSprite: self.background, text: text)
+        //self.background = SKSpriteNode(texture: SKTexture.pillBackgroundTexture(of: size, color: nil), color: UIColor.clear, size: size)
+        self.label = SKLabelNode(text: text)
+        
+        label.preferredMaxLayoutWidth = size.width
+        label.numberOfLines = -1
+        label.lineBreakMode = .byCharWrapping
+        label.zPosition = SpriteLevel.userMessage.rawValue
+        label.fontName = fontName
+        label.verticalAlignmentMode = .center
+        if let fontSize = fontSize { label.fontSize = fontSize }
+        
+        self.background = SKShapeNode(rectOf: label.frame.size.scaled(by: 1.05), cornerRadius: 10)
+        background.fillColor = UIColor(red: 0.99, green: 0.01, blue: 0.48, alpha: 1.00)
+        background.zPosition = SpriteLevel.userMessage.rawValue
+        background.glowWidth = 7
+        background.strokeColor = UIColor(red: 0.99, green: 0.01, blue: 0.48, alpha: 1.00)
         
         super.init()
         
         self.addChild(self.background)
+        self.addChild(self.label)
+        
+        parent.addChild(self)
+        self.position = position
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -199,10 +217,11 @@ class UserMessage: SKNode {
     }
     
     func autoDismiss() {
-        self.run(SKAction.wait(forDuration: 5)) { self.removeFromParent() }
+        self.run(SKAction.wait(forDuration: 0.2)) { self.removeFromParent() }
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         actionBlock()
+        autoDismiss()
     }
 }

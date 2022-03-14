@@ -150,3 +150,28 @@ extension TileChange: CustomStringConvertible {
         return description
     }
 }
+
+extension TorusDescription: CustomStringConvertible {
+    var description: String {
+        return "Torus \(teamNumber) - \(torusNumber), \(attributes.description)"
+    }
+}
+
+extension TileDescription: CustomStringConvertible {
+    var description: String {
+        return "Tile \(position.name)"
+    }
+}
+
+extension GameModel: CustomStringConvertible {
+    var description: String {
+        var description = "Game Model Summary - \n"
+        description += "Players - \(player1 ?? "None") and \(player2 ?? "None")\n"
+        description += "Score - \(team1Score) and \(team2Score)\n"
+        description += "Turn - \(turnNumber); Current Team - \(currentTeam), Winner - \(winner)\n"
+        description += "Tiles And Torii Accounted for - \(tiles.count), \(team1Torii.count), and \(team2Torii.count)\n"
+        description += "Tile Changes - \(tileChanges)\n"
+        description += "Torus Changes - \(torusChanges)\n"
+        return description
+    }
+}

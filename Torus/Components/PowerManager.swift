@@ -27,19 +27,22 @@ class PowerManager {
         guard let power = TestingManager.helper.testPowers ? TestingManager.helper.powersToTest.randomElement() : PowerType.random() else { fatalError("No power retrieved to assing to torus") }
         
         torus.powerUp(with: power)
-        scene.scrollView.updateView(with: torus.powers)
+        scene.scrollView.updateView(with: torus.powers, from: torus.team.teamNumber)
     }
     
     func removePower(from torus: Torus, _ power: PowerType) {
         
-        let powerCount = torus.powers[power]!
+        guard let powerCount = torus.powers[power] else {
+            print("Correct power is not present")
+            return
+        }
         
         if powerCount == 1 {
             torus.powers.removeValue(forKey: power)
         } else {
             torus.powers[power]! = powerCount - 1
         }
-        scene.scrollView.updateView(with: torus.powers)
+        scene.scrollView.updateView(with: torus.powers, from: torus.team.teamNumber)
     }
     
     func activate(_ powerType: PowerType, with torus: Torus, decoding: Bool = false, completion: @escaping () -> ()) {

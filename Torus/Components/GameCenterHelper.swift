@@ -88,6 +88,8 @@ class GameCenterHelper: NSObject {
         
         do {
             match.message = model.messageToDisplay
+            
+            print(model)
 
             match.endTurn(
                 withNextParticipants: [opponent],

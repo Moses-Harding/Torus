@@ -36,7 +36,12 @@ final class Tile: Entity {
     var acidTexture = TileAssets.acidTile.rawValue
     
     var moveSelectionOverlay: MoveSelectionOverlay?
-    var orbOverlay: OrbOverlay?
+    var orbOverlay: OrbOverlay? {
+        didSet {
+            //print("Orb Texture changed to \(orbOverlay) on \(self.name)")
+            print("NOTE - associate individual powers with given orbs")
+        }
+    }
     
     init(scene: GameScene, boardPosition: TilePosition, size: CGSize) {
         
@@ -87,14 +92,16 @@ extension Tile { //Manipulation
     }
     
     func populateOrb(decoding: Bool = false) {
-        
+
         hasOrb = true
         
         if AnimationManager.helper.isFirstTurn {
+            //print("Populating orb on tile \(self.name) - first turn")
             orbOverlay = OrbOverlay(parentSize: sprite.size, parentSprite: sprite)
             orbOverlay?.position = CGPoint(x: CGFloat(height.rawValue * 2), y: CGFloat(height.rawValue * 2))
             AnimationManager.helper.isFirstTurn = false
-        } else {
+        } else if orbOverlay == nil {
+            //print("Populating orb on tile \(self.name) - not first turn")
             AnimationManager.helper.populateOrb(self)
         }
         
@@ -102,6 +109,8 @@ extension Tile { //Manipulation
     }
     
     func removeOrb(duration: CGFloat, completion: @escaping (() -> ()) ) {
+        
+        print("Removing orb on tile \(self.name)")
         
         hasOrb = false
 

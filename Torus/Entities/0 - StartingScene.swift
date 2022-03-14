@@ -20,9 +20,8 @@ class StartingScene: SKScene {
     
     var warning: SKSpriteNode!
     
-    var buttonSize: CGSize { self.view?.frame.size.scaled(x: 0.5, y: 0.2) ?? CGSize.zero }
-    
-    var startButton: TouchNode!
+    var startButton: ImageNode!
+    var logo: ImageNode!
     
     var firstLoad = true
     
@@ -35,18 +34,22 @@ class StartingScene: SKScene {
         
         if firstLoad {
             
+            let frame = view.safeAreaLayoutGuide.layoutFrame
 
-            
             //Set Up Start Button
-            startButton = TouchNode("Start Game", size: buttonSize) { self.startOrAuthenticate() }
-            startButton.position = midPoint.move(.left, by: buttonSize.width / 2)
+            startButton = ImageNode("Start Button.png") { self.startOrAuthenticate() }
+            var buttonWidth = frame.width * 0.65
+            var buttonHeight = startButton.image.size.height * (buttonWidth / startButton.image.size.width)
+            startButton.image.size = CGSize(width: buttonWidth, height: buttonHeight)
+            startButton.position = midPoint
             self.addChild(startButton)
             
-            warning = SKSpriteNode(imageNamed: "GameCenterWarning")
-            let newHeightRatio = view.frame.size.width * 0.95 / warning.size.width
-            warning.size = CGSize(width: view.frame.size.width * 0.95, height: warning.size.height * newHeightRatio)
-            warning.position = CGPoint(x: view.frame.midX, y: warning.size.height / 1.5)
-            self.addChild(warning)
+            logo = ImageNode("Torus Neon Logo.png") { print("Logo") }
+            buttonWidth = frame.width * 0.9
+            buttonHeight = logo.image.size.height * (buttonWidth / logo.image.size.width)
+            logo.image.size = CGSize(width: buttonWidth, height: buttonHeight)
+            logo.position = CGPoint(x: frame.midX, y: (frame.height * 0.95) - logo.image.size.height / 2)
+            self.addChild(logo)
             
             NotificationCenter.default.addObserver(
                 self,
@@ -69,11 +72,14 @@ class StartingScene: SKScene {
     func startOrAuthenticate() {
         if GameCenterHelper.isAuthenticated {
             GameCenterHelper.helper.presentMatchmaker()
+        } else {
+            let message = UserMessage("You need to be connected to GameCenter to play this game. Please go to your settings and sign in.", fontName: "Menlo-Regular", fontSize: 18, size: CGSize(width: frame.width * 0.8, height: 50), parent: self, position: midPoint)
+            message.position = message.position.move(.down, by: message.background.frame.height * 1.5)
         }
     }
     
     @objc private func authenticationChanged(_ notification: Notification) {
-        warning.isHidden = notification.object as? Bool ?? false
+        //warning.isHidden = notification.object as? Bool ?? false
     }
     
     @objc private func presentGame(_ notification: Notification) {

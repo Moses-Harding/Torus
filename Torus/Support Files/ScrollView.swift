@@ -7,6 +7,7 @@
 
 import Foundation
 import UIKit
+import GameKit
 
 class ScrollView: UIScrollView {
     
@@ -46,7 +47,9 @@ class ScrollView: UIScrollView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func updateView(with powerList: [PowerType:Int]) {
+    func updateView(with powerList: [PowerType:Int], from teamNumber: TeamNumber) {
+        guard teamNumber == scene.model.currentTeam else { return }
+        //guard GameCenterHelper.helper.canTakeTurnForCurrentMatch else { return }
         for view in subviews {
                 view.removeFromSuperview()
                 self.contentSize.subtract(height: buttonSpacer)
@@ -75,7 +78,7 @@ class ScrollView: UIScrollView {
     }
     
     func clear() {
-        self.updateView(with: [:])
+        self.updateView(with: [:], from: TeamNumber.one)
     }
 }
 

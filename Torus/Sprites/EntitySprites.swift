@@ -14,7 +14,7 @@ class TorusSprite: EntitySprite {
     
     override var texture: SKTexture? {
         didSet {
-            print("Texture Changed to \(texture)")
+            //print("Texture Changed to \(texture)")
         }
     }
 

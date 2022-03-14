@@ -41,6 +41,7 @@ class ButtonTray: Entity {
         let leftSize = sprite.size.scaled(x: 0.2, y: 0.9)
         let rightSize = sprite.size.scaled(x: 0.75, y: 0.9)
         
+        
         leftArea = OverlaySprite(primaryTexture: blank, color: UIColor.clear, blend: true, size: leftSize, parentSprite: sprite)
         rightArea = OverlaySprite(primaryTexture: blank, color: UIColor.clear, blend: true, size: rightSize, parentSprite: sprite)
         
@@ -48,7 +49,7 @@ class ButtonTray: Entity {
         leftArea.position = CGPoint(x: (-sprite.size.width * 0.7)/2, y: 0)
         rightArea.position = CGPoint(x: (sprite.size.width * 0.2)/2, y: 0)
         
-        backButton = TouchNode("Back", size: leftSize.scaled(by: 0.8)) { self.scene.backToStartScreen() }
+        backButton = TextNode("Back", size: leftSize.scaled(by: 0.8)) { self.scene.backToStartScreen() }
         leftArea.addChild(backButton)
     }
 }

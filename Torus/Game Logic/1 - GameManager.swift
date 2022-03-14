@@ -212,7 +212,7 @@ extension GameManager { //User Touch Interaction / Selection
         
         gameBoard.highlightValidTiles(surrounding: currentTeam.currentlySelected!)
         
-        scene.scrollView.updateView(with: currentTeam.currentlySelected!.powers)
+        scene.scrollView.updateView(with: currentTeam.currentlySelected!.powers, from: torus.team.teamNumber)
     }
     
     func select(_ tile: Tile) {

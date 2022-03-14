@@ -18,7 +18,18 @@ class Torus: Entity {
     var torusNumber: Int
     var team: Team
     
-    var powers = [PowerType:Int]()
+    var powers = [PowerType:Int]() {
+        didSet {
+            if powers.isEmpty {
+                sprite.texture = SKTexture(imageNamed: baseName)
+                //if !ChangeDecoder.helper.currentlyDecoding { ChangeManager.register.removePowers(for: self) }
+            } else {
+                sprite.texture = SKTexture(imageNamed: poweredUpName)
+                //if oldValue == powers { print("No Change") }
+                //if !ChangeDecoder.helper.currentlyDecoding { ChangeManager.register.addPower(for: self) }
+            }
+        }
+    }
     var activatedAttributes = ActivatedAttributes()
     
     var currentTile: Tile
@@ -201,9 +212,8 @@ extension Torus { // Change Status
 extension Torus { //Load Description
     
     func loadDescription(description: TorusDescription) {
-        
-        resetPowers()
-        learn(description.powers)
+
+        self.powers = description.powers
         
         let attributes = description.attributes
         
@@ -233,4 +243,12 @@ extension Torus { //Load Description
         }
     }
     
+}
+
+extension Torus: CustomStringConvertible {
+    var description: String {
+        var description = name
+        description += activatedAttributes.description
+        return description
+    }
 }
