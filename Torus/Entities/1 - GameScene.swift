@@ -15,6 +15,8 @@ class GameScene: SKScene {
         return point
     }
     
+    var waitingScreen: SKSpriteNode?
+    
     var numberOfRows = 9
     var numberOfColumns = 7
     
@@ -23,7 +25,7 @@ class GameScene: SKScene {
     var playScreen: PlayScreen!
     var gameManager: GameManager!
 
-    var scrollView: ScrollView!
+    //var scrollView: ScrollView!
     
     var viewController: GameViewController?
     
@@ -86,6 +88,7 @@ class GameScene: SKScene {
     
     func setUpScrollView() {
         
+        /*
         let frame = playScreen.tray.textBoxArea.frame
         
         let point = self.convert(frame.origin, from: playScreen.tray.textBoxArea)
@@ -94,6 +97,7 @@ class GameScene: SKScene {
         
         scrollView = ScrollView(scene: self, frame: CGRect(origin: origin, size: frame.size.scaled(x: 0.95, y: 0.8)))
         view?.addSubview(scrollView)
+         */
     }
     
     //Game Updates
@@ -131,8 +135,21 @@ class GameScene: SKScene {
     func backToStartScreen() {
         guard let viewController = viewController else {fatalError("No view controller passed to game view scene") }
         if viewController.currentScene == .main {
-            scrollView.clear()
             viewController.switchScene()
         }
+    }
+    
+   @objc func toggleWaitingScreen() {
+       //print("IMPLEMENT THIS FEATURE")
+       /*
+        if waitingScreen == nil {
+            waitingScreen = SKSpriteNode(imageNamed: "Waiting Label")
+            self.addChild(waitingScreen!)
+            waitingScreen?.position = midPoint
+            waitingScreen?.size.scale(proportionateTo: .width, of: self.frame.size)
+            waitingScreen?.zPosition = SpriteLevel.topLevel.rawValue + 10
+        }
+       waitingScreen?.isHidden = GameCenterHelper.helper.canTakeTurnForCurrentMatch
+            */
     }
 }

@@ -45,6 +45,7 @@ public enum TorusOverlayAssets: String {
     case moveDiagonal = "Move Diagonal"
     case jumpProof = "Jump Proof"
     case inhibited = "Inhibited"
+    case climbTile = "Climb Tile"
 }
 
 public enum TileAssets: String {

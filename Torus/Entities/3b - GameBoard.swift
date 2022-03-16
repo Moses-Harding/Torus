@@ -8,7 +8,7 @@
 import Foundation
 import SpriteKit
 
-struct TilePosition: Equatable, Codable {
+struct TilePosition: Equatable, Codable, CustomStringConvertible {
     
     var name: String {
         return "(\(column),\(row))"
@@ -30,6 +30,10 @@ struct TilePosition: Equatable, Codable {
         yDistance = (tileSize.height / 26) * CGFloat(tileHeight.rawValue)
         
         return CGPoint(x: point.x + xDistance, y: point.y + yDistance)
+    }
+    
+    var description: String {
+        return "Tile Position - " + name
     }
 }
 
@@ -116,6 +120,30 @@ extension GameBoard { //Setup functions
 extension GameBoard { // Retrieval Functions
     
     //Retrieve tiles
+    func getRandomTile() -> Tile {
+        
+        guard let tile = tiles.randomElement() else { fatalError("No tile found") }
+        
+        return tile
+    }
+    
+    func getRandomNeighboringTile(from currentTile: Tile) -> Tile {
+
+        var validTiles = [Tile]()
+        
+        let adjacentPairs = [(-1,0), (1,0), (0,1), (0,-1)]
+        
+        for (row, col) in adjacentPairs {
+            if let tile = scene.gameManager.gameBoard.getTile(column: currentTile.boardPosition.column + col, row: currentTile.boardPosition.row + row) {
+                validTiles.append(tile)
+            }
+        }
+        
+        guard let resultTile = validTiles.randomElement() else { fatalError("GameBoard - GetRandomNeighboringTile - No tile found") }
+        
+        return resultTile
+    }
+    
     func getTile(from position: TilePosition?) -> Tile? {
         
         guard let position = position else { return nil }

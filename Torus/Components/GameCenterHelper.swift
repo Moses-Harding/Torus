@@ -66,7 +66,7 @@ class GameCenterHelper: NSObject {
         
         request.minPlayers = 2
         request.maxPlayers = 2
-        request.inviteMessage = "Would you like to play Nine Knights?"
+        request.inviteMessage = "Let's Play Torus Neon"
         
         let vc = GKTurnBasedMatchmakerViewController(matchRequest: request)
         vc.turnBasedMatchmakerDelegate = self
@@ -89,6 +89,7 @@ class GameCenterHelper: NSObject {
         do {
             match.message = model.messageToDisplay
             
+            print()
             print(model)
 
             match.endTurn(
@@ -97,7 +98,6 @@ class GameCenterHelper: NSObject {
                 match: try JSONEncoder().encode(model),
                 completionHandler: completion
             )
-            
         } catch {
             completion(error)
         }
@@ -151,6 +151,8 @@ extension GameCenterHelper: GKLocalPlayerListener {
     
     func player(_ player: GKPlayer, wantsToQuitMatch match: GKTurnBasedMatch) {
         
+        print("Wants to quit match")
+        
         let activeOthers = match.participants.filter { other in
             return other.status == .active && other != player
         }
@@ -159,17 +161,27 @@ extension GameCenterHelper: GKLocalPlayerListener {
         activeOthers.forEach { $0.matchOutcome = .won }
         
         match.endMatchInTurn( withMatch: match.matchData ?? Data() )
+ 
+        match.remove { e in
+            if let error = e {
+                print("Error deleting match - \(error)")
+            } else {
+                print("Match removed")
+            }
+        }
     }
     
     //Turn was taken and other player is notified
     func player(_ player: GKPlayer, receivedTurnEventFor match: GKTurnBasedMatch, didBecomeActive: Bool) {
+        
+        print("Received turn event")
 
         //If matchmaker vc is active (i.e. if user just created a game) then dismiss the vc
         if let vc = currentMatchmakerVC {
             currentMatchmakerVC = nil
             vc.dismiss(animated: true)
         }
-
+        
         if didBecomeActive {
             //The user tapped on notification banner and was not in the app
             self.currentMatch = match
@@ -188,7 +200,6 @@ extension GameCenterHelper: GKLocalPlayerListener {
                 
                 if let data = data {
                     do {
-
                         model = try JSONDecoder().decode(GameModel.self, from: data)
                     } catch {
                         model = GameModel()

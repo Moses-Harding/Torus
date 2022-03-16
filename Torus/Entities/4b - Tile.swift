@@ -39,9 +39,10 @@ final class Tile: Entity {
     var orbOverlay: OrbOverlay? {
         didSet {
             //print("Orb Texture changed to \(orbOverlay) on \(self.name)")
-            print("NOTE - associate individual powers with given orbs")
+            //print("NOTE - associate individual powers with given orbs")
         }
     }
+    var nextPower: PowerType?
     
     init(scene: GameScene, boardPosition: TilePosition, size: CGSize) {
         
@@ -64,7 +65,9 @@ extension Tile { //Manipulation
     func isValidForMovement(moveType: MoveType) {
         
         validForMovement = true
-        moveSelectionOverlay = MoveSelectionOverlay(size: sprite.size, tileHeight: height, moveType: moveType, parentSprite: sprite)
+        if moveSelectionOverlay == nil {
+            moveSelectionOverlay = MoveSelectionOverlay(size: sprite.size, tileHeight: height, moveType: moveType, parentSprite: sprite)
+        }
     }
     
     func isInvalidForMovement() {
@@ -91,7 +94,7 @@ extension Tile { //Manipulation
         gameBoard.unoccupied(self)
     }
     
-    func populateOrb(decoding: Bool = false) {
+    func populateOrb(decoding: Bool = false, nextPower: PowerType? = nil) {
 
         hasOrb = true
         
@@ -104,16 +107,22 @@ extension Tile { //Manipulation
             //print("Populating orb on tile \(self.name) - not first turn")
             AnimationManager.helper.populateOrb(self)
         }
-        
-        if !decoding { ChangeManager.register.populateOrb(on: self) }
+
+        if decoding {
+            guard let power = nextPower else { fatalError("No power passed to populate orb when decoding") }
+            self.nextPower = power
+        } else {
+            guard let power = TestingManager.helper.testPowers ? TestingManager.helper.powersToTest.randomElement() : PowerType.random() else { fatalError("No power retrieved to assign to tile") }
+            self.nextPower = power
+            ChangeManager.register.populateOrb(on: self, nextPower: self.nextPower!)
+        }
     }
     
-    func removeOrb(duration: CGFloat, completion: @escaping (() -> ()) ) {
-        
-        print("Removing orb on tile \(self.name)")
+    func removeOrb(completion: @escaping (() -> ()) ) {
         
         hasOrb = false
-
+        
+        self.nextPower = nil
         self.orbOverlay?.removeFromParent()
         self.orbOverlay = nil
         completion()
@@ -149,8 +158,37 @@ extension Tile { //Manipulation
         guard let tileSprite = self.sprite as? TileSprite else { fatalError("Cannot cast Tile's Sprite to TileSprite") }
         
         tileSprite.acid()
-        
         self.status = .acid
+        
+        if hasOrb {
+            removeOrb {}
+        }
+    }
+    
+    func snakeTunnel(teamToAvoid: TeamNumber) -> Torus? {
+        
+        print("SnakeTunnel for \(self)")
+        
+        guard self.status != .acid else { return nil }
+        
+        changeHeight(to: TileHeight.l5)
+        
+        print("Changing height")
+        
+        if occupiedBy?.team.teamNumber != teamToAvoid {
+            return occupiedBy
+        } else {
+            return nil
+        }
+    }
+    
+    func bomb() {
+        
+        if height == .l1 {
+            acid()
+        } else {
+            lower()
+        }
     }
 }
 
@@ -208,7 +246,7 @@ extension Tile { //Populate Tile Based Off Of Description
         changeStatus(to: description.status)
         changeHeight(to: description.height)
         if description.hasOrb {
-            populateOrb(decoding: true)
+            populateOrb(decoding: true, nextPower: description.nextPower)
         }
     }
 }

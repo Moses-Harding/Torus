@@ -11,6 +11,8 @@
 		155874E5279DEF7A00809621 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 155874E4279DEF7A00809621 /* GameKit.framework */; };
 		1558D41B27C58E4D009051CB /* 0 - StartingScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1558D41A27C58E4D009051CB /* 0 - StartingScene.swift */; };
 		1558D41E27C59578009051CB /* TouchNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1558D41D27C59578009051CB /* TouchNode.swift */; };
+		1565C98727E03AE1006BE12A /* 4a - PowerList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1565C98627E03AE1006BE12A /* 4a - PowerList.swift */; };
+		1577EDDA27E0E71300A1FB2C /* Adding A Power.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 1577EDD927E0E71300A1FB2C /* Adding A Power.rtf */; };
 		157D0A7427C7374B0099ED1F /* GameModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 157D0A7327C7374B0099ED1F /* GameModel.swift */; };
 		15E124BD27D9245B00B57D0B /* 3a - ButtonTray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E124BC27D9245B00B57D0B /* 3a - ButtonTray.swift */; };
 		15FBA5B5278A6D1D00EE5CD1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FBA5B4278A6D1D00EE5CD1 /* AppDelegate.swift */; };
@@ -24,7 +26,7 @@
 		15FBA60E278A6D7A00EE5CD1 /* 3c - Tray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FBA5DD278A6D7900EE5CD1 /* 3c - Tray.swift */; };
 		15FBA60F278A6D7A00EE5CD1 /* 5 - Torus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FBA5DE278A6D7900EE5CD1 /* 5 - Torus.swift */; };
 		15FBA610278A6D7A00EE5CD1 /* 1 - GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FBA5DF278A6D7900EE5CD1 /* 1 - GameScene.swift */; };
-		15FBA611278A6D7A00EE5CD1 /* 4 - Tile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FBA5E0278A6D7900EE5CD1 /* 4 - Tile.swift */; };
+		15FBA611278A6D7A00EE5CD1 /* 4b - Tile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FBA5E0278A6D7900EE5CD1 /* 4b - Tile.swift */; };
 		15FBA612278A6D7A00EE5CD1 /* 2 - PlayScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FBA5E1278A6D7900EE5CD1 /* 2 - PlayScreen.swift */; };
 		15FBA613278A6D7A00EE5CD1 /* PowerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FBA5E3278A6D7900EE5CD1 /* PowerType.swift */; };
 		15FBA614278A6D7A00EE5CD1 /* Activated Attributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FBA5E4278A6D7900EE5CD1 /* Activated Attributes.swift */; };
@@ -50,6 +52,8 @@
 		155874E6279DEF8A00809621 /* Torus.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Torus.entitlements; sourceTree = "<group>"; };
 		1558D41A27C58E4D009051CB /* 0 - StartingScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "0 - StartingScene.swift"; sourceTree = "<group>"; };
 		1558D41D27C59578009051CB /* TouchNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchNode.swift; sourceTree = "<group>"; };
+		1565C98627E03AE1006BE12A /* 4a - PowerList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "4a - PowerList.swift"; sourceTree = "<group>"; };
+		1577EDD927E0E71300A1FB2C /* Adding A Power.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = "Adding A Power.rtf"; sourceTree = "<group>"; };
 		157D0A7327C7374B0099ED1F /* GameModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameModel.swift; sourceTree = "<group>"; };
 		15E124BC27D9245B00B57D0B /* 3a - ButtonTray.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "3a - ButtonTray.swift"; sourceTree = "<group>"; };
 		15FBA5B1278A6D1D00EE5CD1 /* Torus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Torus.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -64,7 +68,7 @@
 		15FBA5DD278A6D7900EE5CD1 /* 3c - Tray.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "3c - Tray.swift"; sourceTree = "<group>"; };
 		15FBA5DE278A6D7900EE5CD1 /* 5 - Torus.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "5 - Torus.swift"; sourceTree = "<group>"; };
 		15FBA5DF278A6D7900EE5CD1 /* 1 - GameScene.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "1 - GameScene.swift"; sourceTree = "<group>"; };
-		15FBA5E0278A6D7900EE5CD1 /* 4 - Tile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "4 - Tile.swift"; sourceTree = "<group>"; };
+		15FBA5E0278A6D7900EE5CD1 /* 4b - Tile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "4b - Tile.swift"; sourceTree = "<group>"; };
 		15FBA5E1278A6D7900EE5CD1 /* 2 - PlayScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "2 - PlayScreen.swift"; sourceTree = "<group>"; };
 		15FBA5E3278A6D7900EE5CD1 /* PowerType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PowerType.swift; sourceTree = "<group>"; };
 		15FBA5E4278A6D7900EE5CD1 /* Activated Attributes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Activated Attributes.swift"; sourceTree = "<group>"; };
@@ -145,6 +149,7 @@
 				15FBA5C1278A6D1F00EE5CD1 /* Assets.xcassets */,
 				15FBA5C3278A6D1F00EE5CD1 /* LaunchScreen.storyboard */,
 				15FBA5BE278A6D1D00EE5CD1 /* Main.storyboard */,
+				1577EDD927E0E71300A1FB2C /* Adding A Power.rtf */,
 			);
 			path = Torus;
 			sourceTree = "<group>";
@@ -167,7 +172,8 @@
 				15E124BC27D9245B00B57D0B /* 3a - ButtonTray.swift */,
 				15FBA5DC278A6D7900EE5CD1 /* 3b - GameBoard.swift */,
 				15FBA5DD278A6D7900EE5CD1 /* 3c - Tray.swift */,
-				15FBA5E0278A6D7900EE5CD1 /* 4 - Tile.swift */,
+				1565C98627E03AE1006BE12A /* 4a - PowerList.swift */,
+				15FBA5E0278A6D7900EE5CD1 /* 4b - Tile.swift */,
 				15FBA5DE278A6D7900EE5CD1 /* 5 - Torus.swift */,
 			);
 			path = Entities;
@@ -288,6 +294,7 @@
 				15FBA5C0278A6D1D00EE5CD1 /* Main.storyboard in Resources */,
 				15FBA5C2278A6D1F00EE5CD1 /* Assets.xcassets in Resources */,
 				15FBA5C5278A6D1F00EE5CD1 /* LaunchScreen.storyboard in Resources */,
+				1577EDDA27E0E71300A1FB2C /* Adding A Power.rtf in Resources */,
 				15FBA5B9278A6D1D00EE5CD1 /* Actions.sks in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -309,8 +316,9 @@
 				15FBA628278A6D7A00EE5CD1 /* GameViewController.swift in Sources */,
 				15FBA622278A6D7A00EE5CD1 /* ScrollView.swift in Sources */,
 				15FBA633278A6EDA00EE5CD1 /* MovementManager.swift in Sources */,
-				15FBA611278A6D7A00EE5CD1 /* 4 - Tile.swift in Sources */,
+				15FBA611278A6D7A00EE5CD1 /* 4b - Tile.swift in Sources */,
 				15FBA604278A6D7A00EE5CD1 /* 2 - Team.swift in Sources */,
+				1565C98727E03AE1006BE12A /* 4a - PowerList.swift in Sources */,
 				15FBA620278A6D7A00EE5CD1 /* Enums.swift in Sources */,
 				15FBA610278A6D7A00EE5CD1 /* 1 - GameScene.swift in Sources */,
 				15FBA614278A6D7A00EE5CD1 /* Activated Attributes.swift in Sources */,

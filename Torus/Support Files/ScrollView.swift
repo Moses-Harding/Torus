@@ -9,6 +9,7 @@ import Foundation
 import UIKit
 import GameKit
 
+/*
 class ScrollView: UIScrollView {
     
     public enum ScrollDirection {
@@ -64,7 +65,7 @@ class ScrollView: UIScrollView {
     
     func add(power: PowerType, powerCount: Int) {
         
-        let buttonFrame = CGRect(origin: currentPosition, size: self.frame.size.scaled(x: 0.8, y: 0.2))
+        let buttonFrame = CGRect(origin: currentPosition, size: self.frame.size.scaled(x: 0.5, y: 0.2))
         let button = ScrollButton(frame: buttonFrame, scrollView: self, power: power, powerCount: powerCount)
         self.addSubview(button)
         
@@ -124,3 +125,4 @@ class ScrollButton: UIButton {
         scrollView.buttonPushed(power)
     }
 }
+*/

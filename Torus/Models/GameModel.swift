@@ -11,9 +11,7 @@ import GameKit
 struct GameModel: Codable {
     
     //Match
-    var messageToDisplay: String {
-        return "Your turn!"
-    }
+    var messageToDisplay: String { return "Your turn!" }
     
     //Turn
     var turnNumber: Int = 0
@@ -49,7 +47,7 @@ struct GameModel: Codable {
         team2Torii = []
         
         for tile in manager.gameBoard.tiles {
-            let tileDescription = TileDescription(position: tile.boardPosition, height: tile.height, status: tile.status, hasOrb: tile.hasOrb)
+            let tileDescription = TileDescription(position: tile.boardPosition, height: tile.height, status: tile.status, hasOrb: tile.hasOrb, nextPower: tile.nextPower)
             tiles.append(tileDescription)
         }
         
@@ -86,13 +84,14 @@ struct GameModel: Codable {
         guard let manager = scene.gameManager else { fatalError("Load Data - Game manager not passed") }
         
         manager.turnNumber = turnNumber
-        
         manager.changeTeam(to: currentTeam)
         
         if !matchAlreadyOpen { loadPreTurnData(to: scene) }
         
         ChangeDecoder.helper.decode(tileChanges: tileChanges)
         ChangeDecoder.helper.decode(torusChanges: torusChanges)
+        
+        print(tileChanges, torusChanges)
         
         savePreTurnData(from: scene)
         
@@ -113,7 +112,6 @@ struct GameModel: Codable {
         team1Score = manager.team1.teamCount
         team2Score = manager.team2.teamCount
         
-        
         tileChanges = ChangeManager.register.tileChanges
         torusChanges = ChangeManager.register.torusChanges
         
@@ -126,6 +124,7 @@ struct TileDescription: Codable {
     var height: TileHeight
     var status: TileStatus
     var hasOrb: Bool
+    var nextPower: PowerType?
 }
 
 struct TorusDescription: Codable {
@@ -159,7 +158,8 @@ extension TorusDescription: CustomStringConvertible {
 
 extension TileDescription: CustomStringConvertible {
     var description: String {
-        return "Tile \(position.name)"
+        let powerName = hasOrb ? " - has \(nextPower!)" : ""
+        return "Tile \(position.name)\(powerName)"
     }
 }
 

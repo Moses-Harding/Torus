@@ -70,6 +70,19 @@ class TileSprite: EntitySprite {
     }
 }
 
+class PowerListSprite: EntitySprite {
+    
+    init(size: CGSize) {
+        
+        let texture = SKTexture(imageNamed: TraySpriteAssets.redTextBox.rawValue)
+        super.init(texture: texture, color: UIColor.clear, size: size)
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
 class GameBoardSprite: EntitySprite {
     
     init(size: CGSize) {
@@ -77,8 +90,6 @@ class GameBoardSprite: EntitySprite {
         let texture = SKTexture(imageNamed: "Blank")
         super.init(texture: texture, color: UIColor.clear, size: size)
         
-        //self.colorBlendFactor = 1
-        //self.alpha = 0
         self.isHidden = true
     }
     

@@ -15,7 +15,11 @@ class GameManager {
     
     var team1: Team!
     var team2: Team!
-    var currentTeam: Team!
+    var currentTeam: Team! {
+        didSet {
+            scene.toggleWaitingScreen()
+        }
+    }
     var userTeam: Team!
 
     var turnNumber = 0
@@ -56,7 +60,6 @@ extension GameManager { //Taking Turn
             
             scene.model.firstMove = false
             scene.model.savePreTurnData(from: scene)
-            //scene.model.saveData(from: scene)
             
             GameCenterHelper.helper.saveCurrentMatch(scene.model) { error in
                 if let e = error {
@@ -84,7 +87,8 @@ extension GameManager { //Taking Turn
         
         gameBoard.unhighlightTiles()
         updateLabels()
-        scene.scrollView?.clear()
+        //scene.scrollView?.clear()
+        tray.powerList.clear()
     }
     
     func updateGameLogic() {
@@ -188,7 +192,19 @@ extension GameManager { //User Touch Interaction / Selection
         }
         
         guard GameCenterHelper.helper.canTakeTurnForCurrentMatch else {
-            print("cannot take turn for current match")
+            let waitingScreen = SKSpriteNode(imageNamed: "Waiting Label")
+            scene.addChild(waitingScreen)
+            waitingScreen.position = scene.midPoint
+            waitingScreen.size.scale(proportionateTo: .width, of: scene.frame.size)
+            waitingScreen.zPosition = SpriteLevel.topLevel.rawValue + 10
+            
+            //let falling = SKAction.moveTo(y: 0, duration: 0.76)
+            let fading = SKAction.fadeOut(withDuration: 0.76)
+            let waiting = SKAction.wait(forDuration: 1.5)
+            //let actionGroup = SKAction.group([falling, fading])
+            let actionSequence = SKAction.sequence([waiting, fading])
+            
+            waitingScreen.run(actionSequence) { waitingScreen.removeFromParent() }
             return
         }
         
@@ -212,7 +228,8 @@ extension GameManager { //User Touch Interaction / Selection
         
         gameBoard.highlightValidTiles(surrounding: currentTeam.currentlySelected!)
         
-        scene.scrollView.updateView(with: currentTeam.currentlySelected!.powers, from: torus.team.teamNumber)
+       // scene.scrollView.updateView(with: currentTeam.currentlySelected!.powers, from: torus.team.teamNumber)
+        tray.powerList.updateView(with: currentTeam.currentlySelected!.powers, from: torus.team.teamNumber)
     }
     
     func select(_ tile: Tile) {
@@ -228,9 +245,15 @@ extension GameManager { //User Touch Interaction / Selection
 
 extension GameManager {
     
-    func activate(power: PowerType) {
+    func activate(power: PowerType) -> (CGFloat, (() -> ()))? {
         
-        guard let current = currentTeam.currentlySelected else { return }
+        guard let current = currentTeam.currentlySelected else { return nil }
+        
+        let exclusionList = [PowerType(.snakeTunelling)] //Deselct for some
+        
+        if exclusionList.contains(power) {
+            self.select(current)
+        }
         
         let completion = {
             self.select(current)
@@ -238,7 +261,7 @@ extension GameManager {
             self.select(current)
         }
         
-        PowerManager.helper.activate(power, with: current, completion: completion)
+        return PowerManager.helper.activate(power, with: current, completion: completion)
     }
 }
 

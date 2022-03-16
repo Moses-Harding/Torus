@@ -12,7 +12,7 @@ import SpriteKit
 enum TorusChangeType: Codable {
     case move
     case activatePower
-    //case addPower
+    case bombs
     case addPower
     case removePowers
 }
@@ -28,11 +28,15 @@ struct TorusChange: Codable  {
     var newPowers: [PowerType:Int]? = nil
     var moveToTile: TilePosition? = nil
     var powerToActivate: PowerType? = nil
+    var targetTiles: [TilePosition]? = nil
+    var waitDuration: CGFloat? = nil
 }
 
 struct TileChange: Codable  {
     var type: TileChangeType
     var tile: TilePosition
+    
+    var nextPower: PowerType
 }
 
 class ChangeManager: Codable {
@@ -50,9 +54,14 @@ class ChangeManager: Codable {
     }
     
     //Tile Changes
-    func populateOrb(on tile: Tile) {
-        let change = TileChange(type: .addOrb, tile: tile.boardPosition)
+    func populateOrb(on tile: Tile, nextPower: PowerType) {
+        let change = TileChange(type: .addOrb, tile: tile.boardPosition, nextPower: nextPower)
         tileChanges.append(change)
+    }
+    
+    func bombs(power: PowerType, for torus: Torus, targetTiles: [TilePosition], waitDuration: CGFloat) {
+        let change = TorusChange(type: .bombs, torus: torus.name, targetTiles: targetTiles, waitDuration: waitDuration)
+        torusChanges.append(change)
     }
     
     //Torus Changes
@@ -87,7 +96,7 @@ class ChangeDecoder {
     
     func decode(tileChanges: [TileChange]) {
         
-        print("\nDecoding Tile Changes")
+        //print("\nDecoding Tile Changes")
         
         guard let scene = gameScene else { fatalError("Change Decoder - GameScene not passed") }
         guard let manager = scene.gameManager else { fatalError("Change Decoder - GameManager not passed") }
@@ -97,11 +106,11 @@ class ChangeDecoder {
         for tileChange in tileChanges {
             guard let tile = manager.gameBoard.getTile(from: tileChange.tile) else { fatalError("Change Decoder - Tile could not be located") }
             
-            print(tileChange)
+            //print(tileChange)
             
             switch tileChange.type {
             case .addOrb:
-                tile.populateOrb(decoding: true)
+                tile.populateOrb(decoding: true, nextPower: tileChange.nextPower)
             }
         }
         
@@ -110,7 +119,7 @@ class ChangeDecoder {
     
     func decode(torusChanges: [TorusChange]) {
         
-        print("\nDecoding Torus Changes")
+        //print("\nDecoding Torus Changes")
         
         guard let scene = gameScene else { fatalError("Change Decoder - GameScene not passed") }
         guard let manager = scene.gameManager else { fatalError("Change Decoder - GameManager not passed") }
@@ -124,10 +133,8 @@ class ChangeDecoder {
             for torusChange in torusChanges {
                 guard let torus = scene.gameManager.getTorus(with: torusChange.torus) else { fatalError("Change Decoder - Torus could not be located") }
                 
-                
                 switch torusChange.type {
                 case .addPower:
-
                     guard let powers = torusChange.newPowers else { fatalError("Change Decoder - Add Power - No Powers Passed") }
                     
                     torus.sprite.run(SKAction.wait(forDuration: waitDuration)) {
@@ -137,6 +144,14 @@ class ChangeDecoder {
                             torus.powers[power] = (torus.powers[power] ?? 0) + powerCount
                         }
                     }
+                case .bombs:
+                    guard let targetTiles = torusChange.targetTiles else { fatalError("Change Decoder - Bombs - No Target Tiles passed") }
+                    guard let duration = torusChange.waitDuration else { fatalError("Change Decoder - Bomb - No wait duration passed") }
+                    
+                    torus.sprite.run(SKAction.wait(forDuration: waitDuration)) {
+                        PowerManager.helper.bombs(activatedBy: torus, existingSet: targetTiles) {}
+                    }
+                    waitDuration += duration
                 case .removePowers:
                     torus.sprite.run(SKAction.wait(forDuration: waitDuration)) {
                         torus.powers = [:]

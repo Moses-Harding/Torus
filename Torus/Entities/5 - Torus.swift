@@ -48,6 +48,7 @@ class Torus: Entity {
     var tripwireName: String
     
     //Status indicators
+    var climbTileSprite: OverlaySprite?
     var tripwireSprite: OverlaySprite?
     var moveDiagonalSprite: OverlaySprite?
     var jumpProofSprite: OverlaySprite?
@@ -86,6 +87,16 @@ class Torus: Entity {
         super.init(scene: scene, sprite: sprite, position: currentTile.boardPosition.point, spriteLevel: .torusOrScrollView, name: name, size: size)
         
         self.currentTile.occupy(with: self)
+        
+        //TESTING
+        if TestingManager.helper.toriiStartWithPowers {
+            TestingManager.helper.powersToTest.forEach { self.powerUp(with: $0) }
+        }
+        
+        print("TESTING TORII POWERS IN TORII INIT")
+        for _ in 0 ... Int.random(in: 0 ... 12) {
+            self.powerUp(with: PowerType.random())
+        }
     }
     
     convenience init(scene: GameScene, tile: Tile, team: Team, size: CGSize, description: TorusDescription) {
@@ -143,51 +154,41 @@ extension Torus {
     func powerUp(with power: PowerType) {
         
         powers[power] = (powers[power] ?? 0) + 1
-        
-        sprite.texture = SKTexture(imageNamed: poweredUpName)
     }
     
     func learn(_ powerSet: [PowerType:Int]) {
-        print("learn powers")
+        print("Learn Powers")
         print(powerSet)
         
         for (power, powerCount) in powerSet {
             powers[power] = (powers[power] ?? 0) + powerCount
         }
-        
-        if !powerSet.isEmpty {
-            sprite.texture = SKTexture(imageNamed: poweredUpName)
-        } else {
-            sprite.texture = SKTexture(imageNamed: baseName)
-        }
     }
     
     func resetPowers() {
-        print("reset")
+        print("Reseting Powers")
         
         powers = [:]
-        sprite.texture = SKTexture(imageNamed: baseName)
     }
 }
 
 extension Torus { // Change Status
     
-    func tripwired() {
+    func climbTile() {
+        activatedAttributes.hasClimbTile = true
         
-        activatedAttributes.isTripWired = true
+        let texture = SKTexture(imageNamed: TorusOverlayAssets.climbTile.rawValue)
         
-        let texture = SKTexture(imageNamed: tripwireName)
-        
-        tripwireSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
+        climbTileSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
     }
     
-    func moveDiagonal() {
+    func inhibited() {
         
-        activatedAttributes.hasMoveDiagonal = true
+        activatedAttributes.isInhibited = true
         
-        let texture = SKTexture(imageNamed: TorusOverlayAssets.moveDiagonal.rawValue)
+        let texture = SKTexture(imageNamed: TorusOverlayAssets.inhibited.rawValue)
         
-        moveDiagonalSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
+        inhibitedSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
     }
     
     func jumpProof() {
@@ -199,13 +200,22 @@ extension Torus { // Change Status
         jumpProofSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
     }
     
-    func inhibited() {
+    func moveDiagonal() {
         
-        activatedAttributes.isInhibited = true
+        activatedAttributes.hasMoveDiagonal = true
         
-        let texture = SKTexture(imageNamed: TorusOverlayAssets.inhibited.rawValue)
+        let texture = SKTexture(imageNamed: TorusOverlayAssets.moveDiagonal.rawValue)
         
-        inhibitedSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
+        moveDiagonalSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
+    }
+    
+    func tripwired() {
+        
+        activatedAttributes.isTripWired = true
+        
+        let texture = SKTexture(imageNamed: tripwireName)
+        
+        tripwireSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
     }
 }
 
@@ -218,7 +228,7 @@ extension Torus { //Load Description
         let attributes = description.attributes
         
         if attributes.hasClimbTile {
-            //
+            climbTile()
         }
         if attributes.hasFlatToSphere {
             //

@@ -7,6 +7,10 @@
 
 import SpriteKit
 
+enum ScaleDirection {
+    case width, height
+}
+
 extension CGSize {
     
     func scaled(by float: CGFloat) -> CGSize {
@@ -15,6 +19,28 @@ extension CGSize {
     
     func scaled(x: CGFloat, y: CGFloat) -> CGSize {
         return self.applying(.init(scaleX: x, y: y))
+    }
+    
+    mutating func scale(proportionateTo direction: ScaleDirection, of size: CGSize) {
+        let currentWidth = self.width
+        let currentHeight = self.height
+        let otherWidth = size.width
+        let otherHeight = size.height
+        
+        var newWidth: CGFloat
+        var newHeight: CGFloat
+        
+        if direction == .width {
+            newWidth = otherWidth
+            let ratio = newWidth / currentWidth
+            newHeight = currentHeight * ratio
+        } else {
+            newHeight = otherHeight
+            let ratio = newHeight / currentHeight
+            newWidth = currentWidth * ratio
+        }
+        
+        self = CGSize(width: newWidth, height: newHeight)
     }
     
     mutating func add(width: CGFloat = 0, height: CGFloat = 0) {
@@ -55,25 +81,17 @@ extension Bool {
     }
 }
 
-extension SKTexture {
-    class func pillBackgroundTexture(of size: CGSize, color: UIColor?) -> SKTexture {
-      return SKTexture(image: UIGraphicsImageRenderer(size: size).image { context in
-        let fillColor = color ?? .white
-        let shadowColor = UIColor(white: 0, alpha: 0.3)
+
+extension SKLabelNode {
+    func adjustLabelFontSizeToFitRect(rect:CGRect) {
         
-        let shadow = NSShadow()
-        shadow.shadowColor = shadowColor
-        shadow.shadowOffset = CGSize(width: 0, height: 1)
-        shadow.shadowBlurRadius = 5
+        // Determine the font scaling factor that should let the label text fit in the given rectangle.
+        let scalingFactor = min(rect.width / self.frame.width, rect.height / self.frame.height)
         
-        let drawContext = context.cgContext
+        // Change the fontSize.
+        self.fontSize *= scalingFactor
         
-        let pillRect = CGRect(origin: .zero, size: size).insetBy(dx: 3, dy: 4)
-        let rectanglePath = UIBezierPath(roundedRect: pillRect, cornerRadius: size.height / 2)
-        
-        drawContext.setShadow(offset: shadow.shadowOffset, blur: shadow.shadowBlurRadius, color: shadowColor.cgColor)
-        fillColor.setFill()
-        rectanglePath.fill()
-      })
+        // Optionally move the SKLabelNode to the center of the rectangle.
+        //self.position = CGPoint(x: rect.midX, y: rect.midY - self.frame.height / 2.0)
     }
 }

@@ -22,15 +22,16 @@ class PowerManager {
         return scene.gameManager
     }
     
-    func assignPower(to torus: Torus) {
-        
-        guard let power = TestingManager.helper.testPowers ? TestingManager.helper.powersToTest.randomElement() : PowerType.random() else { fatalError("No power retrieved to assing to torus") }
+    func assign(power: PowerType, to torus: Torus) {
         
         torus.powerUp(with: power)
-        scene.scrollView.updateView(with: torus.powers, from: torus.team.teamNumber)
+        //scene.scrollView.updateView(with: torus.powers, from: torus.team.teamNumber)
+        gameManager.tray.powerList.updateView(with: torus.powers, from: torus.team.teamNumber)
     }
     
     func removePower(from torus: Torus, _ power: PowerType) {
+        
+        print("Removing \(torus), \(power)")
         
         guard let powerCount = torus.powers[power] else {
             print("Correct power is not present")
@@ -42,19 +43,28 @@ class PowerManager {
         } else {
             torus.powers[power]! = powerCount - 1
         }
-        scene.scrollView.updateView(with: torus.powers, from: torus.team.teamNumber)
+        //scene.scrollView.updateView(with: torus.powers, from: torus.team.teamNumber)
+        gameManager.tray.powerList.updateView(with: torus.powers, from: torus.team.teamNumber)
     }
     
-    func activate(_ powerType: PowerType, with torus: Torus, decoding: Bool = false, completion: @escaping () -> ()) {
-        removePower(from: torus, powerType)
-
-        let direction = powerType.direction ?? .radius //Radius doesn't matter, just unwrapping. 
+    @discardableResult
+    func activate(_ powerType: PowerType, with torus: Torus, decoding: Bool = false, completion: @escaping () -> ()) -> (CGFloat, (() -> ())) {
+        
+        let direction = powerType.direction ?? .radius //Radius doesn't matter, just unwrapping.
+        
+        var waitDuration: CGFloat = 0
         
         switch powerType.power {
         case .acidic:
-            acid(direction, activatedBy: torus, completion: completion)
+            waitDuration = acid(direction, activatedBy: torus, completion: completion)
+        case .bombs:
+            let (targetTiles, duration) = bombs(activatedBy: torus, completion: completion)
+            if !decoding { ChangeManager.register.bombs(power: PowerType(.bombs), for: torus, targetTiles: targetTiles, waitDuration: waitDuration) }
+            waitDuration = duration
+        case .climbTile:
+            climbTile(activatedBy: torus, completion: completion)
         case .destroy:
-            destroy(direction, activatedBy: torus, completion: completion)
+            waitDuration = destroy(direction, activatedBy: torus, completion: completion)
         case .inhibit:
             inhibit(direction, activatedBy: torus, completion: completion)
         case .jumpProof:
@@ -66,47 +76,110 @@ class PowerManager {
         case .moveDiagonal:
             moveDiagonal(activatedBy: torus, completion: completion)
         case .pilfer:
-            pilfer(direction, activatedBy: torus, completion: completion)
+            waitDuration = pilfer(direction, activatedBy: torus, completion: completion)
         case .raiseTile:
             raiseTile(activatedBy: torus, completion: completion)
+        case .smartBombs:
+            let (targetTiles, waitDuration) = bombs(activatedBy: torus, smart: true, completion: completion)
+            if !decoding { ChangeManager.register.bombs(power: PowerType(.smartBombs), for: torus, targetTiles: targetTiles, waitDuration: waitDuration) }
+        case .snakeTunelling:
+            let (targetTiles, duration) = snakeTunnelling(activatedBy: torus, completion: completion)
+            waitDuration = duration
         case .teach:
             teach(direction, activatedBy: torus, completion: completion)
         case .trench:
-            trench(direction, activatedBy: torus, completion: completion)
+            waitDuration = trench(direction, activatedBy: torus, completion: completion)
         case .tripwire:
             tripwire(direction, activatedBy: torus, completion: completion)
         case .wall:
-            wall(direction, activatedBy: torus, completion: completion)
+            waitDuration = wall(direction, activatedBy: torus, completion: completion)
         }
         
-        if !decoding {
+        if !decoding && powerType.power != .bombs && powerType.power != .smartBombs {
             ChangeManager.register.activate(power: powerType, for: torus)
-            //ChangeManager.register.syncPowers(for: torus)
         }
+        
+        let finalClosure = { self.removePower(from: torus, powerType) }
+        
+        return (waitDuration, finalClosure)
     }
 }
 
 extension PowerManager { //Powers
     
-    func acid(_ direction: PowerDirection, activatedBy torus: Torus, completion: @escaping () -> ()) {
+    func acid(_ direction: PowerDirection, activatedBy torus: Torus, completion: @escaping () -> ()) -> CGFloat {
+        
+        var waitDuration: CGFloat = 0
         
         let enemies = getTorii(for: direction, from: torus)
         for enemy in enemies {
             enemy.currentTile.acid()
-            AnimationManager.helper.kill(torus: enemy, deathType: .acidic, completion: completion)
+            waitDuration += AnimationManager.helper.kill(torus: enemy, deathType: .acidic, completion: completion)
         }
         
+        completion()
+        
+        return waitDuration
+    }
+    
+    @discardableResult
+    func bombs(activatedBy torus: Torus, smart: Bool = false, existingSet: [TilePosition]? = nil, completion: @escaping () -> ()) -> ([TilePosition], Double) {
+        
+        var targetTiles = [Tile]()
+        var targetTilePositions = [TilePosition]()
+        var waitDuration: Double = 0
+        
+        if let tilePositions = existingSet {
+            removePower(from: torus, PowerType(.bombs))
+            for position in tilePositions {
+                guard let tile = gameBoard.getTile(from: position) else { fatalError("PowerManager - Bombs - Tile not retrieved") }
+                targetTiles.append(tile)
+            }
+        } else {
+            var randomNumber = Int.random(in: 6 ... 12)
+            
+            if smart { randomNumber += 6 }
+            
+            for _ in 0 ... randomNumber {
+                targetTiles.append(gameBoard.getRandomTile())
+            }
+        }
+        
+        for tile in targetTiles {
+            if smart && tile.occupiedBy != nil && tile.occupiedBy!.team == torus.team {
+                waitDuration += 0.2
+            } else {
+                tile.sprite.run(SKAction.wait(forDuration: waitDuration)) {
+                    AnimationManager.helper.bomb(tile: tile)
+                }
+                targetTilePositions.append(tile.boardPosition)
+                waitDuration += 0.2
+            }
+        }
+        
+        completion()
+        
+        return (targetTilePositions, waitDuration)
+    }
+    
+    func climbTile(activatedBy torus: Torus, completion: @escaping () -> ()) {
+        
+        torus.climbTile()
         completion()
     }
     
-    func destroy(_ direction: PowerDirection, activatedBy torus: Torus, completion: @escaping () -> ()) {
+    func destroy(_ direction: PowerDirection, activatedBy torus: Torus, completion: @escaping () -> ()) -> CGFloat {
+        
+        var waitDuration: CGFloat = 0
         
         let enemies = getTorii(for: direction, from: torus)
         for enemy in enemies {
-            AnimationManager.helper.kill(torus: enemy, deathType: .destroy, completion: completion)
+            waitDuration += AnimationManager.helper.kill(torus: enemy, deathType: .destroy, completion: completion)
         }
         
         completion()
+        
+        return waitDuration
     }
     
     func inhibit(_ direction: PowerDirection, activatedBy torus: Torus, completion: @escaping () -> ()) {
@@ -150,15 +223,19 @@ extension PowerManager { //Powers
         completion()
     }
     
-    func pilfer(_ direction: PowerDirection, activatedBy torus: Torus, completion: @escaping () -> ()) {
+    func pilfer(_ direction: PowerDirection, activatedBy torus: Torus, completion: @escaping () -> ()) -> CGFloat {
+        
+        var waitDuration: CGFloat = 0
         
         let enemies = getTorii(for: direction, from: torus)
         for enemy in enemies {
             torus.learn(enemy.powers)
-            AnimationManager.helper.pilferPowers(from: enemy)
+            waitDuration += AnimationManager.helper.pilferPowers(from: enemy)
         }
         
         completion()
+        
+        return waitDuration
     }
     
     func raiseTile(activatedBy torus: Torus, completion: @escaping () -> ()) {
@@ -168,6 +245,40 @@ extension PowerManager { //Powers
         
         gameManager.select(torus)
         gameManager.updateLabels()
+    }
+    
+    func snakeTunnelling(activatedBy torus: Torus, smart: Bool = false, existingSet: [TilePosition]? = nil, completion: @escaping () -> ()) -> ([TilePosition], CGFloat) {
+        
+        self.gameBoard.unhighlightTiles()
+        
+        let startTile = torus.currentTile
+        let randomNumber = Int.random(in: 10 ... 15)
+        
+        var nextTile = startTile
+        var targetTiles = [nextTile]
+        var targetTilePositions = [nextTile.boardPosition]
+        var waitDuration: CGFloat = 0
+        
+        for _ in 0 ... randomNumber {
+            nextTile = gameBoard.getRandomNeighboringTile(from: nextTile)
+            targetTiles.append(nextTile)
+            targetTilePositions.append(nextTile.boardPosition)
+        }
+        
+        for tile in targetTiles {
+            tile.sprite.run(SKAction.wait(forDuration: waitDuration)) {
+                tile.isValidForMovement(moveType: .attack)
+                tile.snakeTunnel(teamToAvoid: torus.team.teamNumber)
+                tile.sprite.run(SKAction.wait(forDuration: 0.75)) {
+                    tile.isInvalidForMovement()
+                }
+            }
+            waitDuration += 0.75
+        }
+        
+        completion()
+        
+        return (targetTilePositions, waitDuration)
     }
     
     func teach(_ direction: PowerDirection, activatedBy torus: Torus, completion: @escaping () -> ()) {
@@ -180,11 +291,11 @@ extension PowerManager { //Powers
         completion()
     }
     
-    func trench(_ direction: PowerDirection, activatedBy torus: Torus, completion: @escaping () -> ()) {
+    func trench(_ direction: PowerDirection, activatedBy torus: Torus, completion: @escaping () -> ()) -> CGFloat {
         
         let tiles = getTiles(for: direction, from: torus)
         
-        var waitDuration: Double = 0
+        var waitDuration: CGFloat = 0
         for tile in tiles {
             tile.sprite.run(SKAction.wait(forDuration: waitDuration)) {
                 tile.changeHeight(to: .l1)
@@ -194,6 +305,8 @@ extension PowerManager { //Powers
         
         gameManager.select(torus)
         gameManager.updateLabels()
+        
+        return waitDuration
     }
     
     func tripwire(_ direction: PowerDirection, activatedBy torus: Torus, completion: @escaping () -> ()) {
@@ -206,11 +319,11 @@ extension PowerManager { //Powers
         completion()
     }
     
-    func wall(_ direction: PowerDirection, activatedBy torus: Torus, completion: @escaping () -> ()) {
+    func wall(_ direction: PowerDirection, activatedBy torus: Torus, completion: @escaping () -> ()) -> CGFloat {
         
         let tiles = getTiles(for: direction, from: torus)
         
-        var waitDuration: Double = 0
+        var waitDuration: CGFloat = 0
         for tile in tiles {
             tile.sprite.run(SKAction.wait(forDuration: waitDuration)) {
                 tile.changeHeight(to: .l5)
@@ -220,6 +333,8 @@ extension PowerManager { //Powers
         
         gameManager.select(torus)
         gameManager.updateLabels()
+        
+        return waitDuration
     }
     
     func placeHolder(power: PowerType) {
