@@ -173,8 +173,6 @@ class PowerList: Entity {
     
     func buttonPushed(_ button: PowerButton) {
         
-        scene.gameManager.activate(power: button.power)
-        /*
         guard let (duration, closure) = scene.gameManager.activate(power: button.power) else {
             print("PowerLIst - ButtonPushed - Duration and closure not received")
             return }
@@ -189,7 +187,6 @@ class PowerList: Entity {
         button.background.run(SKAction.wait(forDuration: duration)) {
             closure()
         }
-         */
     }
     
     func clear() {
