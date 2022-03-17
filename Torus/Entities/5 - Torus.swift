@@ -16,7 +16,7 @@ class Torus: Entity {
     var torusColor: TorusColor
     
     var torusNumber: Int
-    var team: Team
+    unowned var team: Team
     
     var powers = [PowerType:Int]() {
         didSet {
@@ -32,13 +32,11 @@ class Torus: Entity {
     }
     var activatedAttributes = ActivatedAttributes()
     
-    var currentTile: Tile
+    unowned var currentTile: Tile
     
     var isSelected = false
     
-    var hasPowers: Bool {
-        return !powers.isEmpty
-    }
+    var hasPowers: Bool { return !powers.isEmpty }
     
     //Sprite Names
     var baseName: String
@@ -96,6 +94,7 @@ class Torus: Entity {
         for _ in 0 ... Int.random(in: 0 ... 12) {
             self.powerUp(with: PowerType.random())
             self.powerUp(with: PowerType(.learn, .row))
+            self.powerUp(with: PowerType(.bombs))
         }
     }
     
@@ -175,7 +174,7 @@ extension Torus {
         
         for (power, powerCount) in powerSet {
             powers[power] = (powers[power] ?? 0) + powerCount
-            exceeds20 = powers[power]! > 20
+            if powers[power]! > 20 { exceeds20 = true }
         }
 
         if exceeds20 {

@@ -184,6 +184,7 @@ extension GameManager { //User Touch Interaction / Selection
         currentTeam.currentlySelected?.deselect()
         currentTeam.currentlySelected = nil
         powerList.clear()
+        gameBoard.unhighlightTiles()
     }
     
     func select(_ torus: Torus, triggeredBy: String) {
@@ -244,7 +245,7 @@ extension GameManager { //User Touch Interaction / Selection
         gameBoard.highlightValidTiles(surrounding: currentTeam.currentlySelected!)
         
        // scene.scrollView.updateView(with: currentTeam.currentlySelected!.powers, from: torus.team.teamNumber)
-        tray.powerList.updateView(with: currentTeam.currentlySelected!.powers, from: torus)
+        tray.powerList.updateView(with: currentTeam.currentlySelected!.powers, from: torus, calledBy: "Selecting Torus")
     }
     
     func select(_ tile: Tile) {

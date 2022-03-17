@@ -19,9 +19,7 @@ class Team {
     var teamColor: TorusColor
     
     var gameManager: GameManager
-    var scene: GameScene {
-        return gameManager.scene
-    }
+    var scene: GameScene { return gameManager.scene }
     
     var currentlySelected: Torus?
     
@@ -41,9 +39,7 @@ class Team {
 
     
     func createTeam() {
-        
-        print("Creating team")
-        
+
         var currentRow = 0
         var currentCol = 0
         

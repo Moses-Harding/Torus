@@ -120,9 +120,9 @@ class PowerList: Entity {
     }
     
 
-    func updateView(with powerList: [PowerType:Int], from torus: Torus? = nil) {
+    func updateView(with powerList: [PowerType:Int], from torus: Torus? = nil, calledBy: String) {
         
-        print("Ppdating view with \(torus)")
+        //print("Updating view with \(torus), triggerd by \(calledBy)")
         
         //guard teamNumber == scene.model.currentTeam else { return }
         //guard GameCenterHelper.helper.canTakeTurnForCurrentMatch else { return }
@@ -224,7 +224,7 @@ class PowerList: Entity {
     }
     
     func clear() {
-        self.updateView(with: [:])
+        self.updateView(with: [:], calledBy: "Clearing view")
     }
     
     func displayPowerConsole(message: PowerConsoleAssets, for duration: CGFloat = 0.75) {

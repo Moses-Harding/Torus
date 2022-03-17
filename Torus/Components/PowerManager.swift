@@ -30,7 +30,7 @@ class PowerManager {
         //scene.scrollView.updateView(with: torus.powers, from: torus.team.teamNumber)
         
         if !exceeds20 {
-            gameManager.tray.powerList.updateView(with: torus.powers, from: torus)
+            gameManager.tray.powerList.updateView(with: torus.powers, from: torus, calledBy: "PowerManager Assigning Power")
         }
     }
     
@@ -49,7 +49,7 @@ class PowerManager {
             torus.powers[power]! = powerCount - 1
         }
         //scene.scrollView.updateView(with: torus.powers, from: torus.team.teamNumber)
-        gameManager.tray.powerList.updateView(with: torus.powers, from: torus)
+        gameManager.tray.powerList.updateView(with: torus.powers, from: torus, calledBy: "PowerManager Removing Power")
     }
     
     @discardableResult
@@ -59,7 +59,7 @@ class PowerManager {
         
         var waitDuration: CGFloat = 0.1
         var isEffective = true
-        var overHeat = false
+        var killedSelf = false
         
         var finalClosure = { self.removePower(from: torus, powerType) }
         
@@ -67,8 +67,9 @@ class PowerManager {
         case .acidic:
             (waitDuration, isEffective) = acid(direction, activatedBy: torus)
         case .bombs:
-            let (targetTiles, duration) = bombs(activatedBy: torus)
+            let (targetTiles, duration, killedSelf) = bombs(activatedBy: torus)
             if !decoding { ChangeManager.register.bombs(power: PowerType(.bombs), for: torus, targetTiles: targetTiles, waitDuration: waitDuration) }
+            if killedSelf { finalClosure = { self.gameManager.powerList.clear() } }
             waitDuration = duration
         case .climbTile:
             climbTile(activatedBy: torus)
@@ -79,19 +80,19 @@ class PowerManager {
         case .jumpProof:
             jumpProof(activatedBy: torus)
         case .learn:
-            (isEffective, overHeat) = learn(direction, activatedBy: torus)
-            if overHeat { finalClosure = { self.gameManager.powerList.clear() } }
+            (isEffective, killedSelf) = learn(direction, activatedBy: torus)
+            if killedSelf { finalClosure = { self.gameManager.powerList.clear() } }
         case .lowerTile:
             lowerTile(activatedBy: torus)
         case .moveDiagonal:
             moveDiagonal(activatedBy: torus)
         case .pilfer:
-            (waitDuration, isEffective, overHeat) = pilfer(direction, activatedBy: torus)
-            if overHeat { finalClosure = { self.gameManager.powerList.clear() } }
+            (waitDuration, isEffective, killedSelf) = pilfer(direction, activatedBy: torus)
+            if killedSelf { finalClosure = { self.gameManager.powerList.clear() } }
         case .raiseTile:
             raiseTile(activatedBy: torus)
         case .smartBombs:
-            let (targetTiles, duration) = bombs(activatedBy: torus, smart: true)
+            let (targetTiles, duration, killedSelf) = bombs(activatedBy: torus, smart: true)
             if !decoding { ChangeManager.register.bombs(power: PowerType(.smartBombs), for: torus, targetTiles: targetTiles, waitDuration: waitDuration) }
             waitDuration = duration
         case .snakeTunelling:
@@ -131,11 +132,12 @@ extension PowerManager { //Powers
     }
     
     @discardableResult
-    func bombs(activatedBy torus: Torus, smart: Bool = false, existingSet: [TilePosition]? = nil) -> ([TilePosition], Double) {
+    func bombs(activatedBy torus: Torus, smart: Bool = false, existingSet: [TilePosition]? = nil) -> ([TilePosition], Double, Bool) {
         
         var targetTiles = [Tile]()
         var targetTilePositions = [TilePosition]()
         var waitDuration: Double = 0
+        var killedSelf: Bool = false
         
         if let tilePositions = existingSet {
             removePower(from: torus, PowerType(.bombs))
@@ -151,7 +153,12 @@ extension PowerManager { //Powers
             for _ in 0 ... randomNumber {
                 targetTiles.append(gameBoard.getRandomTile())
             }
+            
+            targetTiles.append(torus.currentTile)
         }
+        
+        
+        killedSelf = targetTiles.contains(torus.currentTile)
         
         for tile in targetTiles {
             if smart && tile.occupiedBy != nil && tile.occupiedBy!.team == torus.team {
@@ -164,8 +171,8 @@ extension PowerManager { //Powers
                 waitDuration += 0.2
             }
         }
-        
-        return (targetTilePositions, waitDuration)
+
+        return (targetTilePositions, waitDuration, killedSelf)
     }
     
     func climbTile(activatedBy torus: Torus) {
