@@ -28,6 +28,10 @@ class GameManager {
         return scene.playScreen.board
     }
     
+    var powerList: PowerList {
+        return scene.playScreen.tray.powerList
+    }
+    
     var tray: Tray {
         return scene.playScreen.tray
     }
@@ -96,8 +100,7 @@ extension GameManager { //Taking Turn
         generateOrbs()
         turnNumber += 1
         
-        currentTeam.currentlySelected?.deselect()
-        currentTeam.currentlySelected = nil
+        self.deselectCurrent()
     }
     
     func updateLabels() {
@@ -177,17 +180,30 @@ extension GameManager { //Set Up
 
 extension GameManager { //User Touch Interaction / Selection
     
-    func select(_ torus: Torus) {
+    func deselectCurrent() {
+        currentTeam.currentlySelected?.deselect()
+        currentTeam.currentlySelected = nil
+        powerList.clear()
+    }
+    
+    func select(_ torus: Torus, triggeredBy: String) {
         //Selecting a torus (if valid) deselects other torii, then shows valid tiles
+        
+        //print("Selecting torus triggered by \(triggeredBy)")
         
         //Make sure team is correct
         guard torus.team == currentTeam else {
-            print("not current team")
+            print("Game Manager - Select Torus - Cannot select because not current team")
             return
         }
         
-        guard !scene.isSendingTurn else {
-            print("is sending turn")
+        guard !scene.isSendingTurn && powerList.powerIsActivating == false else {
+            print("Game Manager - Select Torus - Cannot select because currently sending turn")
+            return
+        }
+        
+        guard !powerList.powerIsActivating else {
+            print("Game Manager - Select Torus - Cannot select because power is activating")
             return
         }
         
@@ -217,8 +233,7 @@ extension GameManager { //User Touch Interaction / Selection
         
         //Deselect torus if same torus
         guard currentTeam.currentlySelected?.name != torus.name else {
-            torus.deselect()
-            currentTeam.currentlySelected = nil
+            self.deselectCurrent()
             return
         }
         
@@ -229,13 +244,13 @@ extension GameManager { //User Touch Interaction / Selection
         gameBoard.highlightValidTiles(surrounding: currentTeam.currentlySelected!)
         
        // scene.scrollView.updateView(with: currentTeam.currentlySelected!.powers, from: torus.team.teamNumber)
-        tray.powerList.updateView(with: currentTeam.currentlySelected!.powers, from: torus.team.teamNumber)
+        tray.powerList.updateView(with: currentTeam.currentlySelected!.powers, from: torus)
     }
     
     func select(_ tile: Tile) {
         //Selecting a tile (if valid) triggers movement / turn taking
         
-        if let torus = currentTeam.currentlySelected, torus.team == currentTeam, tile.validForMovement == true  {
+        if let torus = currentTeam.currentlySelected, torus.team == currentTeam, tile.validForMovement == true, powerList.powerIsActivating == false  {
             
             MovementManager.helper.move(torus, to: tile) { self.takeTurn() }
 
@@ -245,23 +260,19 @@ extension GameManager { //User Touch Interaction / Selection
 
 extension GameManager {
     
-    func activate(power: PowerType) -> (CGFloat, (() -> ()))? {
+    func activate(power: PowerType) -> (CGFloat, Bool, (() -> ()))? {
         
         guard let current = currentTeam.currentlySelected else { return nil }
         
+        /*
         let exclusionList = [PowerType(.snakeTunelling)] //Deselct for some
         
         if exclusionList.contains(power) {
-            self.select(current)
+            self.select(current, triggeredBy: "Game Manager - Activate Power - Exclusion List")
         }
-        
-        let completion = {
-            self.select(current)
-            self.updateLabels()
-            self.select(current)
-        }
-        
-        return PowerManager.helper.activate(power, with: current, completion: completion)
+         */
+
+        return PowerManager.helper.activate(power, with: current)
     }
 }
 

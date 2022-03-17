@@ -73,7 +73,7 @@ struct PowerType: Hashable, Codable {
         
         self.power = power
         
-        let exceptions: [Power] = [.bombs, .jumpProof, .lowerTile, .moveDiagonal, .raiseTile, .snakeTunelling, .smartBombs]
+        let exceptions: [Power] = [.bombs, .climbTile, .jumpProof, .lowerTile, .moveDiagonal, .raiseTile, .snakeTunelling, .smartBombs]
         
         self.direction = exceptions.contains(where: { $0 == power }) ? nil : direction
     }

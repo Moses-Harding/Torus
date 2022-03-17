@@ -149,7 +149,7 @@ class ChangeDecoder {
                     guard let duration = torusChange.waitDuration else { fatalError("Change Decoder - Bomb - No wait duration passed") }
                     
                     torus.sprite.run(SKAction.wait(forDuration: waitDuration)) {
-                        PowerManager.helper.bombs(activatedBy: torus, existingSet: targetTiles) {}
+                        PowerManager.helper.bombs(activatedBy: torus, existingSet: targetTiles)
                     }
                     waitDuration += duration
                 case .removePowers:
@@ -160,7 +160,7 @@ class ChangeDecoder {
                     guard let powerType = torusChange.powerToActivate else { fatalError("Change Decoder - Activate Power - No Power Passed") }
                     
                     torus.sprite.run(SKAction.wait(forDuration: waitDuration)) {
-                        PowerManager.helper.activate(powerType, with: torus, decoding: true) {}
+                        PowerManager.helper.activate(powerType, with: torus, decoding: true)
                     }
                     
                     waitDuration += 1

@@ -24,8 +24,6 @@ class Tray: Entity {
     
     var turnIndicator: OverlaySprite!
     
-    var textBoxArea: TrayItemSprite!
-    
     var leftArea: OverlaySprite!
     var rightArea: OverlaySprite!
     
@@ -74,8 +72,6 @@ class Tray: Entity {
         
         // Text Area
         let textBoxSize = rightSize.scaled(by: 0.9)
-        //textBoxArea = TrayItemSprite(primaryTexture: SKTexture(imageNamed: TraySpriteAssets.redTextBox.rawValue), secondaryTexture: SKTexture(imageNamed: TraySpriteAssets.blueTextBox.rawValue), color: UIColor.clear, size: textBoxSize, parentSprite: rightArea)
-        
         powerList = PowerList(scene: scene, position: self.position.move(.right, by: redLabelBackground.size.width), size: textBoxSize)
     }
 }

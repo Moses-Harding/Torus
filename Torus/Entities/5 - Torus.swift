@@ -92,10 +92,10 @@ class Torus: Entity {
         if TestingManager.helper.toriiStartWithPowers {
             TestingManager.helper.powersToTest.forEach { self.powerUp(with: $0) }
         }
-        
-        print("TESTING TORII POWERS IN TORII INIT")
+
         for _ in 0 ... Int.random(in: 0 ... 12) {
             self.powerUp(with: PowerType.random())
+            self.powerUp(with: PowerType(.learn, .row))
         }
     }
     
@@ -109,7 +109,7 @@ class Torus: Entity {
     //Touch interactions
     override func wasTouched() {
         
-        manager.select(self)
+        manager.select(self, triggeredBy: "Torus was touched")
         manager.select(self.currentTile)
     }
     
@@ -147,26 +147,46 @@ extension Torus {
         currentTile.unoccupy()
         removeFromParent()
         team.remove(torus: self)
+        if self.name == manager.currentTeam.currentlySelected?.name {
+            manager.deselectCurrent()
+        }
     }
     
     //Powers
     
-    func powerUp(with power: PowerType) {
+    func powerUp(with power: PowerType) -> Bool {
         
         powers[power] = (powers[power] ?? 0) + 1
+        
+        var exceeds20 = false
+        
+        powers.forEach { if $0.value > 20 { exceeds20 = true} }
+        
+        if exceeds20 {
+            manager.powerList.displayPowerConsole(message: .powerConsoleOverHeat)
+            AnimationManager.helper.kill(torus: self, deathType: .acidic) {}
+        }
+        return exceeds20
     }
     
-    func learn(_ powerSet: [PowerType:Int]) {
-        print("Learn Powers")
-        print(powerSet)
+    func learn(_ powerSet: [PowerType:Int]) -> Bool {
+        
+        var exceeds20 = false
         
         for (power, powerCount) in powerSet {
             powers[power] = (powers[power] ?? 0) + powerCount
+            exceeds20 = powers[power]! > 20
         }
+
+        if exceeds20 {
+            manager.powerList.displayPowerConsole(message: .powerConsoleOverHeat)
+            AnimationManager.helper.kill(torus: self, deathType: .acidic) {}
+        }
+        
+        return exceeds20
     }
     
     func resetPowers() {
-        print("Reseting Powers")
         
         powers = [:]
     }
@@ -175,6 +195,7 @@ extension Torus {
 extension Torus { // Change Status
     
     func climbTile() {
+        
         activatedAttributes.hasClimbTile = true
         
         let texture = SKTexture(imageNamed: TorusOverlayAssets.climbTile.rawValue)

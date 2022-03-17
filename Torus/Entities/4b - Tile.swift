@@ -167,13 +167,11 @@ extension Tile { //Manipulation
     
     func snakeTunnel(teamToAvoid: TeamNumber) -> Torus? {
         
-        print("SnakeTunnel for \(self)")
+        //print("SnakeTunnel for \(self)")
         
         guard self.status != .acid else { return nil }
         
         changeHeight(to: TileHeight.l5)
-        
-        print("Changing height")
         
         if occupiedBy?.team.teamNumber != teamToAvoid {
             return occupiedBy

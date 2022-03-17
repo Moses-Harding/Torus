@@ -118,7 +118,14 @@ extension AnimationManager { //Torus
     func move(torus: Torus, to newTile: Tile, completion: @escaping () -> ()) {
         
         let moveToAction = SKAction.move(to: torus.currentTile.boardPosition.getPoint(), duration: 0.2)
-        torus.sprite.run(moveToAction) { completion() }
+        let grow = SKAction.scale(to: 1.75, duration: 0.125)
+        let shrink = SKAction.scale(to: 1, duration: 0.1)
+        let growAndShrink = SKAction.sequence([grow,shrink])
+        let attackGroup = SKAction.group([growAndShrink, moveToAction])
+
+        torus.sprite.run(attackGroup) {
+            completion()
+        }
     }
     
 

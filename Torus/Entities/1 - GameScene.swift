@@ -133,7 +133,7 @@ class GameScene: SKScene {
     //Move To Views
     
     func backToStartScreen() {
-        guard let viewController = viewController else {fatalError("No view controller passed to game view scene") }
+        guard let viewController = viewController else { fatalError("No view controller passed to game view scene") }
         if viewController.currentScene == .main {
             viewController.switchScene()
         }

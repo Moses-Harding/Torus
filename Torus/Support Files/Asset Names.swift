@@ -34,9 +34,11 @@ public enum OrbAsset: String, CaseIterable {
     case orb6 = "Orb-6"
 }
 
-public enum TraySpriteAssets: String {
-    case redTextBox = "Text Box - Red"
-    case blueTextBox = "Text Box - Blue"
+public enum PowerConsoleAssets: String {
+    case powerConsole = "PowerConsole"
+    case powerConsoleFilled = "PowerConsole - Filled"
+    case powerConsoleNoEffect = "PowerConsole - No Effect"
+    case powerConsoleOverHeat = "PowerConsole - OverHeat"
 }
 
 public enum TorusOverlayAssets: String {

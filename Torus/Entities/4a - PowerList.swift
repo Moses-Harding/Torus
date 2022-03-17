@@ -30,9 +30,12 @@ class PowerList: Entity {
     var upArrow: ImageNode!
     var downArrow: ImageNode!
     
+    var powerIsActivating = false
+    
     var powerButtons: [PowerButton] = [] {
         didSet {
-            print(totalPowerButtonHeight, sprite.frame.height)
+            //print(totalPowerButtonHeight, sprite.frame.height)
+            //print("Total power button height \(totalPowerButtonHeight), number of powers \(powerButtons.count), scrollPos \(scrollPos), numberOfButtons \(powerButtons.count)")
             if totalPowerButtonHeight >= sprite.frame.height {
                 upArrow.isHidden = false
                 downArrow.isHidden = false
@@ -62,7 +65,7 @@ class PowerList: Entity {
 
         let sprite = PowerListSprite(size: size)
 
-        super.init(scene: scene, sprite: sprite, position: position, spriteLevel: .torusOrScrollView, name: TraySpriteAssets.redTextBox.rawValue, size: size)
+        super.init(scene: scene, sprite: sprite, position: position, spriteLevel: .torusOrScrollView, name: PowerConsoleAssets.powerConsole.rawValue, size: size)
         
         buttonSpacer = sprite.frame.size.height * 0.2
         buttonHeight = sprite.frame.size.height * 0.15
@@ -117,9 +120,14 @@ class PowerList: Entity {
     }
     
 
-    func updateView(with powerList: [PowerType:Int], from teamNumber: TeamNumber) {
-        guard teamNumber == scene.model.currentTeam else { return }
+    func updateView(with powerList: [PowerType:Int], from torus: Torus? = nil) {
+        
+        print("Ppdating view with \(torus)")
+        
+        //guard teamNumber == scene.model.currentTeam else { return }
         //guard GameCenterHelper.helper.canTakeTurnForCurrentMatch else { return }
+        
+        scrollPos = 0
         
         powerButtons.forEach { $0.removeFromParent() }
         powerButtons = []
@@ -173,24 +181,61 @@ class PowerList: Entity {
     
     func buttonPushed(_ button: PowerButton) {
         
-        guard let (duration, closure) = scene.gameManager.activate(power: button.power) else {
-            print("PowerLIst - ButtonPushed - Duration and closure not received")
-            return }
+        guard let (duration, isEffective, closure) = scene.gameManager.activate(power: button.power) else {
+            print("PowerList - ButtonPushed - Duration and closure not received")
+            return
+        }
         
-        let flashRed = SKAction.colorize(with: .red, colorBlendFactor: 1, duration: 0.1)
-        let clearRed = SKAction.colorize(with: .clear, colorBlendFactor: 1, duration: 0.1)
-        let sequence = SKAction.sequence([flashRed, clearRed])
-        let repeating = SKAction.repeatForever(sequence)
+        guard let current = manager.currentTeam.currentlySelected else {
+            print("PowerList - ButtonPushed - No torus currently selected")
+            return
+        }
         
-        print(duration, closure)
-        button.background.run(repeating)
-        button.background.run(SKAction.wait(forDuration: duration)) {
+        print("Activating \(button.label.text) with duration \(duration)")
+        
+        guard isEffective else {
+            self.displayPowerConsole(message: .powerConsoleNoEffect)
+            return
+        }
+        
+        powerIsActivating = true
+        
+        
+        button.label.fontColor = UIColor(red: 0.88, green: 0.44, blue: 1.00, alpha: 1.00)
+        button.label.fontName = "Courier-Bold"
+        button.label.fontSize = 16
+        
+        let gateSprite = SKSpriteNode(imageNamed: PowerConsoleAssets.powerConsoleFilled.rawValue)
+        self.sprite.addChild(gateSprite)
+        gateSprite.size = self.sprite.size
+        gateSprite.alpha = 0.5
+        gateSprite.zPosition = 20
+
+        let waitDuration = duration > 0.5 ? duration : 0.5
+        
+        self.sprite.run(SKAction.wait(forDuration: waitDuration)) {
+            self.manager.select(current, triggeredBy: "Game Manager - Activate Power - Completion 1")
+            self.manager.updateLabels()
+            self.manager.select(current, triggeredBy: "Game Manager - Activate Power - Completion 1")
+            self.powerIsActivating = false
             closure()
+            gateSprite.removeFromParent()
         }
     }
     
     func clear() {
-        self.updateView(with: [:], from: TeamNumber.one)
+        self.updateView(with: [:])
+    }
+    
+    func displayPowerConsole(message: PowerConsoleAssets, for duration: CGFloat = 0.75) {
+        
+        let gateSprite = SKSpriteNode(imageNamed: message.rawValue)
+        self.sprite.addChild(gateSprite)
+        gateSprite.size = self.sprite.size
+        gateSprite.zPosition = 20
+        self.sprite.run(SKAction.wait(forDuration: duration)) {
+            gateSprite.removeFromParent()
+        }
     }
     
     func scrollUp() {
@@ -199,22 +244,22 @@ class PowerList: Entity {
         
         powerButtons.forEach { $0.run(SKAction.moveBy(x: 0, y: -sprite.frame.height / 2, duration: 0.1)) }
         
-        scrollPos -= sprite.frame.height / 2
+        scrollPos -= scrollDistance
         
-        print(scrollPos, totalPowerButtonHeight)
+        //print(scrollPos, totalPowerButtonHeight)
     }
     
     func scrollDown() {
         
-        print("Scroll down")
+        //print("Scroll down")
         
-        guard abs(scrollPos + scrollDistance) < totalPowerButtonHeight else { return }
+        guard (scrollPos + sprite.size.height) < totalPowerButtonHeight else { return }
         
         powerButtons.forEach { $0.run(SKAction.moveBy(x: 0, y: sprite.frame.height / 2, duration: 0.1)) }
         
-        scrollPos += sprite.frame.height / 2
+        scrollPos += scrollDistance
         
-        print(scrollPos, totalPowerButtonHeight)
+        //print(scrollPos, totalPowerButtonHeight)
     }
 }
 
@@ -225,6 +270,7 @@ class PowerButton: TouchNode {
     var label: SKLabelNode
     //var background: SKSpriteNode
     var background: SKShapeNode
+    var highlight: SKSpriteNode
     
     init(powerList: PowerList, power: PowerType, cropNode: SKCropNode, powerCount: Int, position: CGPoint, buttonFrame: CGRect) {
         self.power = power
@@ -233,14 +279,20 @@ class PowerButton: TouchNode {
         //self.background = SKSpriteNode(color: .clear, size: self.powerList.sprite.size.scaled(x: 0.5, y: 0.2))
         background = SKShapeNode(rect: buttonFrame, cornerRadius: 2)
         background.strokeColor = .clear
+        
+        highlight = SKSpriteNode(texture: SKTexture(imageNamed: "Blank"), size: background.frame.size)
+        //highlight.position = background.position
         //background.position = position
         self.label = SKLabelNode()
         
         super.init(actionBlock: nil)
         
         self.addChild(background)
-
+        
+        //background.addChild(highlight)
         background.addChild(label)
+        
+        highlight.position = background.position
         
         label.text = "\(power.name) x \(powerCount)"
         label.position = position
@@ -250,8 +302,8 @@ class PowerButton: TouchNode {
         label.preferredMaxLayoutWidth = buttonFrame.width
         label.fontName = "Courier"
         label.fontSize = 14
-        label.zPosition = 20
-        label.color = .white
+        label.zPosition = background.zPosition + 1
+        label.fontColor = UIColor.white
         
         //label.numberOfLines = -1
         //label.lineBreakMode = .byCharWrapping
@@ -265,6 +317,10 @@ class PowerButton: TouchNode {
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        
+        
+        guard !powerList.powerIsActivating else { return }
+
         powerList.buttonPushed(self)
     }
 }
