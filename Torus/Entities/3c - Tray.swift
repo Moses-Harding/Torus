@@ -70,6 +70,9 @@ class Tray: Entity {
         redLabel = LabelSprite(parentSprite: redLabelBackground)
         blueLabel = LabelSprite(parentSprite: blueLabelBackground)
         
+        redLabel.fontSize = 24
+        blueLabel.fontSize = 24
+        
         // Text Area
         let textBoxSize = rightSize.scaled(by: 0.9)
         powerList = PowerList(scene: scene, position: self.position.move(.right, by: redLabelBackground.size.width), size: textBoxSize)

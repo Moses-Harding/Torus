@@ -191,7 +191,7 @@ class PowerList: Entity {
             return
         }
         
-        print("Activating \(button.label.text) with duration \(duration)")
+        if TestingManager.helper.verbose { print("Activating \(button.label.text) with duration \(duration)") }
         
         guard isEffective else {
             self.displayPowerConsole(message: .powerConsoleNoEffect)
@@ -214,9 +214,7 @@ class PowerList: Entity {
         let waitDuration = duration > 0.5 ? duration : 0.5
         
         self.sprite.run(SKAction.wait(forDuration: waitDuration)) {
-            self.manager.select(current, triggeredBy: "Game Manager - Activate Power - Completion 1")
             self.manager.updateLabels()
-            self.manager.select(current, triggeredBy: "Game Manager - Activate Power - Completion 1")
             self.powerIsActivating = false
             closure()
             gateSprite.removeFromParent()
@@ -245,21 +243,15 @@ class PowerList: Entity {
         powerButtons.forEach { $0.run(SKAction.moveBy(x: 0, y: -sprite.frame.height / 2, duration: 0.1)) }
         
         scrollPos -= scrollDistance
-        
-        //print(scrollPos, totalPowerButtonHeight)
     }
     
     func scrollDown() {
-        
-        //print("Scroll down")
         
         guard (scrollPos + sprite.size.height) < totalPowerButtonHeight else { return }
         
         powerButtons.forEach { $0.run(SKAction.moveBy(x: 0, y: sprite.frame.height / 2, duration: 0.1)) }
         
         scrollPos += scrollDistance
-        
-        //print(scrollPos, totalPowerButtonHeight)
     }
 }
 

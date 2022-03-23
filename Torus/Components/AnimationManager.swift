@@ -12,13 +12,15 @@ class AnimationManager {
     static let helper = AnimationManager()
     
     var scene: GameScene!
-
+    
     var isFirstTurn = true
 }
 
 extension AnimationManager { //Torus
     
-    func attack(torus: Torus, to newTile: Tile, against opponent: Torus, completion: @escaping () -> ()) {
+    func attack(torus: Torus, to newTile: Tile, against opponent: Torus, completion: @escaping () -> ()) -> CGFloat {
+        
+        let waitDuration = 2.25
         
         let moveToAction = SKAction.move(to: torus.currentTile.boardPosition.getPoint(), duration: 0.2)
         let grow = SKAction.scale(to: 1.75, duration: 0.125)
@@ -31,6 +33,8 @@ extension AnimationManager { //Torus
             self.kill(torus: opponent, deathType: .normal, completion: { torus.sprite.zPosition -= 1 })
             completion()
         }
+        
+        return waitDuration
     }
     
     func bomb(tile: Tile) {
@@ -104,7 +108,18 @@ extension AnimationManager { //Torus
         case .tripwire:
             duration = 0.4
             
-            animationGroup = SKAction.group( [SKAction.rotate(byAngle: 5, duration: 0.4), SKAction.fadeOut(withDuration: 0.4)] )
+            let slowSpin = SKAction.rotate(byAngle: 4, duration: 0.5)
+            let slowShrink = SKAction.resize(toWidth: torus.size.width / 2, height: torus.size.height / 2, duration: 0.5)
+            
+            let fastSpin = SKAction.rotate(byAngle: 5, duration: 0.4)
+                            let fastShrink = SKAction.resize(toWidth: 0, height: 0, duration: 0.4)
+            
+            let group1 = SKAction.group([slowSpin, slowShrink])
+            let group2 = SKAction.group([fastSpin, fastShrink])
+                            
+            
+            animationGroup = SKAction.sequence([group1, group2])
+
         }
         
         torus.sprite.run(animationGroup) {
@@ -115,21 +130,68 @@ extension AnimationManager { //Torus
         return duration
     }
     
-    func move(torus: Torus, to newTile: Tile, completion: @escaping () -> ()) {
+    func move(torus: Torus, to newTile: Tile, completion: @escaping () -> ()) -> CGFloat {
+        
+        var waitDuration =  0.25
         
         let moveToAction = SKAction.move(to: torus.currentTile.boardPosition.getPoint(), duration: 0.2)
         let grow = SKAction.scale(to: 1.75, duration: 0.125)
         let shrink = SKAction.scale(to: 1, duration: 0.1)
         let growAndShrink = SKAction.sequence([grow,shrink])
         let attackGroup = SKAction.group([growAndShrink, moveToAction])
-
+        
         torus.sprite.run(attackGroup) {
             completion()
         }
+        
+        return waitDuration
     }
     
-
-    func takeOrb(torus: Torus, to newTile: Tile, completion: @escaping () -> ()) {
+    func recruit(torus: Torus) -> CGFloat {
+        
+        guard let manager = scene?.gameManager else { fatalError("AnimationManager - Recruit - GameManager Not Found") }
+        
+        let fadeOut = SKAction.fadeAlpha(to: 0, duration: 0.5)
+        
+        let left = SKAction.move(by: CGVector(dx: 3, dy: 0), duration: 0.05)
+        let right = SKAction.move(by: CGVector(dx: -3, dy: 0), duration: 0.05)
+        
+        let shake = SKAction.sequence([left, right, left, right, left, right, left, right])
+        
+        let recruitGroup = SKAction.group([fadeOut, shake])
+        
+        let fadeIn = SKAction.fadeIn(withDuration: 0.1)
+        
+        torus.sprite.run(recruitGroup) {
+            let torusCopy = torus
+            torus.die()
+            guard let oppositeTeam = torus.team.teamNumber == .one ? manager.team2 : manager.team1 else { fatalError("AnimationManager  - Recruit - Opposite Team Not Found")}
+            let newTorus = oppositeTeam.addTorus(from: torusCopy)
+            newTorus.sprite.run(fadeIn)
+        }
+        
+        return 0.5
+    }
+    
+    func relocate(torus: Torus, to newTile: Tile) -> CGFloat {
+        
+        let waitDuration: CGFloat = 2.5
+        
+        let moveToAction = SKAction.move(to: torus.currentTile.boardPosition.getPoint(), duration: waitDuration)
+        let grow = SKAction.scale(to: 1.5, duration: (waitDuration / 10))
+        let wait = SKAction.wait(forDuration: (waitDuration / 10) * 8)
+        let shrink = SKAction.scale(to: 1, duration: (waitDuration / 10))
+        let growAndShrink = SKAction.sequence([grow, wait, shrink])
+        let relocateGroup = SKAction.group([growAndShrink, moveToAction])
+        
+        torus.sprite.zPosition += 1
+        torus.sprite.run(relocateGroup)
+        
+        return waitDuration
+    }
+    
+    
+    func takeOrb(torus: Torus, to newTile: Tile, completion: @escaping () -> ()) -> CGFloat {
         
         let moveToDuration = 0.2
         let growDuration = 0.125
@@ -151,6 +213,8 @@ extension AnimationManager { //Torus
             PowerManager.helper.assign(power: power, to: torus)
             completion()
         }
+        
+        return totalDuration
     }
 }
 
@@ -178,6 +242,13 @@ extension AnimationManager { //Tile
 
 extension AnimationManager { //Powers
     
+    func climbTileAnimation(for torus: Torus) {
+        let grow = SKAction.scale(to: 1.2, duration: 0.3)
+        let shrink = SKAction.scale(to: 1, duration: 0.3)
+        let group = SKAction.sequence([grow, shrink])
+        torus.sprite.run(group)
+    }
+    
     func pilferPowers(from torus: Torus) -> CGFloat {
         
         let fade = SKAction.fadeAlpha(to: 0.2, duration: 0.2)
@@ -189,5 +260,28 @@ extension AnimationManager { //Powers
         }
         
         return 0.3
+    }
+    
+    func purify(_ torus: Torus, isEnemy: Bool) -> (CGFloat, Bool) {
+        
+        var waitDuration: CGFloat = 0
+        
+        let fade = SKAction.fadeAlpha(to: 0.2, duration: 0.2)
+        let fadeIn = SKAction.fadeIn(withDuration: 0.1)
+        var wasEffective = false
+        
+        
+        wasEffective = torus.purify(isEnemy: isEnemy)
+        
+        if wasEffective {
+            torus.sprite.run(fade) {
+                
+                torus.sprite.run(fadeIn)
+            }
+            waitDuration = 0.3
+        }
+        
+        
+        return (waitDuration, wasEffective)
     }
 }

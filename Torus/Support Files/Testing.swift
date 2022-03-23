@@ -12,6 +12,9 @@ class TestingManager {
     
     static let helper = TestingManager()
     
+    //
+    var verbose = true
+    
     //Test Powers
     var testPowers = false
     var toriiStartWithPowers = false
@@ -20,7 +23,7 @@ class TestingManager {
     
     //var powersToTest: [PowerType] = [PowerType(.raiseTile), PowerType(.lowerTile), PowerType(.wall, .row), PowerType(.wall, .radius), PowerType(.wall, .column), PowerType(.trench, .radius), PowerType(.trench, .row), PowerType(.trench, .column), PowerType(.climbTile)]
     //var powersToTest: [PowerType] = [PowerType(.bombs), PowerType(.smartBombs)]
-    var powersToTest: [PowerType] = [PowerType(.climbTile), PowerType(.jumpProof), PowerType(.moveDiagonal), PowerType(.snakeTunelling)]
+    var powersToTest: [PowerType] = [PowerType(.climbTile), PowerType(.jumpProof), PowerType(.moveDiagonal), PowerType(.snakeTunnelling)]
     
     //Test Number of orbs
     var testOrbs = false

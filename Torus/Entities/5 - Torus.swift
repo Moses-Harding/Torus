@@ -51,6 +51,8 @@ class Torus: Entity {
     var moveDiagonalSprite: OverlaySprite?
     var jumpProofSprite: OverlaySprite?
     var inhibitedSprite: OverlaySprite?
+    var flatToSphereSprite: OverlaySprite?
+    var invisibleSprite: OverlaySprite?
     
     init(scene: GameScene, number: Int, team: Team, color: TorusColor, currentTile: Tile, size: CGSize) {
         
@@ -91,10 +93,17 @@ class Torus: Entity {
             TestingManager.helper.powersToTest.forEach { self.powerUp(with: $0) }
         }
 
-        for _ in 0 ... Int.random(in: 0 ... 12) {
+        for _ in 0 ... Int.random(in: 0 ... 5) {
             self.powerUp(with: PowerType.random())
-            self.powerUp(with: PowerType(.learn, .row))
-            self.powerUp(with: PowerType(.bombs))
+            //self.powerUp(with: PowerType(.jumpProof))
+            //self.powerUp(with: PowerType(.tripwire, .column))
+            //self.powerUp(with: PowerType(.purify, .column))
+            self.powerUp(with: PowerType(.relocate))
+            self.powerUp(with: PowerType(.doublePowers))
+            self.powerUp(with: PowerType(.recruit, .column))
+            self.powerUp(with: PowerType(.swap, .column))
+            self.powerUp(with: PowerType(.learn, .column))
+            self.powerUp(with: PowerType(.snakeTunnelling, .column))
         }
     }
     
@@ -153,21 +162,6 @@ extension Torus {
     
     //Powers
     
-    func powerUp(with power: PowerType) -> Bool {
-        
-        powers[power] = (powers[power] ?? 0) + 1
-        
-        var exceeds20 = false
-        
-        powers.forEach { if $0.value > 20 { exceeds20 = true} }
-        
-        if exceeds20 {
-            manager.powerList.displayPowerConsole(message: .powerConsoleOverHeat)
-            AnimationManager.helper.kill(torus: self, deathType: .acidic) {}
-        }
-        return exceeds20
-    }
-    
     func learn(_ powerSet: [PowerType:Int]) -> Bool {
         
         var exceeds20 = false
@@ -185,6 +179,83 @@ extension Torus {
         return exceeds20
     }
     
+    func powerUp(with power: PowerType) -> Bool {
+        
+        powers[power] = (powers[power] ?? 0) + 1
+        
+        var exceeds20 = false
+        
+        powers.forEach { if $0.value > 20 { exceeds20 = true} }
+        
+        if exceeds20 {
+            manager.powerList.displayPowerConsole(message: .powerConsoleOverHeat)
+            AnimationManager.helper.kill(torus: self, deathType: .acidic) {}
+        }
+        return exceeds20
+    }
+    
+    func purify(isEnemy: Bool) -> Bool {
+        
+        var wasEffective = false
+        
+        print("Purify \(self.name) - isEnemy is \(isEnemy)")
+        
+        if isEnemy {
+
+            if let climbTile = climbTileSprite {
+                activatedAttributes.hasClimbTile = false
+                climbTile.removeFromParent()
+                climbTileSprite = nil
+                wasEffective = true
+            }
+            
+            if let jumpProof = jumpProofSprite {
+                activatedAttributes.hasJumpProof = false
+                jumpProof.removeFromParent()
+                jumpProofSprite = nil
+                wasEffective = true
+            }
+            
+            if let moveDiagonal = moveDiagonalSprite {
+                activatedAttributes.hasMoveDiagonal = false
+                moveDiagonal.removeFromParent()
+                moveDiagonalSprite = nil
+                wasEffective = true
+            }
+            
+            if let flatToSphere = flatToSphereSprite {
+                activatedAttributes.hasFlatToSphere = false
+                flatToSphere.removeFromParent()
+                flatToSphereSprite = nil
+                wasEffective = true
+            }
+            
+            if let invisible = invisibleSprite {
+                activatedAttributes.hasInvisibility = false
+                invisible.removeFromParent()
+                invisibleSprite = nil
+                wasEffective = true
+            }
+        } else {
+
+            if let inhibited = inhibitedSprite {
+                activatedAttributes.isInhibited = false
+                inhibited.removeFromParent()
+                inhibitedSprite = nil
+                wasEffective = true
+            }
+            
+            if let tripWire = tripwireSprite {
+                activatedAttributes.isTripWired = false
+                tripWire.removeFromParent()
+                tripwireSprite = nil
+                wasEffective = true
+            }
+        }
+        
+        return wasEffective
+    }
+    
     func resetPowers() {
         
         powers = [:]
@@ -193,7 +264,11 @@ extension Torus {
 
 extension Torus { // Change Status
     
+    //GOOD STUFF
     func climbTile() {
+        
+        //SPECIAL
+        AnimationManager.helper.climbTileAnimation(for: self)
         
         activatedAttributes.hasClimbTile = true
         
@@ -202,13 +277,22 @@ extension Torus { // Change Status
         climbTileSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
     }
     
-    func inhibited() {
+    func flatToSphere() {
         
-        activatedAttributes.isInhibited = true
+        activatedAttributes.hasFlatToSphere = true
         
-        let texture = SKTexture(imageNamed: TorusOverlayAssets.inhibited.rawValue)
+        let texture = SKTexture(imageNamed: TorusOverlayAssets.flatToSphere.rawValue)
         
-        inhibitedSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
+        flatToSphereSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
+    }
+    
+    func invisible() {
+        
+        activatedAttributes.hasInvisibility = true
+        
+        let texture = SKTexture(imageNamed: TorusOverlayAssets.invisible.rawValue)
+        
+        invisibleSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
     }
     
     func jumpProof() {
@@ -227,6 +311,16 @@ extension Torus { // Change Status
         let texture = SKTexture(imageNamed: TorusOverlayAssets.moveDiagonal.rawValue)
         
         moveDiagonalSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
+    }
+    
+    // BAD STUFF
+    func inhibited() {
+        
+        activatedAttributes.isInhibited = true
+        
+        let texture = SKTexture(imageNamed: TorusOverlayAssets.inhibited.rawValue)
+        
+        inhibitedSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
     }
     
     func tripwired() {

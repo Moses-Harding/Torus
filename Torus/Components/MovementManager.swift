@@ -75,9 +75,10 @@ extension MovementManager {
 extension MovementManager { //Torus Movement
     
     //Move
-    func move(_ torus: Torus, to newTile: Tile, decoding: Bool = false, completion: @escaping () -> ()) {
+    func move(_ torus: Torus, to newTile: Tile, decoding: Bool = false, relocating: Bool = false, completion: @escaping () -> ()) -> CGFloat {
         
-        let movementType = movement(from: torus, to: newTile)
+        let movementType: MoveType = relocating ? .relocate : movement(from: torus, to: newTile)
+        var waitDuration: CGFloat = 0
         
         //Save opposing torus
         let opponent: Torus? = newTile.occupiedBy
@@ -87,13 +88,15 @@ extension MovementManager { //Torus Movement
         let finalAnimation = torus.activatedAttributes.isTripWired ? { AnimationManager.helper.kill(torus: torus, deathType: .tripwire, completion: completion) } : completion
         
         if movementType == .attack {
-            AnimationManager.helper.attack(torus: torus, to: newTile, against: opponent!) { finalAnimation() }
+            waitDuration = AnimationManager.helper.attack(torus: torus, to: newTile, against: opponent!) { finalAnimation() }
         } else if movementType == .orb {
-            AnimationManager.helper.takeOrb(torus: torus, to: newTile) { finalAnimation() }
+            waitDuration = AnimationManager.helper.takeOrb(torus: torus, to: newTile) { finalAnimation() }
         } else if movementType == .normal {
-            AnimationManager.helper.move(torus: torus, to: newTile) { finalAnimation() }
+            waitDuration = AnimationManager.helper.move(torus: torus, to: newTile) { finalAnimation() }
+        } else if movementType == .relocate {
+            waitDuration = AnimationManager.helper.relocate(torus: torus, to: newTile)
         }
-        
+
         torus.deselect()
         
         if !decoding {
@@ -102,5 +105,7 @@ extension MovementManager { //Torus Movement
         } else {
             print("Is currently decoding")
         }
+        
+        return waitDuration
     }
 }

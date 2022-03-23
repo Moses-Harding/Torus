@@ -22,6 +22,7 @@ class StartingScene: SKScene {
     
     var startButton: ImageNode!
     var logo: ImageNode!
+    var background: ImageNode!
     
     var firstLoad = true
     
@@ -35,21 +36,37 @@ class StartingScene: SKScene {
         if firstLoad {
             
             let frame = view.safeAreaLayoutGuide.layoutFrame
-
-            //Set Up Start Button
-            startButton = ImageNode("Start Button.png") { self.startOrAuthenticate() }
-            var buttonWidth = frame.width * 0.65
-            var buttonHeight = startButton.image.size.height * (buttonWidth / startButton.image.size.width)
-            startButton.image.size = CGSize(width: buttonWidth, height: buttonHeight)
-            startButton.position = midPoint
-            self.addChild(startButton)
             
-            logo = ImageNode("Torus Neon Logo.png") { print("Logo") }
+            var buttonHeight: CGFloat
+            var buttonWidth: CGFloat
+            
+
+            
+            logo = ImageNode("Torus Neon Logo V2.png") { print("Logo") }
             buttonWidth = frame.width * 0.9
             buttonHeight = logo.image.size.height * (buttonWidth / logo.image.size.width)
             logo.image.size = CGSize(width: buttonWidth, height: buttonHeight)
-            logo.position = CGPoint(x: frame.midX, y: (frame.height * 0.95) - logo.image.size.height / 2)
+            logo.position = CGPoint(x: frame.midX, y: (frame.height * 0.95) - logo.image.size.height)
+            logo.zPosition = 2
             self.addChild(logo)
+            
+            //Set Up Start Button
+            startButton = ImageNode("Start Button V2.png") { self.startOrAuthenticate() }
+            buttonWidth = frame.width * 0.65
+            buttonHeight = startButton.image.size.height * (buttonWidth / startButton.image.size.width)
+            startButton.image.size = CGSize(width: buttonWidth, height: buttonHeight)
+            startButton.position = logo.position.move(.down, by: logo.image.size.height)
+            startButton.zPosition = 2
+            self.addChild(startButton)
+            
+            background = ImageNode("Background Design V2.png") { print("Logo") }
+            //buttonWidth = frame.width
+            background.image.size.scale(proportionateTo: .width, with: frame.width)
+            //background.image.size = frame.size
+            //logo.image.size = CGSize(width: buttonWidth, height: buttonHeight)
+            background.position = CGPoint(x: frame.midX, y: frame.midY)
+            background.zPosition = 1
+            self.addChild(background)
             
             NotificationCenter.default.addObserver(
                 self,

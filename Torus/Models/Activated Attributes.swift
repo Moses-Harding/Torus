@@ -9,12 +9,14 @@ import Foundation
 
 struct ActivatedAttributes: Codable {
     
+    //GOOD
     var hasMoveDiagonal = false
     var hasClimbTile = false
     var hasJumpProof = false
     var hasInvisibility = false
     var hasFlatToSphere = false
     
+    //Bad
     var isInhibited = false
     var isTripWired = false
     var isSpyTapped = false

@@ -8,13 +8,16 @@
 import Foundation
 import UIKit
 import SpriteKit
+import AVFAudio
 
 enum TorusChangeType: Codable {
-    case move
     case activatePower
-    case bombs
     case addPower
+    case bombs
+    case move
+    case relocate
     case removePowers
+    case snakeTunnelling
 }
 
 enum TileChangeType: Codable  {
@@ -61,6 +64,16 @@ class ChangeManager: Codable {
     
     func bombs(power: PowerType, for torus: Torus, targetTiles: [TilePosition], waitDuration: CGFloat) {
         let change = TorusChange(type: .bombs, torus: torus.name, targetTiles: targetTiles, waitDuration: waitDuration)
+        torusChanges.append(change)
+    }
+    
+    func relocate(_ torus: Torus, targetTile: TilePosition, waitDuration: CGFloat) {
+        let change = TorusChange(type: .relocate, torus: torus.name, moveToTile: targetTile, waitDuration: waitDuration)
+        torusChanges.append(change)
+    }
+    
+    func snakeTunnelling(for torus: Torus, targetTiles: [TilePosition], waitDuration: CGFloat) {
+        let change = TorusChange(type: .snakeTunnelling, torus: torus.name, targetTiles: targetTiles, waitDuration: waitDuration)
         torusChanges.append(change)
     }
     
@@ -150,6 +163,22 @@ class ChangeDecoder {
                     
                     torus.sprite.run(SKAction.wait(forDuration: waitDuration)) {
                         PowerManager.helper.bombs(activatedBy: torus, existingSet: targetTiles)
+                    }
+                    waitDuration += duration
+                case .snakeTunnelling:
+                    guard let targetTiles = torusChange.targetTiles else { fatalError("Change Decoder - SnakeTUnneling - No Target Tiles passed") }
+                    guard let duration = torusChange.waitDuration else { fatalError("Change Decoder - SnakeTUnneling - No wait duration passed") }
+                    
+                    torus.sprite.run(SKAction.wait(forDuration: waitDuration)) {
+                        PowerManager.helper.snakeTunnelling(activatedBy: torus, existingSet: targetTiles)
+                    }
+                    waitDuration += duration
+                case .relocate:
+                    guard let targetTile = torusChange.moveToTile else { fatalError("Change Decoder - Relocate - No Target Tile Passed")}
+                    guard let duration = torusChange.waitDuration else { fatalError("Change Decoder - Relocate - No wait duration passed") }
+                    
+                    torus.sprite.run(SKAction.wait(forDuration: waitDuration)) {
+                        PowerManager.helper.relocate(activedBy: torus, existingTile: targetTile)
                     }
                     waitDuration += duration
                 case .removePowers:

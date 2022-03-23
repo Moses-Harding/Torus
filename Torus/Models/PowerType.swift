@@ -11,22 +11,19 @@ import SpriteKit
 /*Remaing Power Types
  
  Basic Powers
- - Recruit
- - Swap
- - SnakeTunneling
  - Grow Quadradius
- - 2x
- - Move Again
  - Create Base
- - Flat To Sphere
- 
- Member Powers
+
+ Maybe Powers
  - Invisibility
  - Spy Tapped
+ - Move Again
+ - Flat To Sphere
  
  New Powers
  - Ram
  - Freeze
+ - Leap
  */
 
 enum Power: String, CaseIterable, Codable {
@@ -34,15 +31,20 @@ enum Power: String, CaseIterable, Codable {
     case bombs = "Bombs"
     case climbTile = "Climb Tile"
     case destroy = "Destroy"
+    case doublePowers = "Double Powers"
     case inhibit = "Inhibit"
     case jumpProof = "Jump Proof"
     case learn = "Learn"
     case lowerTile = "Lower Tile"
     case moveDiagonal = "Move Diagonal"
     case pilfer = "Pilfer"
+    case purify = "Purify"
     case raiseTile = "Raise Tile"
+    case recruit = "Recruit"
+    case relocate = "Relocate"
     case smartBombs = "Smart Bombs"
-    case snakeTunelling = "Snake Tunnelling"
+    case snakeTunnelling = "Snake Tunnelling"
+    case swap = "Swap"
     case teach = "Teach"
     case trench = "Trench"
     case tripwire = "Tripwire"
@@ -73,7 +75,7 @@ struct PowerType: Hashable, Codable {
         
         self.power = power
         
-        let exceptions: [Power] = [.bombs, .climbTile, .jumpProof, .lowerTile, .moveDiagonal, .raiseTile, .snakeTunelling, .smartBombs]
+        let exceptions: [Power] = [.bombs, .climbTile, .doublePowers, .jumpProof, .lowerTile, .moveDiagonal, .raiseTile, .relocate, .snakeTunnelling, .smartBombs]
         
         self.direction = exceptions.contains(where: { $0 == power }) ? nil : direction
     }

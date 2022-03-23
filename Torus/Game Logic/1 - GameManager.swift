@@ -190,7 +190,7 @@ extension GameManager { //User Touch Interaction / Selection
     func select(_ torus: Torus, triggeredBy: String) {
         //Selecting a torus (if valid) deselects other torii, then shows valid tiles
         
-        //print("Selecting torus triggered by \(triggeredBy)")
+        if TestingManager.helper.verbose { print("Selecting torus triggered by \(triggeredBy)") }
         
         //Make sure team is correct
         guard torus.team == currentTeam else {
@@ -264,14 +264,6 @@ extension GameManager {
     func activate(power: PowerType) -> (CGFloat, Bool, (() -> ()))? {
         
         guard let current = currentTeam.currentlySelected else { return nil }
-        
-        /*
-        let exclusionList = [PowerType(.snakeTunelling)] //Deselct for some
-        
-        if exclusionList.contains(power) {
-            self.select(current, triggeredBy: "Game Manager - Activate Power - Exclusion List")
-        }
-         */
 
         return PowerManager.helper.activate(power, with: current)
     }

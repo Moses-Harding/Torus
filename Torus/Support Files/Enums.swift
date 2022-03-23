@@ -13,7 +13,7 @@ enum DeathType {
 }
 
 enum MoveType {
-    case invalid, normal, attack, orb
+    case invalid, normal, attack, orb, relocate
 }
 
 enum MovePointDirection {

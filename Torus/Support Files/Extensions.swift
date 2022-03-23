@@ -43,6 +43,26 @@ extension CGSize {
         self = CGSize(width: newWidth, height: newHeight)
     }
     
+    mutating func scale(proportionateTo direction: ScaleDirection, with dimension: CGFloat) {
+        let currentWidth = self.width
+        let currentHeight = self.height
+        
+        var newWidth: CGFloat
+        var newHeight: CGFloat
+        
+        if direction == .width {
+            newWidth = dimension
+            let ratio = newWidth / currentWidth
+            newHeight = currentHeight * ratio
+        } else {
+            newHeight = dimension
+            let ratio = newHeight / currentHeight
+            newWidth = currentWidth * ratio
+        }
+        
+        self = CGSize(width: newWidth, height: newHeight)
+    }
+    
     mutating func add(width: CGFloat = 0, height: CGFloat = 0) {
         self = CGSize(width: self.width + width, height: self.height + height)
     }

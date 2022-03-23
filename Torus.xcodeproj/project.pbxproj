@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		150D3ED527D69E6000B5A838 /* ChangeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150D3ED427D69E6000B5A838 /* ChangeManager.swift */; };
+		1513330627EABAC700705E84 /* Next Steps.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 1513330527EABAC700705E84 /* Next Steps.rtf */; };
 		155874E5279DEF7A00809621 /* GameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 155874E4279DEF7A00809621 /* GameKit.framework */; };
 		1558D41B27C58E4D009051CB /* 0 - StartingScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1558D41A27C58E4D009051CB /* 0 - StartingScene.swift */; };
 		1558D41E27C59578009051CB /* TouchNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1558D41D27C59578009051CB /* TouchNode.swift */; };
@@ -48,6 +49,7 @@
 
 /* Begin PBXFileReference section */
 		150D3ED427D69E6000B5A838 /* ChangeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangeManager.swift; sourceTree = "<group>"; };
+		1513330527EABAC700705E84 /* Next Steps.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = "Next Steps.rtf"; sourceTree = "<group>"; };
 		155874E4279DEF7A00809621 /* GameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GameKit.framework; path = System/Library/Frameworks/GameKit.framework; sourceTree = SDKROOT; };
 		155874E6279DEF8A00809621 /* Torus.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Torus.entitlements; sourceTree = "<group>"; };
 		1558D41A27C58E4D009051CB /* 0 - StartingScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "0 - StartingScene.swift"; sourceTree = "<group>"; };
@@ -150,6 +152,7 @@
 				15FBA5C3278A6D1F00EE5CD1 /* LaunchScreen.storyboard */,
 				15FBA5BE278A6D1D00EE5CD1 /* Main.storyboard */,
 				1577EDD927E0E71300A1FB2C /* Adding A Power.rtf */,
+				1513330527EABAC700705E84 /* Next Steps.rtf */,
 			);
 			path = Torus;
 			sourceTree = "<group>";
@@ -293,6 +296,7 @@
 			files = (
 				15FBA5C0278A6D1D00EE5CD1 /* Main.storyboard in Resources */,
 				15FBA5C2278A6D1F00EE5CD1 /* Assets.xcassets in Resources */,
+				1513330627EABAC700705E84 /* Next Steps.rtf in Resources */,
 				15FBA5C5278A6D1F00EE5CD1 /* LaunchScreen.storyboard in Resources */,
 				1577EDDA27E0E71300A1FB2C /* Adding A Power.rtf in Resources */,
 				15FBA5B9278A6D1D00EE5CD1 /* Actions.sks in Resources */,

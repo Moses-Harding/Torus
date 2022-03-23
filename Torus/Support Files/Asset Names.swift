@@ -9,9 +9,9 @@ import Foundation
 
 public enum BackgroundLabelAsset: String {
     case redHighlighted = "Red Label Background - Highlighted"
-    case redUnhighlighted = "Red Label Background - Unhighlighted"
+    case redUnhighlighted = "Red Label Background"
     case blueHighlighted = "Blue Label Background - Highlighted"
-    case blueUnhighlighted = "Blue Label Background - Unhighlighted"
+    case blueUnhighlighted = "Blue Label Background"
 }
 
 public enum TorusAsset: String {
@@ -35,7 +35,7 @@ public enum OrbAsset: String, CaseIterable {
 }
 
 public enum PowerConsoleAssets: String {
-    case powerConsole = "PowerConsole"
+    case powerConsole = "PowerConsole V2"
     case powerConsoleFilled = "PowerConsole - Filled"
     case powerConsoleNoEffect = "PowerConsole - No Effect"
     case powerConsoleOverHeat = "PowerConsole - OverHeat"
@@ -48,6 +48,8 @@ public enum TorusOverlayAssets: String {
     case jumpProof = "Jump Proof"
     case inhibited = "Inhibited"
     case climbTile = "Climb Tile"
+    case flatToSphere = "Flat To Sphere"
+    case invisible = "Invisible"
 }
 
 public enum TileAssets: String {

@@ -15,6 +15,7 @@ enum TeamNumber: Codable {
 class Team {
     
     var teamNumber: TeamNumber
+    var oppositeTeam: TeamNumber
     var torii = [Torus]()
     var teamColor: TorusColor
     
@@ -32,9 +33,38 @@ class Team {
     init(teamNumber: TeamNumber, teamColor: TorusColor?, gameManager: GameManager) {
         
         self.teamNumber = teamNumber
+        self.oppositeTeam = teamNumber == .one ? .two : .one
         self.teamColor = teamNumber == .one ? .red : .blue
         self.gameManager = gameManager
         self.torusSize = CGSize.zero
+    }
+    
+    func addTorus(at position: TilePosition) -> Torus {
+        
+        guard let tile = gameManager.gameBoard.getTile(from: position), tile.occupiedBy == nil else { fatalError("Team - Add Torus - Cannot Add To Tile") }
+        
+        let lastNumber = torii.last?.torusNumber ?? 1
+
+        let torus = Torus(scene: gameManager.scene, number: lastNumber, team: self, color: teamColor, currentTile: tile, size: tile.size)
+        torii.append(torus)
+        
+        return torus
+    }
+    
+    func addTorus(from torus: Torus) -> Torus {
+        
+        guard let tile = gameManager.gameBoard.getTile(from: torus.currentTile.boardPosition), tile.occupiedBy == nil else { fatalError("Team - Add Torus - Cannot Add To Tile") }
+        
+        let lastNumber = torii.last?.torusNumber ?? 1
+        
+        let description = TorusDescription(color: self.teamColor, teamNumber: self.teamNumber, torusNumber: lastNumber, powers: torus.powers, attributes: torus.activatedAttributes, currentTile: torus.currentTile.boardPosition)
+
+        
+        let torus = Torus(scene: gameManager.scene, number: lastNumber, team: self, color: teamColor, currentTile: tile, size: tile.size)
+        torus.loadDescription(description: description)
+        torii.append(torus)
+        
+        return torus
     }
 
     
