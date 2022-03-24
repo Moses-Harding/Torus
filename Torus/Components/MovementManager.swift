@@ -82,6 +82,9 @@ extension MovementManager { //Torus Movement
         
         //Save opposing torus
         let opponent: Torus? = newTile.occupiedBy
+
+        
+        let absoluteDistance = abs((torus.currentTile.boardPosition.column - newTile.boardPosition.column) + (torus.currentTile.boardPosition.row - newTile.boardPosition.row))
         
         torus.changeOccupancy(to: newTile)
         
@@ -94,7 +97,7 @@ extension MovementManager { //Torus Movement
         } else if movementType == .normal {
             waitDuration = AnimationManager.helper.move(torus: torus, to: newTile) { finalAnimation() }
         } else if movementType == .relocate {
-            waitDuration = AnimationManager.helper.relocate(torus: torus, to: newTile)
+            waitDuration = AnimationManager.helper.relocate(torus: torus, to: newTile, absoluteDistance: absoluteDistance, takeOrb: newTile.hasOrb) { completion() }
         }
 
         torus.deselect()

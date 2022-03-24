@@ -21,13 +21,21 @@ struct TilePosition: Equatable, Codable, CustomStringConvertible {
     var tileHeight: TileHeight
     var tileSize: CGSize
     
+    var xDistance: CGFloat {
+        return (tileSize.width / CGFloat(29)) * CGFloat(tileHeight.rawValue)
+    }
+    
+    var yDistance: CGFloat {
+        return (tileSize.height / CGFloat(31)) * CGFloat(tileHeight.rawValue)
+    }
+    
     func getPoint() -> CGPoint {
         
         var xDistance: CGFloat = 0
         var yDistance: CGFloat = 0
-        
-        xDistance = (tileSize.width / 26) * CGFloat(tileHeight.rawValue)
-        yDistance = (tileSize.height / 26) * CGFloat(tileHeight.rawValue)
+
+        xDistance = (tileSize.width / CGFloat(29)) * CGFloat(tileHeight.rawValue)
+        yDistance = (tileSize.height / CGFloat(31)) * CGFloat(tileHeight.rawValue)
         
         return CGPoint(x: point.x + xDistance, y: point.y + yDistance)
     }
@@ -40,8 +48,6 @@ struct TilePosition: Equatable, Codable, CustomStringConvertible {
 class GameBoard: Entity {
     
     var tiles = [Tile]()
-    
-    var unoccupiedTiles = [Tile]()
     
     var playScreen: PlayScreen
     
@@ -79,12 +85,7 @@ extension GameBoard { //Setup functions
                 let newTile = Tile(scene: self.scene, boardPosition: position, size: cellSize)
                 
                 tiles.append(newTile)
-                
-                
-                if newTile.occupiedBy == nil {
-                    unoccupiedTiles.append(newTile)
-                }
-                
+
                 currentX += cellSize.width
             }
             
@@ -105,15 +106,6 @@ extension GameBoard { //Setup functions
             let midX = x + (cellSize.width / 2)
             let midY = y + (cellSize.height / 2)
             return CGPoint(x: midX, y: midY)
-    }
-    
-    func syncUnoccupiedTiles() {
-        
-        for tile in tiles {
-            if tile.occupiedBy == nil {
-                unoccupiedTiles.append(tile)
-            }
-        }
     }
 }
 
@@ -170,8 +162,13 @@ extension GameBoard { // Retrieval Functions
     
     func getTileForOrb(from index: Int) -> Tile? {
         
-        let tile = unoccupiedTiles[index]
-        return tile.validForOrb ? tile : nil
+        let tile = tiles[index]
+
+        if tile.hasOrb || tile.occupiedBy != nil || tile.status == .acid {
+            return nil
+        } else {
+            return tile
+        }
     }
 }
 
@@ -187,13 +184,5 @@ extension GameBoard { //Valid tiles
         
         highlightedTiles.forEach { $0.tile.isInvalidForMovement() }
         highlightedTiles = []
-    }
-    
-    func unoccupied(_ tile: Tile) {
-        unoccupiedTiles.append(tile)
-    }
-    
-    func occupied(_ tile: Tile) {
-        unoccupiedTiles.removeAll { $0 == tile }
     }
 }

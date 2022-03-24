@@ -64,6 +64,7 @@ class StartingScene: SKScene {
             background.image.size.scale(proportionateTo: .width, with: frame.width)
             //background.image.size = frame.size
             //logo.image.size = CGSize(width: buttonWidth, height: buttonHeight)
+            //background.image.size = CGSize(width: frame.width, height: frame.height * 0.9)
             background.position = CGPoint(x: frame.midX, y: frame.midY)
             background.zPosition = 1
             self.addChild(background)

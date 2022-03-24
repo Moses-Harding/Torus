@@ -79,19 +79,13 @@ extension Tile { //Manipulation
     
     //Occupancy
     func occupy(with torus: Torus) {
-        
-        guard let gameBoard = scene.playScreen.board else { return }
-        
+
         occupiedBy = torus
-        gameBoard.occupied(self)
     }
     
     func unoccupy() {
         
-        guard let gameBoard = scene.playScreen.board else { return }
-        
         occupiedBy = nil
-        gameBoard.unoccupied(self)
     }
     
     func populateOrb(decoding: Bool = false, nextPower: PowerType? = nil) {
@@ -128,7 +122,29 @@ extension Tile { //Manipulation
         completion()
     }
     
+    func invert() {
+        
+        var newHeight: TileHeight
+        
+        switch self.height {
+        case .l1:
+            newHeight = .l5
+        case .l2:
+            newHeight = .l4
+        case .l3:
+            newHeight = .l3
+        case .l4:
+            newHeight = .l2
+        case .l5:
+            newHeight = .l1
+        }
+        
+        changeHeight(to: newHeight)
+    }
+    
     func changeHeight(to newHeight: TileHeight) {
+        
+        guard newHeight != self.height else { return }
         
         guard let tileSprite = self.sprite as? TileSprite else { fatalError("Cannot cast Tile's Sprite to TileSprite") }
         
@@ -141,7 +157,7 @@ extension Tile { //Manipulation
         }
         
         if let orb = orbOverlay {
-            orb.position = CGPoint(x: CGFloat(height.rawValue * 2), y: CGFloat(height.rawValue * 2))
+            orb.position = orb.position.move(.right, by: boardPosition.xDistance).move(.up, by: boardPosition.yDistance)
         }
     }
     
@@ -216,7 +232,8 @@ extension Tile { //Raise And Lower
         case .l4:
             changeHeight(to: .l5)
         case .l5:
-            changeHeight(to: .l5)
+            //changeHeight(to: .l5)
+            print("Max Height Reached")
         }
     }
     
@@ -224,7 +241,8 @@ extension Tile { //Raise And Lower
 
         switch height {
         case .l1:
-            changeHeight(to: .l1)
+            print("Max Depth Reached")
+            //changeHeight(to: .l1)
         case .l2:
             changeHeight(to: .l1)
         case .l3:

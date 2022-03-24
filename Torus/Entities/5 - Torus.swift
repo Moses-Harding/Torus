@@ -90,20 +90,36 @@ class Torus: Entity {
         
         //TESTING
         if TestingManager.helper.toriiStartWithPowers {
-            TestingManager.helper.powersToTest.forEach { self.powerUp(with: $0) }
-        }
-
-        for _ in 0 ... Int.random(in: 0 ... 5) {
-            self.powerUp(with: PowerType.random())
-            //self.powerUp(with: PowerType(.jumpProof))
-            //self.powerUp(with: PowerType(.tripwire, .column))
-            //self.powerUp(with: PowerType(.purify, .column))
-            self.powerUp(with: PowerType(.relocate))
-            self.powerUp(with: PowerType(.doublePowers))
-            self.powerUp(with: PowerType(.recruit, .column))
-            self.powerUp(with: PowerType(.swap, .column))
-            self.powerUp(with: PowerType(.learn, .column))
-            self.powerUp(with: PowerType(.snakeTunnelling, .column))
+            
+            if torusNumber % 2 == 0 { return }
+            for _ in 0 ... Int.random(in: 0 ... 3) {
+                //self.powerUp(with: PowerType.random())
+                //self.powerUp(with: PowerType(.jumpProof))
+                //self.powerUp(with: PowerType(.tripwire, .column))
+                //self.powerUp(with: PowerType(.purify, .column))
+                //self.powerUp(with: PowerType(.relocate))
+                //self.powerUp(with: PowerType(.doublePowers))
+                //self.powerUp(with: PowerType(.recruit, .column))
+                //self.powerUp(with: PowerType(.swap, .column))
+                //self.powerUp(with: PowerType(.learn, .column))
+                //self.powerUp(with: PowerType(.snakeTunnelling, .column))
+                //self.powerUp(with: PowerType(.wall, .column))
+                //self.powerUp(with: PowerType(.trench, .column))
+                //self.powerUp(with: PowerType(.raiseTile))
+                //self.powerUp(with: PowerType(.lowerTile))
+                
+                self.powerUp(with: PowerType(.moat, .column))
+                self.powerUp(with: PowerType(.moat, .row))
+                self.powerUp(with: PowerType(.invert, .row))
+                self.powerUp(with: PowerType(.invert, .column))
+                self.powerUp(with: PowerType(.respawnOrbs))
+                self.powerUp(with: PowerType(.beneficiary))
+                self.powerUp(with: PowerType(.kamikaze, .row))
+                self.powerUp(with: PowerType(.kamikaze, .column))
+                self.powerUp(with: PowerType(.scramble, .row))
+                self.powerUp(with: PowerType(.scramble, .column))
+                self.powerUp(with: PowerType(.scramble, .radius))
+            }
         }
     }
     

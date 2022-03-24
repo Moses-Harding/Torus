@@ -173,9 +173,9 @@ extension AnimationManager { //Torus
         return 0.5
     }
     
-    func relocate(torus: Torus, to newTile: Tile) -> CGFloat {
+    func relocate(torus: Torus, to newTile: Tile, absoluteDistance: Int, takeOrb: Bool = false, completion: @escaping () -> ()) -> CGFloat {
         
-        let waitDuration: CGFloat = 2.5
+        let waitDuration: CGFloat = CGFloat(absoluteDistance) * 0.75
         
         let moveToAction = SKAction.move(to: torus.currentTile.boardPosition.getPoint(), duration: waitDuration)
         let grow = SKAction.scale(to: 1.5, duration: (waitDuration / 10))
@@ -186,6 +186,15 @@ extension AnimationManager { //Torus
         
         torus.sprite.zPosition += 1
         torus.sprite.run(relocateGroup)
+
+        
+        torus.sprite.run(relocateGroup) {
+            if takeOrb {
+                guard let power = newTile.nextPower else { fatalError("TakeOrb - No power to assign to torus") }
+                newTile.removeOrb { torus.sprite.zPosition = SpriteLevel.torusOrScrollView.rawValue }
+                PowerManager.helper.assign(power: power, to: torus)
+            }
+        }
         
         return waitDuration
     }

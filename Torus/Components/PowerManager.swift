@@ -65,6 +65,9 @@ class PowerManager {
         switch powerType.power {
         case .acidic:
             (waitDuration, isEffective) = acid(direction, activatedBy: torus)
+        case .beneficiary:
+            (waitDuration, isEffective, killedSelf) = pilfer(direction, activatedBy: torus, beneficiary: true)
+            if killedSelf { finalClosure = { self.gameManager.powerList.clear() } }
         case .bombs:
             let (targetTiles, duration, killedSelf) = bombs(activatedBy: torus)
             if !decoding { ChangeManager.register.bombs(power: PowerType(.bombs), for: torus, targetTiles: targetTiles, waitDuration: waitDuration) }
@@ -79,13 +82,19 @@ class PowerManager {
             if killedSelf { finalClosure = { self.gameManager.powerList.clear() } }
         case .inhibit:
             isEffective = inhibit(direction, activatedBy: torus)
+        case .invert:
+            waitDuration = invert(direction, activatedBy: torus)
         case .jumpProof:
             jumpProof(activatedBy: torus)
+        case .kamikaze:
+            (waitDuration, isEffective) = destroy(direction, activatedBy: torus, kamikaze: true)
         case .learn:
             (isEffective, killedSelf) = learn(direction, activatedBy: torus)
             if killedSelf { finalClosure = { self.gameManager.powerList.clear() } }
         case .lowerTile:
             lowerTile(activatedBy: torus)
+        case .moat:
+            waitDuration = trench(direction, activatedBy: torus, moat: true)
         case .moveDiagonal:
             moveDiagonal(activatedBy: torus)
         case .pilfer:
@@ -99,8 +108,12 @@ class PowerManager {
             (waitDuration, isEffective) = recruit(direction, activatedBy: torus)
         case .relocate:
             let foundTile: TilePosition?
-            (waitDuration, foundTile, isEffective) = relocate(activedBy: torus)
+            (waitDuration, foundTile, isEffective) = relocate(activatedBy: torus)
             if !decoding && isEffective { ChangeManager.register.relocate(torus, targetTile: foundTile!, waitDuration: waitDuration)}
+        case .respawnOrbs:
+            respawnOrbs()
+        case .scramble:
+            waitDuration = scramble(direction, activatedBy: torus)
         case .smartBombs:
             let (targetTiles, duration, killedSelf) = bombs(activatedBy: torus, smart: true)
             if !decoding { ChangeManager.register.bombs(power: PowerType(.smartBombs), for: torus, targetTiles: targetTiles, waitDuration: waitDuration) }
@@ -121,7 +134,7 @@ class PowerManager {
             waitDuration = wall(direction, activatedBy: torus)
         }
         
-        let specialPowers: [Power] = [.bombs, .smartBombs, .snakeTunnelling, .relocate]
+        let specialPowers: [Power] = [.bombs, .smartBombs, .snakeTunnelling, .relocate, .respawnOrbs, .scramble]
         
         if !decoding && !specialPowers.contains(powerType.power) && isEffective {
             ChangeManager.register.activate(power: powerType, for: torus)
@@ -146,7 +159,7 @@ extension PowerManager { //Powers
         return (waitDuration, !enemies.isEmpty)
     }
     
-    @discardableResult
+    //@discardableResult
     func bombs(activatedBy torus: Torus, smart: Bool = false, existingSet: [TilePosition]? = nil) -> ([TilePosition], Double, Bool) {
         
         var targetTiles = [Tile]()
@@ -195,16 +208,24 @@ extension PowerManager { //Powers
         torus.climbTile()
     }
     
-    func destroy(_ direction: PowerDirection, activatedBy torus: Torus) -> (CGFloat, Bool) {
+    func destroy(_ direction: PowerDirection, activatedBy torus: Torus, kamikaze: Bool = false) -> (CGFloat, Bool) {
         
         var waitDuration: CGFloat = 0
+
+        var torii: [Torus]
         
-        let enemies = getEnemies(for: direction, from: torus)
-        for enemy in enemies {
-            waitDuration += AnimationManager.helper.kill(torus: enemy, deathType: .destroy) {}
+        if kamikaze {
+            torii = getEnemies(for: direction, from: torus)
+            torii += getAllies(for: direction, from: torus)
+        } else {
+            torii = getEnemies(for: direction, from: torus)
+        }
+
+        for eachTorus in torii {
+            waitDuration = AnimationManager.helper.kill(torus: eachTorus, deathType: .destroy) {}
         }
         
-        return (waitDuration, !enemies.isEmpty)
+        return (waitDuration, !torii.isEmpty)
     }
     
     func doublePowers(activatedBy torus: Torus) -> Bool {
@@ -235,6 +256,22 @@ extension PowerManager { //Powers
         return !enemies.isEmpty
     }
     
+    func invert(_ direction: PowerDirection, activatedBy torus: Torus) -> CGFloat {
+        
+        let tiles = getTiles(for: direction, from: torus)
+        gameManager.deselectCurrent()
+        
+        var waitDuration: CGFloat = 0
+        for tile in tiles {
+            tile.sprite.run(SKAction.wait(forDuration: waitDuration)) {
+                tile.invert()
+            }
+            waitDuration += 0.03
+        }
+        
+        return waitDuration
+    }
+    
     func jumpProof(activatedBy torus: Torus) {
         
         torus.jumpProof()
@@ -263,6 +300,8 @@ extension PowerManager { //Powers
     
     func lowerTile(activatedBy torus: Torus) {
         
+        gameManager.deselectCurrent()
+        
         let tile = torus.currentTile
         tile.lower()
     }
@@ -272,18 +311,26 @@ extension PowerManager { //Powers
         torus.moveDiagonal()
     }
     
-    func pilfer(_ direction: PowerDirection, activatedBy torus: Torus) -> (CGFloat, Bool, Bool) {
+    func pilfer(_ direction: PowerDirection, activatedBy torus: Torus, beneficiary: Bool = false) -> (CGFloat, Bool, Bool) {
         
         var waitDuration: CGFloat = 0
         var overHeat = false
         
-        let enemies = getEnemies(for: direction, from: torus)
-        for enemy in enemies {
-            overHeat = torus.learn(enemy.powers)
-            waitDuration += AnimationManager.helper.pilferPowers(from: enemy)
+        var torii: [Torus]
+        
+        if beneficiary {
+            torii = torus.team.torii
+            torii.removeAll { $0.name == torus.name }
+        } else {
+            torii = getEnemies(for: direction, from: torus)
+        }
+
+        for eachTorus in torii {
+            overHeat = torus.learn(eachTorus.powers)
+            waitDuration = AnimationManager.helper.pilferPowers(from: eachTorus)
         }
         
-        return (waitDuration, !enemies.isEmpty, overHeat)
+        return (waitDuration, !torii.isEmpty, overHeat)
     }
     
     func purify(_ direction: PowerDirection, activatedBy torus: Torus) -> (CGFloat, Bool) {
@@ -311,6 +358,8 @@ extension PowerManager { //Powers
     
     func raiseTile(activatedBy torus: Torus) {
         
+        gameManager.deselectCurrent()
+        
         let tile = torus.currentTile
         tile.raise()
     }
@@ -327,7 +376,7 @@ extension PowerManager { //Powers
         return (waitDuration, !enemies.isEmpty)
     }
     
-    func relocate(activedBy torus: Torus, existingTile: TilePosition? = nil) -> (CGFloat, TilePosition?, Bool) {
+    func relocate(activatedBy torus: Torus, existingTile: TilePosition? = nil) -> (CGFloat, TilePosition?, Bool) {
         
         var isEffective = false
         var waitDuration: CGFloat = 0
@@ -347,9 +396,9 @@ extension PowerManager { //Powers
             while tile == nil && numberOfTries < totalTileCount {
                 let foundTile = gameBoard.getRandomTile()
                 if TestingManager.helper.verbose { print("PowerManager - Relocate - Found Tile - \(foundTile) - Occupied By \(foundTile.occupiedBy) - Number Of Tries \(numberOfTries)") }
-                if foundTile.occupiedBy == nil && foundTile.hasOrb == false {
+                if foundTile.occupiedBy == nil && foundTile.status != .acid {
                     tile = foundTile
-                    waitDuration = MovementManager.helper.move(torus, to: foundTile, relocating: true) {}
+                    waitDuration = MovementManager.helper.move(torus, to: foundTile, relocating: true) { self.gameManager.updateGameBoard() }
                     isEffective = true
                 } else {
                     numberOfTries += 1
@@ -360,9 +409,43 @@ extension PowerManager { //Powers
         return (waitDuration, tile?.boardPosition, isEffective)
     }
     
+    func respawnOrbs() {
+        
+        var respawnCount = 0
+        
+        for tile in gameBoard.tiles {
+            if tile.hasOrb {
+                tile.removeOrb {
+                    respawnCount += 1
+                }
+            }
+        }
+        
+        gameManager.generateOrbs(with: respawnCount)
+    }
+    
+    func scramble(_ direction: PowerDirection, activatedBy torus: Torus) -> CGFloat {
+        
+        var waitDuration: CGFloat = 0
+        
+        var tileList = getTiles(for: direction, from: torus).shuffled()
+        var torusList = getEnemies(for: direction, from: torus) + getAllies(for: direction, from: torus)
+
+        while torusList.count > 0 && tileList.count > 0 {
+            guard let tile = tileList.popLast() else { fatalError("PowerManager - Scramble - No Tile Found") }
+            if tile.status != .acid {
+                guard let currentTorus = torusList.popLast() else { fatalError("PowerManager - Scramble - No Torus Found")  }
+                let newDuration = MovementManager.helper.move(currentTorus, to: tile, relocating: true) { self.gameManager.updateGameBoard() }
+                waitDuration = newDuration > waitDuration ? newDuration : waitDuration
+            }
+        }
+        
+        return waitDuration
+    }
+    
     func snakeTunnelling(activatedBy torus: Torus, existingSet: [TilePosition]? = nil) -> ([TilePosition], CGFloat) {
         
-        self.gameBoard.unhighlightTiles()
+        gameManager.deselectCurrent()
         
         let startTile = torus.currentTile
         let randomNumber = Int.random(in: 10 ... 15)
@@ -444,14 +527,20 @@ extension PowerManager { //Powers
         return !allies.isEmpty
     }
     
-    func trench(_ direction: PowerDirection, activatedBy torus: Torus) -> CGFloat {
+    func trench(_ direction: PowerDirection, activatedBy torus: Torus, moat: Bool = false) -> CGFloat {
         
         let tiles = getTiles(for: direction, from: torus)
+        
+        gameManager.deselectCurrent()
         
         var waitDuration: CGFloat = 0
         for tile in tiles {
             tile.sprite.run(SKAction.wait(forDuration: waitDuration)) {
-                tile.changeHeight(to: .l1)
+                if tile == torus.currentTile && moat {
+                    tile.changeHeight(to: .l5)
+                } else {
+                    tile.changeHeight(to: .l1)
+                }
             }
             waitDuration += 0.025
         }
@@ -472,6 +561,7 @@ extension PowerManager { //Powers
     func wall(_ direction: PowerDirection, activatedBy torus: Torus) -> CGFloat {
         
         let tiles = getTiles(for: direction, from: torus)
+        gameManager.deselectCurrent()
         
         var waitDuration: CGFloat = 0
         for tile in tiles {

@@ -178,7 +178,7 @@ class ChangeDecoder {
                     guard let duration = torusChange.waitDuration else { fatalError("Change Decoder - Relocate - No wait duration passed") }
                     
                     torus.sprite.run(SKAction.wait(forDuration: waitDuration)) {
-                        PowerManager.helper.relocate(activedBy: torus, existingTile: targetTile)
+                        PowerManager.helper.relocate(activatedBy: torus, existingTile: targetTile)
                     }
                     waitDuration += duration
                 case .removePowers:

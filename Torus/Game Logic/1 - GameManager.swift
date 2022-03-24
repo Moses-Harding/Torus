@@ -60,7 +60,6 @@ extension GameManager { //Taking Turn
             createTorii()
             updateGameLogic()
             updateGameBoard()
-            gameBoard.syncUnoccupiedTiles()
             
             scene.model.firstMove = false
             scene.model.savePreTurnData(from: scene)
@@ -75,6 +74,24 @@ extension GameManager { //Taking Turn
             scene.model.loadData(to: scene, matchAlreadyOpen: matchAlreadyOpen)
             updateGameLogic()
             updateGameBoard()
+        }
+        
+        if TestingManager.helper.toriiStartWithPowers {
+            currentTeam.torii.forEach {
+                if Int.random(in: 1 ... 2) % 2 == 0 { return }
+                if 1 == 1 { return }
+                $0.powerUp(with: PowerType(.moat, .column))
+                $0.powerUp(with: PowerType(.moat, .row))
+                $0.powerUp(with: PowerType(.invert, .row))
+                $0.powerUp(with: PowerType(.invert, .column))
+                $0.powerUp(with: PowerType(.respawnOrbs))
+                $0.powerUp(with: PowerType(.beneficiary))
+                $0.powerUp(with: PowerType(.kamikaze, .row))
+                $0.powerUp(with: PowerType(.kamikaze, .column))
+                $0.powerUp(with: PowerType(.scramble, .row))
+                $0.powerUp(with: PowerType(.scramble, .column))
+                $0.powerUp(with: PowerType(.scramble, .radius))
+            }
         }
     }
     
@@ -91,7 +108,6 @@ extension GameManager { //Taking Turn
         
         gameBoard.unhighlightTiles()
         updateLabels()
-        //scene.scrollView?.clear()
         tray.powerList.clear()
     }
     
@@ -133,17 +149,21 @@ extension GameManager { //Taking Turn
         }
     }
     
-    func generateOrbs() {
+    func generateOrbs(with respawnCount: Int? = nil) {
 
-        guard turnNumber % 10 == 0 else { return }
+        guard turnNumber % 10 == 0 || respawnCount != nil else { return }
         
-        var numberOfOrbs = TestingManager.helper.testOrbs ? TestingManager.helper.numberOfOrbsToTest : Int(gameBoard.unoccupiedTiles.count / 5)
-        
-        var randomIndices = Set(0 ..< gameBoard.unoccupiedTiles.count).shuffled()
+        var numberOfOrbs = 15
+        //var numberOfOrbs = respawnCount == nil ? TestingManager.helper.testOrbs ? TestingManager.helper.numberOfOrbsToTest : Int(gameBoard.unoccupiedTiles.count / 5) : respawnCount!
+
+        var randomIndices = Set(0 ..< gameBoard.tiles.count).shuffled()
         
         while numberOfOrbs > 0 && randomIndices.count > 0 {
             guard let randomIndex = randomIndices.popLast() else { fatalError("No index when trying to generate orb") }
-            if let tile = gameBoard.getTileForOrb(from: randomIndex) { tile.populateOrb() }
+            if let tile = gameBoard.getTileForOrb(from: randomIndex) {
+                print(tile, tile.hasOrb, tile.occupiedBy)
+                tile.populateOrb()
+            }
             numberOfOrbs -= 1
         }
     }
@@ -151,10 +171,6 @@ extension GameManager { //Taking Turn
     func winnerFound() -> TeamNumber? {
         currentTeam.teamCount == 0 ? getOtherTeam(from: currentTeam).teamNumber : nil
     }
-}
-
-extension GameManager { //Executing Actions Of Turn
-    
 }
 
 extension GameManager { //Set Up

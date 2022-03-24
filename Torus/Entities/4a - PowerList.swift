@@ -185,12 +185,7 @@ class PowerList: Entity {
             print("PowerList - ButtonPushed - Duration and closure not received")
             return
         }
-        
-        guard let current = manager.currentTeam.currentlySelected else {
-            print("PowerList - ButtonPushed - No torus currently selected")
-            return
-        }
-        
+
         if TestingManager.helper.verbose { print("Activating \(button.label.text) with duration \(duration)") }
         
         guard isEffective else {
@@ -218,6 +213,9 @@ class PowerList: Entity {
             self.powerIsActivating = false
             closure()
             gateSprite.removeFromParent()
+            if self.manager.currentTeam.currentlySelected == nil {
+                self.clear()
+            }
         }
     }
     
