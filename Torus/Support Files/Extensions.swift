@@ -115,3 +115,12 @@ extension SKLabelNode {
         //self.position = CGPoint(x: rect.midX, y: rect.midY - self.frame.height / 2.0)
     }
 }
+
+extension Array where Element: Equatable {
+    
+    mutating func appendIfUnique(_ item: Element) {
+        if !self.contains(where: { $0 == item }) {
+            self.append(item)
+        }
+    }
+}

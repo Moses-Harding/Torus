@@ -27,7 +27,7 @@ class StartingScene: SKScene {
     var firstLoad = true
     
     override func didMove(to view: SKView) {
-
+        
         //set up occurs in setUp after GameViewController calls viewDidLoad
         self.backgroundColor = .black
         GameCenterHelper.helper.currentMatch = nil
@@ -40,7 +40,7 @@ class StartingScene: SKScene {
             var buttonHeight: CGFloat
             var buttonWidth: CGFloat
             
-
+            
             
             logo = ImageNode("Torus Neon Logo V2.png") { print("Logo") }
             buttonWidth = frame.width * 0.9
@@ -77,10 +77,10 @@ class StartingScene: SKScene {
             )
             
             NotificationCenter.default.addObserver(
-              self,
-              selector: #selector(presentGame(_:)),
-              name: .presentGame,
-              object: nil
+                self,
+                selector: #selector(presentGame(_:)),
+                name: .presentGame,
+                object: nil
             )
             
             self.firstLoad = false
@@ -88,11 +88,23 @@ class StartingScene: SKScene {
     }
     
     func startOrAuthenticate() {
-        if GameCenterHelper.isAuthenticated {
-            GameCenterHelper.helper.presentMatchmaker()
+        
+        if TestingManager.helper.startWithoutGameCenter {
+            guard let viewController = self.viewController else { fatalError() }
+            let scene = GameScene(model: GameModel(), size: self.size, viewController: viewController)
+            viewController.gameScene = scene
+            
+            //Move To view
+            if viewController.currentScene == .starting {
+                viewController.switchScene()
+            }
         } else {
-            let message = UserMessage("You need to be connected to GameCenter to play this game. Please go to your settings and sign in.", fontName: "Menlo-Regular", fontSize: 18, size: CGSize(width: frame.width * 0.8, height: 50), parent: self, position: midPoint)
-            message.position = message.position.move(.down, by: message.background.frame.height * 1.5)
+            if GameCenterHelper.isAuthenticated {
+                GameCenterHelper.helper.presentMatchmaker()
+            } else {
+                let message = UserMessage("You need to be connected to GameCenter to play this game. Please go to your settings and sign in.", fontName: "Menlo-Regular", fontSize: 18, size: CGSize(width: frame.width * 0.8, height: 50), parent: self, position: midPoint)
+                message.position = message.position.move(.down, by: message.background.frame.height * 1.5)
+            }
         }
     }
     
@@ -101,7 +113,7 @@ class StartingScene: SKScene {
     }
     
     @objc private func presentGame(_ notification: Notification) {
-
+        
         guard let match = notification.object as? GKTurnBasedMatch else {
             return
         }
@@ -112,15 +124,15 @@ class StartingScene: SKScene {
     // MARK: - Helpers
     
     private func loadAndDisplay(match: GKTurnBasedMatch) {
-
+        
         match.loadMatchData { data, error in
-
+            
             //Load or create a model if one does not exist
             var model: GameModel
             
             if let data = data {
                 do {
-
+                    
                     model = try JSONDecoder().decode(GameModel.self, from: data)
                 } catch {
                     model = GameModel()
@@ -152,7 +164,7 @@ class StartingScene: SKScene {
             guard let viewController = self.viewController else { fatalError() }
             let scene = GameScene(model: model, size: self.size, viewController: viewController)
             viewController.gameScene = scene
-
+            
             //Move To view
             if viewController.currentScene == .starting {
                 viewController.switchScene()

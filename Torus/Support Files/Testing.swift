@@ -18,6 +18,10 @@ class TestingManager {
     //Test Powers
     var testPowers = false
     var toriiStartWithPowers = true
+    var toriiStartWithStatuses = false
+    
+    //Start without gamecetner
+    var startWithoutGameCenter = false
     
     var heightList: [PowerType] = [PowerType(.raiseTile), PowerType(.lowerTile), PowerType(.wall, .row), PowerType(.wall, .radius), PowerType(.wall, .column), PowerType(.trench, .radius), PowerType(.trench, .row), PowerType(.trench, .column)]
     

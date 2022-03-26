@@ -151,7 +151,7 @@ extension GameCenterHelper: GKLocalPlayerListener {
     
     func player(_ player: GKPlayer, wantsToQuitMatch match: GKTurnBasedMatch) {
         
-        print("Wants to quit match")
+        //print("Wants to quit match")
         
         let activeOthers = match.participants.filter { other in
             return other.status == .active && other != player
@@ -174,7 +174,7 @@ extension GameCenterHelper: GKLocalPlayerListener {
     //Turn was taken and other player is notified
     func player(_ player: GKPlayer, receivedTurnEventFor match: GKTurnBasedMatch, didBecomeActive: Bool) {
         
-        print("Received turn event")
+        //print("Received turn event")
 
         //If matchmaker vc is active (i.e. if user just created a game) then dismiss the vc
         if let vc = currentMatchmakerVC {

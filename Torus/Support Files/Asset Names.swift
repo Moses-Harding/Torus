@@ -42,14 +42,15 @@ public enum PowerConsoleAssets: String {
 }
 
 public enum TorusOverlayAssets: String {
-    case tripwireRed = "Tripwire - Red"
-    case tripwireBlue = "Tripwire - Blue"
-    case moveDiagonal = "Move Diagonal"
-    case jumpProof = "Jump Proof"
-    case inhibited = "Inhibited"
+    case amplify = "Amplify"
     case climbTile = "Climb Tile"
     case flatToSphere = "Flat To Sphere"
+    case inhibited = "Inhibited"
     case invisible = "Invisible"
+    case jumpProof = "Jump Proof"
+    case moveDiagonal = "Move Diagonal"
+    case tripwireBlue = "Tripwire - Blue"
+    case tripwireRed = "Tripwire"
 }
 
 public enum TileAssets: String {

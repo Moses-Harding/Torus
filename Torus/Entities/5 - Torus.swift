@@ -46,13 +46,15 @@ class Torus: Entity {
     var tripwireName: String
     
     //Status indicators
+    var amplifySprite: OverlaySprite?
     var climbTileSprite: OverlaySprite?
-    var tripwireSprite: OverlaySprite?
-    var moveDiagonalSprite: OverlaySprite?
-    var jumpProofSprite: OverlaySprite?
-    var inhibitedSprite: OverlaySprite?
     var flatToSphereSprite: OverlaySprite?
     var invisibleSprite: OverlaySprite?
+    var jumpProofSprite: OverlaySprite?
+    var moveDiagonalSprite: OverlaySprite?
+
+    var inhibitedSprite: OverlaySprite?
+    var tripwireSprite: OverlaySprite?
     
     init(scene: GameScene, number: Int, team: Team, color: TorusColor, currentTile: Tile, size: CGSize) {
         
@@ -93,6 +95,7 @@ class Torus: Entity {
             
             if torusNumber % 2 == 0 { return }
             for _ in 0 ... Int.random(in: 0 ... 3) {
+                
                 //self.powerUp(with: PowerType.random())
                 //self.powerUp(with: PowerType(.jumpProof))
                 //self.powerUp(with: PowerType(.tripwire, .column))
@@ -108,6 +111,7 @@ class Torus: Entity {
                 //self.powerUp(with: PowerType(.raiseTile))
                 //self.powerUp(with: PowerType(.lowerTile))
                 
+                /*
                 self.powerUp(with: PowerType(.moat, .column))
                 self.powerUp(with: PowerType(.moat, .row))
                 self.powerUp(with: PowerType(.invert, .row))
@@ -116,9 +120,11 @@ class Torus: Entity {
                 self.powerUp(with: PowerType(.beneficiary))
                 self.powerUp(with: PowerType(.kamikaze, .row))
                 self.powerUp(with: PowerType(.kamikaze, .column))
+                */
                 self.powerUp(with: PowerType(.scramble, .row))
                 self.powerUp(with: PowerType(.scramble, .column))
                 self.powerUp(with: PowerType(.scramble, .radius))
+                self.powerUp(with: PowerType(.amplify))
             }
         }
     }
@@ -135,6 +141,8 @@ class Torus: Entity {
         
         manager.select(self, triggeredBy: "Torus was touched")
         manager.select(self.currentTile)
+        
+        print("Touched torus \(self) at \(currentTile.boardPosition)")
     }
     
 }
@@ -217,6 +225,13 @@ extension Torus {
         print("Purify \(self.name) - isEnemy is \(isEnemy)")
         
         if isEnemy {
+            
+            if let amplify = amplifySprite {
+                activatedAttributes.hasAmplify = false
+                amplify.removeFromParent()
+                amplifySprite = nil
+                wasEffective = true
+            }
 
             if let climbTile = climbTileSprite {
                 activatedAttributes.hasClimbTile = false
@@ -281,6 +296,16 @@ extension Torus {
 extension Torus { // Change Status
     
     //GOOD STUFF
+    func amplify() {
+        
+        activatedAttributes.hasAmplify = true
+        
+        let texture = SKTexture(imageNamed: TorusOverlayAssets.amplify.rawValue)
+        
+        amplifySprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
+        amplifySprite?.zPosition = TorusOverlaySpriteLevel.amplify.rawValue
+    }
+    
     func climbTile() {
         
         //SPECIAL
@@ -291,6 +316,7 @@ extension Torus { // Change Status
         let texture = SKTexture(imageNamed: TorusOverlayAssets.climbTile.rawValue)
         
         climbTileSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
+        climbTileSprite?.zPosition = TorusOverlaySpriteLevel.climbTile.rawValue
     }
     
     func flatToSphere() {
@@ -300,8 +326,9 @@ extension Torus { // Change Status
         let texture = SKTexture(imageNamed: TorusOverlayAssets.flatToSphere.rawValue)
         
         flatToSphereSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
+        
     }
-    
+
     func invisible() {
         
         activatedAttributes.hasInvisibility = true
@@ -318,6 +345,7 @@ extension Torus { // Change Status
         let texture = SKTexture(imageNamed: TorusOverlayAssets.jumpProof.rawValue)
         
         jumpProofSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
+        jumpProofSprite?.zPosition = TorusOverlaySpriteLevel.jumpProof.rawValue
     }
     
     func moveDiagonal() {
@@ -327,6 +355,7 @@ extension Torus { // Change Status
         let texture = SKTexture(imageNamed: TorusOverlayAssets.moveDiagonal.rawValue)
         
         moveDiagonalSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
+        moveDiagonalSprite?.zPosition = TorusOverlaySpriteLevel.moveDiagonal.rawValue
     }
     
     // BAD STUFF
@@ -337,6 +366,7 @@ extension Torus { // Change Status
         let texture = SKTexture(imageNamed: TorusOverlayAssets.inhibited.rawValue)
         
         inhibitedSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
+        inhibitedSprite?.zPosition = TorusOverlaySpriteLevel.inhibited.rawValue
     }
     
     func tripwired() {
@@ -346,6 +376,7 @@ extension Torus { // Change Status
         let texture = SKTexture(imageNamed: tripwireName)
         
         tripwireSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
+        tripwireSprite?.zPosition = TorusOverlaySpriteLevel.tripwire.rawValue
     }
 }
 
@@ -357,6 +388,9 @@ extension Torus { //Load Description
         
         let attributes = description.attributes
         
+        if attributes.hasAmplify {
+            amplify()
+        }
         if attributes.hasClimbTile {
             climbTile()
         }
@@ -390,5 +424,11 @@ extension Torus: CustomStringConvertible {
         var description = name
         description += activatedAttributes.description
         return description
+    }
+}
+
+extension Torus: Equatable {
+    static func == (lhs: Torus, rhs: Torus) -> Bool {
+        return lhs.name == rhs.name
     }
 }

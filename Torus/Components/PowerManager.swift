@@ -24,7 +24,7 @@ class PowerManager {
     
     func assign(power: PowerType, to torus: Torus) {
         
-        print("Assigning power \(power.name) to \(torus.name)")
+        //print("Assigning power \(power.name) to \(torus.name)")
         
         let exceeds20 = torus.powerUp(with: power)
         
@@ -35,7 +35,7 @@ class PowerManager {
     
     func removePower(from torus: Torus, _ power: PowerType) {
         
-        if TestingManager.helper.verbose { print("Removing \(torus), \(power)") }
+        //if TestingManager.helper.verbose { print("Removing \(torus), \(power)") }
         
         guard let powerCount = torus.powers[power] else {
             print("Correct power is not present")
@@ -63,6 +63,8 @@ class PowerManager {
         var finalClosure = { self.removePower(from: torus, powerType) }
         
         switch powerType.power {
+        case .amplify:
+            amplify(activatedBy: torus)
         case .acidic:
             (waitDuration, isEffective) = acid(direction, activatedBy: torus)
         case .beneficiary:
@@ -145,6 +147,10 @@ class PowerManager {
 }
 
 extension PowerManager { //Powers
+    
+    func amplify(activatedBy torus: Torus) {
+        torus.amplify()
+    }
     
     func acid(_ direction: PowerDirection, activatedBy torus: Torus) -> (CGFloat, Bool) {
         
@@ -395,7 +401,7 @@ extension PowerManager { //Powers
             
             while tile == nil && numberOfTries < totalTileCount {
                 let foundTile = gameBoard.getRandomTile()
-                if TestingManager.helper.verbose { print("PowerManager - Relocate - Found Tile - \(foundTile) - Occupied By \(foundTile.occupiedBy) - Number Of Tries \(numberOfTries)") }
+                //if TestingManager.helper.verbose { print("PowerManager - Relocate - Found Tile - \(foundTile) - Occupied By \(foundTile.occupiedBy) - Number Of Tries \(numberOfTries)") }
                 if foundTile.occupiedBy == nil && foundTile.status != .acid {
                     tile = foundTile
                     waitDuration = MovementManager.helper.move(torus, to: foundTile, relocating: true) { self.gameManager.updateGameBoard() }
@@ -430,15 +436,8 @@ extension PowerManager { //Powers
         
         var tileList = getTiles(for: direction, from: torus).shuffled()
         var torusList = getEnemies(for: direction, from: torus) + getAllies(for: direction, from: torus)
-
-        while torusList.count > 0 && tileList.count > 0 {
-            guard let tile = tileList.popLast() else { fatalError("PowerManager - Scramble - No Tile Found") }
-            if tile.status != .acid {
-                guard let currentTorus = torusList.popLast() else { fatalError("PowerManager - Scramble - No Torus Found")  }
-                let newDuration = MovementManager.helper.move(currentTorus, to: tile, relocating: true) { self.gameManager.updateGameBoard() }
-                waitDuration = newDuration > waitDuration ? newDuration : waitDuration
-            }
-        }
+        
+        waitDuration = MovementManager.helper.scramble(torusList, tiles: tileList) { self.gameManager.updateGameBoard() }
         
         return waitDuration
     }
@@ -592,6 +591,7 @@ extension PowerManager { //Selecting Row / Column
     func getTorii(for direction: PowerDirection, from torus: Torus, enemies: Bool = true) -> [Torus] {
         
         var validTorii = [Torus]()
+        let amplify = torus.activatedAttributes.hasAmplify
         
         let enemyTeam = gameManager.getOtherTeam(from: torus.team)
         
@@ -601,7 +601,12 @@ extension PowerManager { //Selecting Row / Column
         case .column:
             for eachTorus in allTorii {
                 if eachTorus.currentTile.boardPosition.column == torus.currentTile.boardPosition.column {
-                    validTorii.append(eachTorus)
+                    validTorii.appendIfUnique(eachTorus)
+                }
+                if amplify {
+                    if eachTorus.currentTile.boardPosition.column == torus.currentTile.boardPosition.column - 1 ||  eachTorus.currentTile.boardPosition.column == torus.currentTile.boardPosition.column + 1 {
+                        validTorii.appendIfUnique(eachTorus)
+                    }
                 }
             }
         case .radius:
@@ -609,16 +614,26 @@ extension PowerManager { //Selecting Row / Column
                 let rowDif = abs(eachTorus.currentTile.boardPosition.row - torus.currentTile.boardPosition.row)
                 let colDif = abs(eachTorus.currentTile.boardPosition.column - torus.currentTile.boardPosition.column)
                 if (rowDif == 0 || rowDif == 1) && (colDif == 0 || colDif == 1) {
-                    validTorii.append(eachTorus)
+                    validTorii.appendIfUnique(eachTorus)
+                }
+                if amplify {
+                    if (rowDif == 0 || rowDif == 1 || rowDif == 2) && (colDif == 0 || colDif == 1 || colDif == 2) {
+                        validTorii.appendIfUnique(eachTorus)
+                    }
                 }
             }
         case .row:
             for eachTorus in allTorii {
                 if eachTorus.currentTile.boardPosition.row == torus.currentTile.boardPosition.row {
-                    validTorii.append(eachTorus)
+                    validTorii.appendIfUnique(eachTorus)
+                }
+                if amplify {
+                if eachTorus.currentTile.boardPosition.row == torus.currentTile.boardPosition.row - 1 ||  eachTorus.currentTile.boardPosition.row == torus.currentTile.boardPosition.row + 1 {
+                    validTorii.appendIfUnique(eachTorus)
+                }
                 }
             }
-        }
+            }
         
         return validTorii
     }
@@ -627,6 +642,8 @@ extension PowerManager { //Selecting Row / Column
         
         var validTiles = [Tile]()
         
+        let amplify = torus.activatedAttributes.hasAmplify
+        
         let row = torus.currentTile.boardPosition.row
         let column = torus.currentTile.boardPosition.column
         
@@ -634,7 +651,15 @@ extension PowerManager { //Selecting Row / Column
         case .column:
             for eachRow in 0 ..< scene.numberOfRows {
                 if let tile = gameBoard.getTile(column: column, row: eachRow) {
-                    validTiles.append(tile)
+                    validTiles.appendIfUnique(tile)
+                }
+                if amplify {
+                    if let tile = gameBoard.getTile(column: column - 1, row: eachRow) {
+                        validTiles.appendIfUnique(tile)
+                    }
+                    if let tile = gameBoard.getTile(column: column + 1, row: eachRow) {
+                        validTiles.appendIfUnique(tile)
+                    }
                 }
             }
         case .radius:
@@ -642,13 +667,26 @@ extension PowerManager { //Selecting Row / Column
                 let rowDif = abs(eachTile.boardPosition.row - torus.currentTile.boardPosition.row)
                 let colDif = abs(eachTile.boardPosition.column - torus.currentTile.boardPosition.column)
                 if (rowDif == 0 || rowDif == 1) && (colDif == 0 || colDif == 1) {
-                    validTiles.append(eachTile)
+                    validTiles.appendIfUnique(eachTile)
+                }
+                if amplify {
+                    if (rowDif == 0 || rowDif == 1 || rowDif == 2) && (colDif == 0 || colDif == 1 || colDif == 2) {
+                        validTiles.appendIfUnique(eachTile)
+                    }
                 }
             }
         case .row:
             for eachCol in 0 ..< scene.numberOfColumns {
                 if let tile = gameBoard.getTile(column: eachCol, row: row) {
-                    validTiles.append(tile)
+                    validTiles.appendIfUnique(tile)
+                }
+                if amplify {
+                    if let tile = gameBoard.getTile(column: eachCol, row: row - 1) {
+                        validTiles.appendIfUnique(tile)
+                    }
+                    if let tile = gameBoard.getTile(column: eachCol , row: row + 1) {
+                        validTiles.appendIfUnique(tile)
+                    }
                 }
             }
         }

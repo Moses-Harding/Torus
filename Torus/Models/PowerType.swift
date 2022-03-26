@@ -11,7 +11,6 @@ import SpriteKit
 /*Remaing Power Types
  
  Basic Powers
- - Grow Quadradius
  - Create Base
  - Duplicate
 
@@ -34,6 +33,7 @@ import SpriteKit
 
 enum Power: String, CaseIterable, Codable {
     case acidic = "Acidic"
+    case amplify = "Amplify"
     case beneficiary = "Beneficiary"
     case bombs = "Bombs"
     case climbTile = "Climb Tile"
@@ -87,7 +87,7 @@ struct PowerType: Hashable, Codable {
         
         self.power = power
         
-        let exceptions: [Power] = [.beneficiary, .bombs, .climbTile, .doublePowers, .jumpProof, .lowerTile, .moveDiagonal, .raiseTile, .relocate, .respawnOrbs, .snakeTunnelling, .smartBombs]
+        let exceptions: [Power] = [.amplify, .beneficiary, .bombs, .climbTile, .doublePowers, .jumpProof, .lowerTile, .moveDiagonal, .raiseTile, .relocate, .respawnOrbs, .snakeTunnelling, .smartBombs]
         
         self.direction = exceptions.contains(where: { $0 == power }) ? nil : direction
     }

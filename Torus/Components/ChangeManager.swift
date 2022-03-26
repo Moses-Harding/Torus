@@ -17,11 +17,18 @@ enum TorusChangeType: Codable {
     case move
     case relocate
     case removePowers
+    case scramble
     case snakeTunnelling
 }
 
 enum TileChangeType: Codable  {
     case addOrb
+}
+
+
+struct ScrambledTileAssignment: Codable {
+    var torusName: String
+    var tilePosition: TilePosition
 }
 
 struct TorusChange: Codable  {
@@ -31,6 +38,7 @@ struct TorusChange: Codable  {
     var newPowers: [PowerType:Int]? = nil
     var moveToTile: TilePosition? = nil
     var powerToActivate: PowerType? = nil
+    var scrambledList: [ScrambledTileAssignment]? = nil
     var targetTiles: [TilePosition]? = nil
     var waitDuration: CGFloat? = nil
 }
@@ -51,7 +59,7 @@ class ChangeManager: Codable {
     
     //Refresh
     func refresh() {
-        print("Refreshing change list")
+        //print("Refreshing change list")
         tileChanges = []
         torusChanges = []
     }
@@ -83,18 +91,23 @@ class ChangeManager: Codable {
         torusChanges.append(change)
     }
     
-    func move(_ torus: Torus, to tile: Tile) {
-        let change = TorusChange(type: .move, torus: torus.name, moveToTile: tile.boardPosition)
-        torusChanges.append(change)
-    }
-    
     func addPower(for torus: Torus) {
         let change = TorusChange(type: .addPower, torus: torus.name, newPowers: torus.powers)
         torusChanges.append(change)
     }
     
+    func move(_ torus: Torus, to tile: Tile) {
+        let change = TorusChange(type: .move, torus: torus.name, moveToTile: tile.boardPosition)
+        torusChanges.append(change)
+    }
+
     func removePowers(for torus: Torus) {
         let change = TorusChange(type: .removePowers, torus: torus.name)
+        torusChanges.append(change)
+    }
+    
+    func scramble(_ tileAssignments: [ScrambledTileAssignment], for torus: Torus, waitDuration: CGFloat) {
+        let change = TorusChange(type: .scramble, torus: torus.name, scrambledList: tileAssignments, waitDuration: waitDuration)
         torusChanges.append(change)
     }
 }
@@ -145,8 +158,17 @@ class ChangeDecoder {
             
             for torusChange in torusChanges {
                 guard let torus = scene.gameManager.getTorus(with: torusChange.torus) else { fatalError("Change Decoder - Torus could not be located") }
+                print("Torus change - retrieved \(torus)")
                 
                 switch torusChange.type {
+                case .activatePower:
+                    guard let powerType = torusChange.powerToActivate else { fatalError("Change Decoder - Activate Power - No Power Passed") }
+                    
+                    torus.sprite.run(SKAction.wait(forDuration: waitDuration)) {
+                        PowerManager.helper.activate(powerType, with: torus, decoding: true)
+                    }
+                    
+                    waitDuration += 1
                 case .addPower:
                     guard let powers = torusChange.newPowers else { fatalError("Change Decoder - Add Power - No Powers Passed") }
                     
@@ -165,6 +187,17 @@ class ChangeDecoder {
                         PowerManager.helper.bombs(activatedBy: torus, existingSet: targetTiles)
                     }
                     waitDuration += duration
+                case .move:
+                    guard let tile = manager.gameBoard.getTile(from: torusChange.moveToTile) else { fatalError("Change Decoder - Move - No destination tile passed")}
+                    print("Movement - \(waitDuration)")
+                    print("NOTE - This doesn't work after scramble; since torus is being removed and readded, I think that the torus referenced in the torus change movement doesn't exist, therefore cannot execute the run.")
+                    // sorry :(
+                    torus.sprite.run(SKAction.wait(forDuration: 3)) {
+                        print("Movement about to be triggered..")
+                        MovementManager.helper.move(torus, to: tile, decoding: true) {}
+                    }
+                    
+                    waitDuration += 1
                 case .snakeTunnelling:
                     guard let targetTiles = torusChange.targetTiles else { fatalError("Change Decoder - SnakeTUnneling - No Target Tiles passed") }
                     guard let duration = torusChange.waitDuration else { fatalError("Change Decoder - SnakeTUnneling - No wait duration passed") }
@@ -185,22 +218,15 @@ class ChangeDecoder {
                     torus.sprite.run(SKAction.wait(forDuration: waitDuration)) {
                         torus.powers = [:]
                     }
-                case .activatePower:
-                    guard let powerType = torusChange.powerToActivate else { fatalError("Change Decoder - Activate Power - No Power Passed") }
-                    
+                case .scramble:
+                    guard let scrambledList = torusChange.scrambledList else { fatalError("Change Decoder - Scramble - No Tiles passed") }
+                    guard let duration = torusChange.waitDuration else { fatalError("Change Decoder - Scramble - No wait duration passed") }
+                    print("Scrambled tile assignments -  \(scrambledList)")
+                    print(waitDuration)
                     torus.sprite.run(SKAction.wait(forDuration: waitDuration)) {
-                        PowerManager.helper.activate(powerType, with: torus, decoding: true)
+                        MovementManager.helper.decodedScramble(scrambledList: scrambledList)
                     }
-                    
-                    waitDuration += 1
-                case .move:
-                    guard let tile = manager.gameBoard.getTile(from: torusChange.moveToTile) else { fatalError("Change Decoder - Move - No destination tile passed")}
-                    
-                    torus.sprite.run(SKAction.wait(forDuration: waitDuration)) {
-                        MovementManager.helper.move(torus, to: tile, decoding: true) {}
-                    }
-                    
-                    waitDuration += 1
+                    waitDuration += duration
                 }
             }
             

@@ -51,13 +51,15 @@ class Team {
         return torus
     }
     
-    func addTorus(from torus: Torus) -> Torus {
+    func addTorus(from torus: Torus, override boardPosition: TilePosition? = nil, keepNumber: Bool = false) -> Torus {
         
-        guard let tile = gameManager.gameBoard.getTile(from: torus.currentTile.boardPosition), tile.occupiedBy == nil else { fatalError("Team - Add Torus - Cannot Add To Tile") }
+        var boardPosition = boardPosition ?? torus.currentTile.boardPosition
         
-        let lastNumber = torii.last?.torusNumber ?? 1
+        guard let tile = gameManager.gameBoard.getTile(from: boardPosition), tile.occupiedBy == nil else { fatalError("Team - Add Torus - Cannot Add To Tile") }
         
-        let description = TorusDescription(color: self.teamColor, teamNumber: self.teamNumber, torusNumber: lastNumber, powers: torus.powers, attributes: torus.activatedAttributes, currentTile: torus.currentTile.boardPosition)
+        let lastNumber = keepNumber ? torus.torusNumber : torii.last?.torusNumber ?? 1
+        
+        let description = TorusDescription(color: self.teamColor, teamNumber: self.teamNumber, torusNumber: lastNumber, powers: torus.powers, attributes: torus.activatedAttributes, currentTile: boardPosition)
 
         
         let torus = Torus(scene: gameManager.scene, number: lastNumber, team: self, color: teamColor, currentTile: tile, size: tile.size)

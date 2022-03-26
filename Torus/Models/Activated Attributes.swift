@@ -10,45 +10,51 @@ import Foundation
 struct ActivatedAttributes: Codable {
     
     //GOOD
-    var hasMoveDiagonal = false
+    var hasAmplify = false
     var hasClimbTile = false
-    var hasJumpProof = false
-    var hasInvisibility = false
     var hasFlatToSphere = false
+    var hasInvisibility = false
+    var hasJumpProof = false
+    var hasMoveDiagonal = false
     
-    //Bad
+    //BAD
     var isInhibited = false
-    var isTripWired = false
     var isSpyTapped = false
+    var isTripWired = false
 }
 
 extension ActivatedAttributes: CustomStringConvertible {
     var description: String {
         var description = ""
-        if hasMoveDiagonal {
-            description += "MoveDiagonal; "
+        if hasAmplify {
+            description += ": Amplified"
         }
         if hasClimbTile {
-            description += "ClimbTile; "
-        }
-        if hasJumpProof {
-            description += "JumpProof; "
-        }
-        if hasInvisibility {
-            description += "Invisible; "
+            description += ": ClimbTile"
         }
         if hasFlatToSphere {
-            description += "FlatToSphere; "
+            description += ": FlatToSphere"
         }
+        if hasInvisibility {
+            description += ": Invisible"
+        }
+        if hasJumpProof {
+            description += ": JumpProof"
+        }
+        if hasMoveDiagonal {
+            description += ": MoveDiagonal"
+        }
+        
         if isInhibited {
-            description += "Inhibited; "
-        }
-        if isTripWired {
-            description += "Tripwired; "
+            description += ": Inhibited"
         }
         if isSpyTapped {
-            description += "SpyTapped"
+            description += ": SpyTapped"
         }
+        if isTripWired {
+            description += ": Tripwired"
+        }
+
         return description
     }
 }

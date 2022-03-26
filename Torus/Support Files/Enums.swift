@@ -24,6 +24,15 @@ enum SpriteLevel: CGFloat {
     case playScreen = 0, boardOrTray = 1, tileOrTrayItem = 2, torusOrScrollView = 3, tileOverlay = 4, label = 5, userMessage = 6, topLevel = 100
 }
 
+enum TorusOverlaySpriteLevel: CGFloat {
+    case inhibited = 1
+    case moveDiagonal
+    case amplify
+    case jumpProof
+    case climbTile
+    case tripwire
+}
+
 enum TeamColor {
     case red, blue
 }

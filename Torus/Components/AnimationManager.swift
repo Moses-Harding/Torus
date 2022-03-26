@@ -132,6 +132,8 @@ extension AnimationManager { //Torus
     
     func move(torus: Torus, to newTile: Tile, completion: @escaping () -> ()) -> CGFloat {
         
+        print("Triggering Move")
+        
         var waitDuration =  0.25
         
         let moveToAction = SKAction.move(to: torus.currentTile.boardPosition.getPoint(), duration: 0.2)
@@ -193,6 +195,36 @@ extension AnimationManager { //Torus
                 guard let power = newTile.nextPower else { fatalError("TakeOrb - No power to assign to torus") }
                 newTile.removeOrb { torus.sprite.zPosition = SpriteLevel.torusOrScrollView.rawValue }
                 PowerManager.helper.assign(power: power, to: torus)
+            }
+        }
+        
+        return waitDuration
+    }
+    
+    func scramble(torus: Torus, to newTile: Tile, takeOrb: Bool = false) -> CGFloat {
+        
+        var waitDuration = 0.5
+        
+        let capturedTorus = torus
+        
+        //print("Scramble -  Torus - \(torus)")
+    
+        let fadeIn = SKAction.fadeIn(withDuration: waitDuration)
+        let grow = SKAction.scale(to: 1.2, duration: 0)
+        let shrink = SKAction.scale(to: 1, duration: waitDuration)
+        
+        let newTorus = capturedTorus.team.addTorus(from: torus, override: newTile.boardPosition, keepNumber: true)
+        newTorus.sprite.alpha = 0
+        newTorus.sprite.run(grow)
+        
+        let scrambleAnimationGroup = SKAction.group([fadeIn, shrink])
+        
+
+        newTorus.sprite.run(scrambleAnimationGroup) {
+            if takeOrb {
+                guard let power = newTile.nextPower else { fatalError("TakeOrb - No power to assign to torus") }
+                newTile.removeOrb { newTorus.sprite.zPosition = SpriteLevel.torusOrScrollView.rawValue }
+                PowerManager.helper.assign(power: power, to: newTorus)
             }
         }
         

@@ -21,7 +21,7 @@ class GameManager {
         }
     }
     var userTeam: Team!
-
+    
     var turnNumber = 0
     
     var gameBoard: GameBoard {
@@ -52,7 +52,7 @@ class GameManager {
 extension GameManager { //Taking Turn
     
     func beginTurn(matchAlreadyOpen: Bool) {
-
+        
         print("\n______\nBegin turn")
         
         if scene.model.firstMove && GameCenterHelper.helper.canTakeTurnForCurrentMatch {
@@ -78,19 +78,73 @@ extension GameManager { //Taking Turn
         
         if TestingManager.helper.toriiStartWithPowers {
             currentTeam.torii.forEach {
-                if Int.random(in: 1 ... 2) % 2 == 0 { return }
-                if 1 == 1 { return }
-                $0.powerUp(with: PowerType(.moat, .column))
-                $0.powerUp(with: PowerType(.moat, .row))
-                $0.powerUp(with: PowerType(.invert, .row))
-                $0.powerUp(with: PowerType(.invert, .column))
-                $0.powerUp(with: PowerType(.respawnOrbs))
-                $0.powerUp(with: PowerType(.beneficiary))
-                $0.powerUp(with: PowerType(.kamikaze, .row))
-                $0.powerUp(with: PowerType(.kamikaze, .column))
-                $0.powerUp(with: PowerType(.scramble, .row))
-                $0.powerUp(with: PowerType(.scramble, .column))
-                $0.powerUp(with: PowerType(.scramble, .radius))
+                if $0.torusNumber % 2 == 0 {
+                    
+                    /*
+                    $0.powerUp(with: PowerType(.respawnOrbs))
+                    $0.powerUp(with: PowerType(.scramble, .row))
+                    $0.powerUp(with: PowerType(.scramble, .column))
+                    $0.powerUp(with: PowerType(.scramble, .radius))
+                    $0.powerUp(with: PowerType(.amplify))
+                     */
+                    /*
+                     $0.powerUp(with: PowerType(.amplify))
+                     $0.powerUp(with: PowerType(.moat, .column))
+                     $0.powerUp(with: PowerType(.moat, .row))
+                     $0.powerUp(with: PowerType(.invert, .row))
+                     $0.powerUp(with: PowerType(.invert, .column))
+
+                     $0.powerUp(with: PowerType(.beneficiary))
+                     $0.powerUp(with: PowerType(.kamikaze, .row))
+                     $0.powerUp(with: PowerType(.kamikaze, .column))
+                     $0.powerUp(with: PowerType(.kamikaze, .radius))
+                    $0.powerUp(with: PowerType(.moveDiagonal))
+                    $0.powerUp(with: PowerType(.inhibit, .column))
+                    $0.powerUp(with: PowerType.random())
+                    $0.powerUp(with: PowerType(.swap, .row))
+                    $0.powerUp(with: PowerType(.swap, .column))
+                    $0.powerUp(with: PowerType(.swap, .radius))
+                    $0.powerUp(with: PowerType(.destroy, .row))
+                    $0.powerUp(with: PowerType(.destroy, .column))
+                    $0.powerUp(with: PowerType(.destroy, .radius))
+                    $0.powerUp(with: PowerType(.wall, .row))
+                    $0.powerUp(with: PowerType(.wall, .column))
+                    $0.powerUp(with: PowerType(.wall, .radius))
+                    $0.powerUp(with: PowerType(.trench, .row))
+                    $0.powerUp(with: PowerType(.trench, .column))
+                    $0.powerUp(with: PowerType(.trench, .radius))
+                     */
+                }
+            }
+        }
+        if TestingManager.helper.toriiStartWithStatuses {
+            currentTeam.torii.forEach {
+                if $0.torusNumber % 3 == 0 {
+                    $0.amplify()
+                }
+                if $0.torusNumber % 5 == 0 {
+                    $0.inhibited()
+                }
+                if $0.torusNumber % 7 == 0 {
+                    $0.moveDiagonal()
+                }
+                if $0.torusNumber % 11 == 0 {
+                    $0.climbTile()
+                }
+                if $0.torusNumber % 13 == 0 {
+                    $0.jumpProof()
+                }
+                if $0.torusNumber % 17 == 0 {
+                    $0.tripwired()
+                }
+                if $0.torusNumber % 19 == 0 {
+                    $0.amplify()
+                    $0.inhibited()
+                    $0.moveDiagonal()
+                    $0.climbTile()
+                    $0.jumpProof()
+                    $0.tripwired()
+                }
             }
         }
     }
@@ -126,7 +180,7 @@ extension GameManager { //Taking Turn
     }
     
     func switchTeams() {
-
+        
         currentTeam = currentTeam == team1 ? team2 : team1
         changeTeam(to: currentTeam.teamNumber)
     }
@@ -150,18 +204,21 @@ extension GameManager { //Taking Turn
     }
     
     func generateOrbs(with respawnCount: Int? = nil) {
-
+        
         guard turnNumber % 10 == 0 || respawnCount != nil else { return }
         
         var numberOfOrbs = 15
         //var numberOfOrbs = respawnCount == nil ? TestingManager.helper.testOrbs ? TestingManager.helper.numberOfOrbsToTest : Int(gameBoard.unoccupiedTiles.count / 5) : respawnCount!
-
+        
         var randomIndices = Set(0 ..< gameBoard.tiles.count).shuffled()
+        
+        //print("\nGenerate orbs, all tiles -")
+        //gameBoard.tiles.forEach { print("\($0), occupied by \($0.occupiedBy)")}
         
         while numberOfOrbs > 0 && randomIndices.count > 0 {
             guard let randomIndex = randomIndices.popLast() else { fatalError("No index when trying to generate orb") }
             if let tile = gameBoard.getTileForOrb(from: randomIndex) {
-                print(tile, tile.hasOrb, tile.occupiedBy)
+                //print("Generating orb on \(tile), has orb already - \(tile.hasOrb), occupied by \(tile.occupiedBy)")
                 tile.populateOrb()
             }
             numberOfOrbs -= 1
@@ -174,7 +231,7 @@ extension GameManager { //Taking Turn
 }
 
 extension GameManager { //Set Up
-
+    
     func createTiles() {
         
         gameBoard.setUpTiles()
@@ -206,7 +263,7 @@ extension GameManager { //User Touch Interaction / Selection
     func select(_ torus: Torus, triggeredBy: String) {
         //Selecting a torus (if valid) deselects other torii, then shows valid tiles
         
-        if TestingManager.helper.verbose { print("Selecting torus triggered by \(triggeredBy)") }
+        //if TestingManager.helper.verbose { print("Selecting torus triggered by \(triggeredBy)") }
         
         //Make sure team is correct
         guard torus.team == currentTeam else {
@@ -260,7 +317,7 @@ extension GameManager { //User Touch Interaction / Selection
         
         gameBoard.highlightValidTiles(surrounding: currentTeam.currentlySelected!)
         
-       // scene.scrollView.updateView(with: currentTeam.currentlySelected!.powers, from: torus.team.teamNumber)
+        // scene.scrollView.updateView(with: currentTeam.currentlySelected!.powers, from: torus.team.teamNumber)
         tray.powerList.updateView(with: currentTeam.currentlySelected!.powers, from: torus, calledBy: "Selecting Torus")
     }
     
@@ -270,7 +327,7 @@ extension GameManager { //User Touch Interaction / Selection
         if let torus = currentTeam.currentlySelected, torus.team == currentTeam, tile.validForMovement == true, powerList.powerIsActivating == false  {
             
             MovementManager.helper.move(torus, to: tile) { self.takeTurn() }
-
+            
         }
     }
 }
@@ -280,7 +337,7 @@ extension GameManager {
     func activate(power: PowerType) -> (CGFloat, Bool, (() -> ()))? {
         
         guard let current = currentTeam.currentlySelected else { return nil }
-
+        
         return PowerManager.helper.activate(power, with: current)
     }
 }
@@ -288,7 +345,7 @@ extension GameManager {
 extension GameManager { //Retrieve
     
     func getTorus(with name: String) -> Torus? {
-
+        
         let team1Torus = team1.getTorus(with: name)
         let team2Torus = team2.getTorus(with: name)
         

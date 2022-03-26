@@ -89,6 +89,8 @@ extension Tile { //Manipulation
     }
     
     func populateOrb(decoding: Bool = false, nextPower: PowerType? = nil) {
+        
+        print("Populating orb on \(self.boardPosition)")
 
         hasOrb = true
         
