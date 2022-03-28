@@ -155,7 +155,7 @@ extension MovementManager { //Torus Movement
         
         var movementType: MoveType = relocating ? .relocate : movement(from: torus, to: newTile)
         var waitDuration: CGFloat = 0
-        
+         
         //Save opposing torus
         let opponent: Torus? = newTile.occupiedBy
         
