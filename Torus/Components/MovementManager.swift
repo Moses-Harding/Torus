@@ -76,26 +76,36 @@ extension MovementManager { //Torus Movement
     
     func decodedScramble(scrambledList: [ScrambledTileAssignment]) -> CGFloat {
         
+        print("\nMovementManager - decodedScramble")
+        print("ScrambledList -")
+        for pair in scrambledList {
+            print(pair.tilePosition, pair.torusName)
+        }
+        print()
+        
         var tileAssignments = [(Torus, Tile)]()
         
-        var waitDuration: CGFloat = 0
+        var waitDuration: CGFloat = 0.5
         let fadeDuration: CGFloat = 0.5
         
-        
-        for eachPair in scrambledList {
-            guard let torus = scene.gameManager.getTorus(with: eachPair.torusName) else { fatalError("MovementManager - decodedScramble - Torus \(eachPair.torusName) could not be located")}
-            guard let tile = scene.gameManager.gameBoard.getTile(from: eachPair.tilePosition) else { fatalError("MovementManager - decodedScramble - Tile \(eachPair.tilePosition) could not be located") }
-            torus.sprite.run(SKAction.group([SKAction.fadeOut(withDuration: fadeDuration), SKAction.scale(to: 1.2, duration: fadeDuration)])) {
-                torus.die()
-            }
-            tileAssignments.append((torus, tile))
+        scrambledList.forEach {
+            guard let torus = scene.gameManager.getTorus(with: $0.torusName) else { fatalError("MovementManager - decodedScramble - Torus \($0.torusName) could not be located") }
+            torus.sprite.run(SKAction.group([SKAction.fadeOut(withDuration: fadeDuration), SKAction.scale(to: 1.2, duration: fadeDuration)]))
         }
         
-        guard let firstTorus = tileAssignments.first?.0 else { fatalError("MovementManager - decodedScramble - TileAssignemnts list is empty")}
-        
-        firstTorus.sprite.run(SKAction.wait(forDuration: fadeDuration)) {
-
+        scene.run(SKAction.wait(forDuration: fadeDuration)) {
+            print("Iterating through scrambled list")
+            for eachPair in scrambledList {
+                guard let torus = self.scene.gameManager.getTorus(with: eachPair.torusName) else { fatalError("MovementManager - decodedScramble - Torus \(eachPair.torusName) could not be located") }
+                guard let tile = self.scene.gameManager.gameBoard.getTile(from: eachPair.tilePosition) else { fatalError("MovementManager - decodedScramble - Tile \(eachPair.tilePosition) could not be located") }
+                tileAssignments.append((torus, tile))
+                tile.occupiedBy = nil
+                torus.die(calledBy: "Decoded Scramble")
+            }
+            
+            print("Iterating through assignment list")
             for tileAssignment in tileAssignments {
+                //print("\n\(tileAssignment.0), which is currently at \(tileAssignment.0.currentTile), will move to \(tileAssignment.1).\n\(tileAssignment.0.currentTile)'s current occupant is \(String(describing: tileAssignment.0.currentTile.occupiedBy)), and \(tileAssignment.1)'s current occupant is \(tileAssignment.1.occupiedBy)")
                 waitDuration = AnimationManager.helper.scramble(torus: tileAssignment.0, to: tileAssignment.1, takeOrb: tileAssignment.1.hasOrb)
             }
         }
@@ -103,17 +113,17 @@ extension MovementManager { //Torus Movement
         return waitDuration + fadeDuration
     }
     
-    func scramble(_ torii: [Torus], tiles: [Tile], decoding: Bool = false, completion: @escaping () -> ()) -> CGFloat {
+    func scramble(_ torii: [Torus], tiles: [Tile], direction: PowerDirection, decoding: Bool = false, completion: @escaping () -> ()) -> CGFloat {
         
-        print("Registering scramble")
+        print("\nMovementManager - Scramble")
+        print("Torii - \(torii)")
+        print("Tiles - \(tiles)")
+        tiles.forEach { print("\($0) occupied by \($0.occupiedBy)")}
         
         var torusList = torii
         var tileList = tiles
         
-        //print("Torus list - \(torusList)")
-        //print("Tile list - \(tileList)")
-        
-        var waitDuration: CGFloat = 0
+        var waitDuration: CGFloat = 0.5
         let fadeDuration: CGFloat = 0.5
         
         var tileAssignments = [(Torus, Tile)]()
@@ -131,10 +141,9 @@ extension MovementManager { //Torus Movement
                 if tile.status != .acid {
                     guard let currentTorus = torusList.popLast() else { fatalError("PowerManager - Scramble - No Torus Found")  }
                     tileAssignments.append((currentTorus, tile))
-                    currentTorus.die()
+                    currentTorus.die(calledBy: "Scramble")
                 }
             }
-            
             
             for tileAssignment in tileAssignments {
                 waitDuration = AnimationManager.helper.scramble(torus: tileAssignment.0, to: tileAssignment.1, takeOrb: tileAssignment.1.hasOrb)
@@ -143,19 +152,19 @@ extension MovementManager { //Torus Movement
             }
             
             if !decoding {
-                ChangeManager.register.scramble(scrambledTileAssignmentsForDecoding, for: firstTorus, waitDuration: waitDuration + fadeDuration)
+                ChangeManager.register.scramble(scrambledTileAssignmentsForDecoding, direction: direction, for: firstTorus, waitDuration: waitDuration + fadeDuration)
             }
         }
-
+        
         return waitDuration + fadeDuration
     }
     
     //Move
     func move(_ torus: Torus, to newTile: Tile, decoding: Bool = false, relocating: Bool = false, completion: @escaping () -> ()) -> CGFloat {
         
-        var movementType: MoveType = relocating ? .relocate : movement(from: torus, to: newTile)
+        let movementType: MoveType = relocating ? .relocate : movement(from: torus, to: newTile)
         var waitDuration: CGFloat = 0
-         
+        
         //Save opposing torus
         let opponent: Torus? = newTile.occupiedBy
         
@@ -168,7 +177,7 @@ extension MovementManager { //Torus Movement
         
         torus.changeOccupancy(to: newTile)
         
-        let finalAnimation = torus.activatedAttributes.isTripWired ? { AnimationManager.helper.kill(torus: torus, deathType: .tripwire, completion: completion) } : completion
+        let finalAnimation = torus.activatedAttributes.isTripWired ? { AnimationManager.helper.kill(torus: torus, deathType: .tripwire, calledBy: "AnimationManager - Move", completion: completion) } : completion
         
         if movementType == .attack {
             waitDuration = AnimationManager.helper.attack(torus: torus, to: newTile, against: opponent!) { finalAnimation() }
@@ -182,14 +191,8 @@ extension MovementManager { //Torus Movement
         
         torus.deselect()
         
-        //print("Movement End - \(torus), Old Tile Occupied Status: \(oldTile.occupiedBy), New Tile Occupied Status: \(newTile.occupiedBy)")
-        
         if !decoding {
-            print("Registering movement")
             ChangeManager.register.move(torus, to: newTile)
-            //ChangeManager.register.syncPowers(for: torus)
-        } else {
-            print("Movement Manager - Decoding Movement")
         }
         
         return waitDuration

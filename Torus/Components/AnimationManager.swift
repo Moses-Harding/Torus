@@ -30,7 +30,7 @@ extension AnimationManager { //Torus
         
         torus.sprite.zPosition += 1
         torus.sprite.run(attackGroup) {
-            self.kill(torus: opponent, deathType: .normal, completion: { torus.sprite.zPosition -= 1 })
+            self.kill(torus: opponent, deathType: .normal, calledBy: "Attack", completion: { torus.sprite.zPosition -= 1 } )
             completion()
         }
         
@@ -51,7 +51,7 @@ extension AnimationManager { //Torus
                 tile.bomb()
                 bombSprite.removeFromParent()
             }
-            self.kill(torus: torus, deathType: .acidic) {}
+            self.kill(torus: torus, deathType: .acidic, calledBy: "Bomb") {}
         } else {
             bombSprite.run(shrink) {
                 tile.bomb()
@@ -61,7 +61,7 @@ extension AnimationManager { //Torus
     }
     
     @discardableResult
-    func kill(torus: Torus, deathType: DeathType, completion: @escaping (() -> ()) ) -> CGFloat {
+    func kill(torus: Torus, deathType: DeathType, calledBy: String, completion: @escaping (() -> ()) ) -> CGFloat {
         
         var animationGroup: SKAction
         
@@ -101,6 +101,10 @@ extension AnimationManager { //Torus
             let fadeOut = SKAction.fadeOut(withDuration: fadeDuration)
             
             animationGroup = SKAction.sequence( [moveUp, moveDown, moveUp, moveDown, moveUp, moveDown, fadeOut])
+        case .fadeOut:
+            duration = 0.5
+            
+            animationGroup = SKAction.group([SKAction.fadeOut(withDuration: duration), SKAction.scale(to: 1.2, duration: duration)])
         case .normal:
             duration = 0.1
             
@@ -123,8 +127,8 @@ extension AnimationManager { //Torus
         }
         
         torus.sprite.run(animationGroup) {
+            torus.die(calledBy: "Kill - \(calledBy)")
             completion()
-            torus.die()
         }
         
         return duration
@@ -166,7 +170,7 @@ extension AnimationManager { //Torus
         
         torus.sprite.run(recruitGroup) {
             let torusCopy = torus
-            torus.die()
+            torus.die(calledBy: "Recruit")
             guard let oppositeTeam = torus.team.teamNumber == .one ? manager.team2 : manager.team1 else { fatalError("AnimationManager  - Recruit - Opposite Team Not Found")}
             let newTorus = oppositeTeam.addTorus(from: torusCopy)
             newTorus.sprite.run(fadeIn)
@@ -222,14 +226,14 @@ extension AnimationManager { //Torus
 
         newTorus.sprite.run(scrambleAnimationGroup) {
             if takeOrb {
-                guard let power = newTile.nextPower else { fatalError("TakeOrb - No power to assign to torus") }
+                guard let power = newTile.nextPower else { fatalError("AnimationManager - Scramble - TakeOrb - No power to assign to torus") }
                 newTile.removeOrb { newTorus.sprite.zPosition = SpriteLevel.torusOrScrollView.rawValue }
                 PowerManager.helper.assign(power: power, to: newTorus)
             }
         }
         
         return waitDuration
-    }
+    } 
     
     
     func takeOrb(torus: Torus, to newTile: Tile, completion: @escaping () -> ()) -> CGFloat {

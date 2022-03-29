@@ -52,10 +52,14 @@ class Team {
     }
     
     func addTorus(from torus: Torus, override boardPosition: TilePosition? = nil, keepNumber: Bool = false) -> Torus {
-        
+
         var boardPosition = boardPosition ?? torus.currentTile.boardPosition
         
-        guard let tile = gameManager.gameBoard.getTile(from: boardPosition), tile.occupiedBy == nil else { fatalError("Team - Add Torus - Cannot Add To Tile") }
+        guard let tile = gameManager.gameBoard.getTile(from: boardPosition) else { fatalError("Team - Add Torus - Cannot Get Tile") }
+                
+        if TestingManager.helper.verboseTiles { print("Team - Add Torus - Adding \(torus) to \(tile)") }
+        
+        guard tile.occupiedBy == nil else { fatalError("Team - Add Torus - Trying to add \(torus) but \(tile) is occupied by \(String(describing: tile.occupiedBy))") }
         
         let lastNumber = keepNumber ? torus.torusNumber : torii.last?.torusNumber ?? 1
         

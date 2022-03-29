@@ -9,7 +9,7 @@ import Foundation
 import SpriteKit
 
 enum DeathType {
-    case acidic, destroy, normal, tripwire
+    case acidic, destroy, fadeOut, normal, tripwire
 }
 
 enum MoveType {

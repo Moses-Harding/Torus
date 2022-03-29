@@ -67,6 +67,33 @@ class GameBoard: Entity {
         super.init(scene: scene, sprite: sprite, position: CGPoint(x: playScreen.boardFrame.midX, y: playScreen.boardFrame.midY), spriteLevel: .boardOrTray, name: "Game Board", size: playScreen.boardFrame.size)
     }
     
+    func printGameBoard() {
+        print(" --- GameBoard ---")
+        var gameBoardString = ""
+        
+        for row in 0 ..< scene.numberOfRows {
+            for column in 0 ..< scene.numberOfColumns {
+                
+                let tile = getTile(column: column, row: row)
+                var torusName = ""
+                if let torus = tile?.occupiedBy {
+                    torusName = "\(torus.team.teamNumber), \(torus.torusNumber.asTwoDigitNumber())"
+                } else {
+                    torusName = "       "
+                }
+                let torus = tile?.occupiedBy
+                gameBoardString += "[\(column),\(row) (\(torusName))]  -  "
+            }
+            gameBoardString += "\n\n"
+        }
+        
+        print(gameBoardString)
+        
+        print(" --- Torus Directory --- ")
+        manager.team1.torii.forEach { print($0.name, $0.currentTile)}
+        manager.team2.torii.forEach { print($0.name, $0.currentTile)}
+        print()
+    }
 }
  
 extension GameBoard { //Setup functions

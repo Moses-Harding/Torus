@@ -15,6 +15,10 @@ class TestingManager {
     //
     var verbose = true
     
+    var verboseTiles = true
+    var verboseChanges = true
+    var verbosePowers = true
+    
     //Test Powers
     var testPowers = false
     var toriiStartWithPowers = true

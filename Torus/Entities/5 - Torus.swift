@@ -38,6 +38,8 @@ class Torus: Entity {
     
     var hasPowers: Bool { return !powers.isEmpty }
     
+    var verbose = true
+    
     //Sprite Names
     var baseName: String
     var selectedName: String
@@ -121,9 +123,9 @@ class Torus: Entity {
                 self.powerUp(with: PowerType(.kamikaze, .row))
                 self.powerUp(with: PowerType(.kamikaze, .column))
                 */
-                self.powerUp(with: PowerType(.scramble, .row))
+                //self.powerUp(with: PowerType(.scramble, .row))
                 self.powerUp(with: PowerType(.scramble, .column))
-                self.powerUp(with: PowerType(.scramble, .radius))
+                //self.powerUp(with: PowerType(.scramble, .radius))
                 self.powerUp(with: PowerType(.amplify))
             }
         }
@@ -174,9 +176,13 @@ extension Torus {
         currentTile.occupy(with: self)
     }
     
-    func die() {
+    func die(calledBy: String) {
         
-        currentTile.unoccupy()
+        if verbose { print("\(self.name) has died, called by \(calledBy)") }
+        
+        if currentTile.occupiedBy == self {
+            currentTile.unoccupy()
+        }
         removeFromParent()
         team.remove(torus: self)
         if self.name == manager.currentTeam.currentlySelected?.name {
@@ -197,7 +203,7 @@ extension Torus {
 
         if exceeds20 {
             manager.powerList.displayPowerConsole(message: .powerConsoleOverHeat)
-            AnimationManager.helper.kill(torus: self, deathType: .acidic) {}
+            AnimationManager.helper.kill(torus: self, deathType: .acidic, calledBy: "Learn - Overheat") {}
         }
         
         return exceeds20
@@ -213,7 +219,7 @@ extension Torus {
         
         if exceeds20 {
             manager.powerList.displayPowerConsole(message: .powerConsoleOverHeat)
-            AnimationManager.helper.kill(torus: self, deathType: .acidic) {}
+            AnimationManager.helper.kill(torus: self, deathType: .acidic, calledBy: "Power Up - Overheat") {}
         }
         return exceeds20
     }
@@ -267,6 +273,7 @@ extension Torus {
                 invisibleSprite = nil
                 wasEffective = true
             }
+            
         } else {
 
             if let inhibited = inhibitedSprite {

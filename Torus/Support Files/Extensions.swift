@@ -7,6 +7,17 @@
 
 import SpriteKit
 
+
+extension Array where Element: Equatable {
+    
+    mutating func appendIfUnique(_ item: Element) {
+        if !self.contains(where: { $0 == item }) {
+            self.append(item)
+        }
+    }
+}
+
+
 enum ScaleDirection {
     case width, height
 }
@@ -116,11 +127,12 @@ extension SKLabelNode {
     }
 }
 
-extension Array where Element: Equatable {
-    
-    mutating func appendIfUnique(_ item: Element) {
-        if !self.contains(where: { $0 == item }) {
-            self.append(item)
+extension Int {
+    func asTwoDigitNumber() -> String {
+        if self / 10 >= 1 {
+            return String(self)
+        } else {
+            return "0\(self)"
         }
     }
 }

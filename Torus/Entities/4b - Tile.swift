@@ -90,7 +90,7 @@ extension Tile { //Manipulation
     
     func populateOrb(decoding: Bool = false, nextPower: PowerType? = nil) {
         
-        print("Populating orb on \(self.boardPosition)")
+        if TestingManager.helper.verbose { print("Populating orb on \(self.boardPosition)") }
 
         hasOrb = true
         
