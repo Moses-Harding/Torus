@@ -1,6 +1,6 @@
 //
 //  AnimationManager.swift
-//  Triple Bomb
+//  Torus Neon
 //
 //  Created by Moses Harding on 11/15/21.
 //
@@ -12,6 +12,8 @@ class AnimationManager {
     static let helper = AnimationManager()
     
     var scene: GameScene!
+    
+    var timer: Timer?
     
     var isFirstTurn = true
 }
@@ -37,25 +39,25 @@ extension AnimationManager { //Torus
         return waitDuration
     }
     
-    func bomb(tile: Tile) {
+    func missile(tile: Tile) {
         
-        let bombSprite = SKSpriteNode(imageNamed: "Bomb")
-        bombSprite.size = tile.size.scaled(by: 0.95)
-        tile.sprite.addChild(bombSprite)
-        bombSprite.zPosition = tile.sprite.zPosition + 1
+        let missileSprite = SKSpriteNode(imageNamed: "Missile")
+        missileSprite.size = tile.size.scaled(by: 0.95)
+        tile.sprite.addChild(missileSprite)
+        missileSprite.zPosition = tile.sprite.zPosition + 1
         
         let shrink = SKAction.scale(to: 0.5, duration: 0.2)
         
         if let torus = tile.occupiedBy {
-            bombSprite.run(shrink) {
-                tile.bomb()
-                bombSprite.removeFromParent()
+            missileSprite.run(shrink) {
+                tile.missileStrike()
+                missileSprite.removeFromParent()
             }
-            self.kill(torus: torus, deathType: .acidic, calledBy: "Bomb") {}
+            self.kill(torus: torus, deathType: .disintegrate, calledBy: "Missile") {}
         } else {
-            bombSprite.run(shrink) {
-                tile.bomb()
-                bombSprite.removeFromParent()
+            missileSprite.run(shrink) {
+                tile.missileStrike()
+                missileSprite.removeFromParent()
             }
         }
     }
@@ -68,7 +70,7 @@ extension AnimationManager { //Torus
         var duration: CGFloat = 0
         
         switch deathType {
-        case .acidic:
+        case .disintegrate:
             let upDuration = CGFloat.random(in: 0.025 ... 0.075)
             let downDuration = CGFloat.random(in: 0.025 ... 0.075)
             let fadeDuration = 0.1
@@ -89,7 +91,7 @@ extension AnimationManager { //Torus
             let flashingSequence = SKAction.sequence( [flashIn, flashOut, flashIn, flashOut, flashIn, flashOut])
             
             animationGroup = SKAction.group([movingSequence, flashingSequence])
-        case .destroy:
+        case .obliterate:
             let upDuration = CGFloat.random(in: 0.025 ... 0.075)
             let downDuration = CGFloat.random(in: 0.025 ... 0.075)
             let fadeDuration = 0.1
@@ -109,7 +111,7 @@ extension AnimationManager { //Torus
             duration = 0.1
             
             animationGroup = SKAction.resize(toWidth: 0, height: 0, duration: 0.1)
-        case .tripwire:
+        case .snare:
             duration = 0.4
             
             let slowSpin = SKAction.rotate(byAngle: 4, duration: 0.5)
@@ -153,9 +155,9 @@ extension AnimationManager { //Torus
         return waitDuration
     }
     
-    func recruit(torus: Torus) -> CGFloat {
+    func defect(torus: Torus) -> CGFloat {
         
-        guard let manager = scene?.gameManager else { fatalError("AnimationManager - Recruit - GameManager Not Found") }
+        guard let manager = scene?.gameManager else { fatalError("AnimationManager - Defect - GameManager Not Found") }
         
         let fadeOut = SKAction.fadeAlpha(to: 0, duration: 0.5)
         
@@ -164,14 +166,14 @@ extension AnimationManager { //Torus
         
         let shake = SKAction.sequence([left, right, left, right, left, right, left, right])
         
-        let recruitGroup = SKAction.group([fadeOut, shake])
+        let defectGroup = SKAction.group([fadeOut, shake])
         
         let fadeIn = SKAction.fadeIn(withDuration: 0.1)
         
-        torus.sprite.run(recruitGroup) {
+        torus.sprite.run(defectGroup) {
             let torusCopy = torus
-            torus.die(calledBy: "Recruit")
-            guard let oppositeTeam = torus.team.teamNumber == .one ? manager.team2 : manager.team1 else { fatalError("AnimationManager  - Recruit - Opposite Team Not Found")}
+            torus.die(calledBy: "Defect")
+            guard let oppositeTeam = torus.team.teamNumber == .one ? manager.team2 : manager.team1 else { fatalError("AnimationManager  - Defect - Opposite Team Not Found") }
             let newTorus = oppositeTeam.addTorus(from: torusCopy)
             newTorus.sprite.run(fadeIn)
         }
@@ -181,7 +183,7 @@ extension AnimationManager { //Torus
     
     func relocate(torus: Torus, to newTile: Tile, absoluteDistance: Int, takeOrb: Bool = false, completion: @escaping () -> ()) -> CGFloat {
         
-        let waitDuration: CGFloat = CGFloat(absoluteDistance) * 0.75
+        let waitDuration: CGFloat = CGFloat(absoluteDistance) * 0.5
         
         let moveToAction = SKAction.move(to: torus.currentTile.boardPosition.getPoint(), duration: waitDuration)
         let grow = SKAction.scale(to: 1.5, duration: (waitDuration / 10))
@@ -230,6 +232,10 @@ extension AnimationManager { //Torus
                 newTile.removeOrb { newTorus.sprite.zPosition = SpriteLevel.torusOrScrollView.rawValue }
                 PowerManager.helper.assign(power: power, to: newTorus)
             }
+            if newTorus.activatedAttributes.isSnared {
+                self.kill(torus: newTorus, deathType: .snare, calledBy: "Scramble - Snare", completion: {} )
+                waitDuration = 1
+            }
         }
         
         return waitDuration
@@ -261,7 +267,40 @@ extension AnimationManager { //Torus
         
         return totalDuration
     }
+    
+    func finalAnimation() {
+
+        timer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true) { [self] timer in
+            createColorSprite()
+        }
+    }
+    
+    func createColorSprite() {
+        let colors  = UIColor.convertSCSS("$flickr-pink: rgba(247, 37, 133, 1);$byzantine: rgba(181, 23, 158, 1);$purple: rgba(114, 9, 183, 1);$purple-2: rgba(86, 11, 173, 1);$trypan-blue: rgba(72, 12, 168, 1);$trypan-blue-2: rgba(58, 12, 163, 1);$persian-blue: rgba(63, 55, 201, 1);$ultramarine-blue: rgba(67, 97, 238, 1);$dodger-blue: rgba(72, 149, 239, 1);$vivid-sky-blue: rgba(76, 201, 240, 1);")
+        let sprites = ["S1", "S2", "S3", "S4", "S5", "S6"]
+        
+        let spriteName = sprites.randomElement() ?? "S1"
+        let color = colors.randomElement() ?? UIColor.systemPink
+        let sprite = SKSpriteNode(imageNamed: spriteName)
+        sprite.color = color
+        sprite.colorBlendFactor = 1
+        
+        let randomX = CGFloat.random(in: 0 ... scene.frame.width)
+        
+        let randomPoint = CGPoint(x: randomX, y: -50)
+        sprite.position = randomPoint
+        sprite.size.scale(proportionateTo: .width, with: scene.frame.width / 3)
+        
+        scene.addChild(sprite)
+        
+        sprite.zPosition = scene.playScreen.buttonTray.backButton.zPosition - 1
+        
+        let move = SKAction.move(to: CGPoint(x: CGFloat.random(in: 0 ... scene.frame.width), y: scene.frame.height + sprite.size.height), duration: 4)
+        let rotate = SKAction.rotate(byAngle: CGFloat.random(in: 0 ... 5), duration: 4)
+        sprite.run(SKAction.group([move, rotate]))
+    }
 }
+
 
 extension AnimationManager { //Tile
     
@@ -287,7 +326,7 @@ extension AnimationManager { //Tile
 
 extension AnimationManager { //Powers
     
-    func climbTileAnimation(for torus: Torus) {
+    func weightlessAnimation(for torus: Torus) {
         let grow = SKAction.scale(to: 1.2, duration: 0.3)
         let shrink = SKAction.scale(to: 1, duration: 0.3)
         let group = SKAction.sequence([grow, shrink])

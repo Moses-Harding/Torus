@@ -1,6 +1,6 @@
 //
 //  GameViewController.swift
-//  Triple Bomb
+//  Torus Neon
 //
 //  Created by Moses Harding on 9/27/21.
 //
@@ -35,8 +35,8 @@ class GameViewController: UIViewController {
 
             view.ignoresSiblingOrder = true
             
-            view.showsFPS = true
-            view.showsNodeCount = true
+            view.showsFPS = false
+            view.showsNodeCount = false
         }
     }
     
@@ -44,12 +44,24 @@ class GameViewController: UIViewController {
         
         guard let view = self.view as? SKView, let gameScene = self.gameScene else { fatalError() }
         
+        guard let filter = CIFilter(name: "CIRippleTransition") else { fatalError() }
+        
+        //filter.setValue(view.frame.width, forKey: "inputWidth")
+        //filter.setValue(CIVector(x: view.frame.width, y: view.frame.height), forKey: "inputExtent")
+        //filter.setValue(5, forKey: "inputTime")
+        //filter.setDefaults()
+        //filter.setValue(5.0, forKey: "inputScale")
+        
+       
+        
+        let transition = SKTransition(ciFilter: filter, duration: 1)
+        
         switch currentScene {
         case .starting:
-            view.presentScene(gameScene)
+            view.presentScene(gameScene, transition: transition)
             currentScene = .main
         case .main:
-            view.presentScene(startingScene)
+            view.presentScene(startingScene, transition: transition)
             currentScene = .starting
         }
     }
@@ -70,6 +82,6 @@ class GameViewController: UIViewController {
         return true
     }
     
-    override func viewDidAppear(_ animated: Bool) { //Scene is set up after view appears so that the safe area is accurate
+    override func viewDidAppear(_ animated: Bool) {
     }
 }

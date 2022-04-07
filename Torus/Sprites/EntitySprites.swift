@@ -1,6 +1,6 @@
 //
 //  EntitySprites.swift
-//  Triple Bomb
+//  Torus Neon
 //
 //  Created by Moses Harding on 10/11/21.
 //
@@ -45,8 +45,8 @@ class TileSprite: EntitySprite {
         super.init(texture: texture, color: UIColor.clear, size: size)
     }
     
-    func acid() {
-        self.texture = SKTexture(imageNamed: TileAssets.acidTile.rawValue)
+    func disintegrate() {
+        self.texture = SKTexture(imageNamed: TileAssets.disintegrateTile.rawValue)
     }
     
     func changeHeight(to height: TileHeight) {
@@ -100,7 +100,11 @@ class GameBoardSprite: EntitySprite {
 
 class TraySprite: EntitySprite {
     
-    init(size: CGSize) {
+    var action: (()->())? = nil
+    
+    init(size: CGSize, action: (()->())? = nil) {
+        
+        self.action = action
         
         let texture = SKTexture(imageNamed: "Tray")
         super.init(texture: texture, color: UIColor.clear, size: size)
@@ -108,6 +112,12 @@ class TraySprite: EntitySprite {
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let action = action {
+            action()
+        }
     }
 }
 

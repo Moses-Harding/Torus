@@ -1,6 +1,6 @@
 //
 //  EntitySpriteModel.swift
-//  Triple Bomb
+//  Torus Neon
 //
 //  Created by Moses Harding on 10/12/21.
 //
@@ -74,8 +74,11 @@ class OverlaySprite: SKSpriteNode {
 class LabelSprite: SKLabelNode {
     
     var parentSprite: SKSpriteNode
+    var action: (()->())?
     
-    init(parentSprite: SKSpriteNode, fontName: String = "Courier-Bold", position: CGPoint? = nil, text: String? = nil, width: CGFloat? = nil) {
+    init(parentSprite: SKSpriteNode, fontName: String = "Courier-Bold", position: CGPoint? = nil, text: String? = nil, width: CGFloat? = nil, action: (()->())? = nil) {
+        
+        self.action = action
         
         self.parentSprite = parentSprite
         
@@ -109,19 +112,24 @@ class LabelSprite: SKLabelNode {
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        print(self.text as? String)
+        if let action = action {
+            action()
+        }
     }
 }
 
 class TrayItemSprite: SKSpriteNode {
     
     var parentSprite: OverlaySprite
+    var action: (()->())?
     
     var primaryTexture: SKTexture
     var secondaryTexture: SKTexture?
     var isPrimary = true
     
-    init(primaryTexture: SKTexture, secondaryTexture: SKTexture? = nil, color: UIColor, blend: Bool = false, size: CGSize, parentSprite: OverlaySprite) {
+    init(primaryTexture: SKTexture, secondaryTexture: SKTexture? = nil, color: UIColor, blend: Bool = false, size: CGSize, parentSprite: OverlaySprite, action: (()->())? = nil) {
+        
+        self.action = action
         
         self.parentSprite = parentSprite
         self.primaryTexture = primaryTexture
@@ -164,6 +172,12 @@ class TrayItemSprite: SKSpriteNode {
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if let action = action {
+            action()
+        }
     }
 }
 

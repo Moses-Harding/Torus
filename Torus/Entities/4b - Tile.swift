@@ -1,6 +1,6 @@
 //
 //  Tile.swift
-//  Triple Bomb
+//  Torus Neon
 //
 //  Created by Moses Harding on 9/27/21.
 //
@@ -33,7 +33,7 @@ final class Tile: Entity {
     }
     
     var normalTexture = TileAssets.l3.rawValue
-    var acidTexture = TileAssets.acidTile.rawValue
+    var disintegrateTexture = TileAssets.disintegrateTile.rawValue
     
     var moveSelectionOverlay: MoveSelectionOverlay?
     var orbOverlay: OrbOverlay? {
@@ -90,6 +90,8 @@ extension Tile { //Manipulation
     
     func populateOrb(decoding: Bool = false, nextPower: PowerType? = nil) {
         
+        guard status != .disintegrated else { return }
+        
         if TestingManager.helper.verbose { print("Populating orb on \(self.boardPosition)") }
 
         hasOrb = true
@@ -126,6 +128,8 @@ extension Tile { //Manipulation
     
     func invert() {
         
+        guard status != .disintegrated else { return }
+        
         var newHeight: TileHeight
         
         switch self.height {
@@ -147,6 +151,7 @@ extension Tile { //Manipulation
     func changeHeight(to newHeight: TileHeight) {
         
         guard newHeight != self.height else { return }
+        guard status != .disintegrated else { return }
         
         guard let tileSprite = self.sprite as? TileSprite else { fatalError("Cannot cast Tile's Sprite to TileSprite") }
         
@@ -164,32 +169,35 @@ extension Tile { //Manipulation
     }
     
     func changeStatus(to newStatus: TileStatus) {
-        if status == .acid {
-            self.acid()
+        if status == .disintegrated {
+            self.disintegrate()
         } else if status != .normal {
            print("STATUS NOT ACCOUNTED FOR")
         }
     }
     
-    func acid() {
+    func disintegrate() {
         
         guard let tileSprite = self.sprite as? TileSprite else { fatalError("Cannot cast Tile's Sprite to TileSprite") }
         
-        tileSprite.acid()
-        self.status = .acid
+        tileSprite.disintegrate()
+        self.status = .disintegrated
         
         if hasOrb {
             removeOrb {}
         }
     }
     
-    func snakeTunnel(teamToAvoid: TeamNumber) -> Torus? {
+    func burrow(teamToAvoid: TeamNumber) -> Torus? {
         
-        //print("SnakeTunnel for \(self)")
-        
-        guard self.status != .acid else { return nil }
+        guard self.status != .disintegrated else { return nil }
         
         changeHeight(to: TileHeight.l5)
+        
+        self.isValidForMovement(moveType: .attack)
+        self.sprite.run(SKAction.wait(forDuration: 0.75)) {
+            self.isInvalidForMovement()
+        }
         
         if occupiedBy?.team.teamNumber != teamToAvoid {
             return occupiedBy
@@ -198,13 +206,13 @@ extension Tile { //Manipulation
         }
     }
     
-    func bomb() {
+    func missileStrike() {
         
-        if height == .l1 {
-            acid()
-        } else {
-            lower()
-        }
+        guard status != .disintegrated else { return }
+        
+        height == .l1 ? disintegrate() : lower()
+        
+        if hasOrb { removeOrb() { } }
     }
 }
 
@@ -265,6 +273,9 @@ extension Tile { //Populate Tile Based Off Of Description
         changeHeight(to: description.height)
         if description.hasOrb {
             populateOrb(decoding: true, nextPower: description.nextPower)
+        }
+        if description.status == .disintegrated {
+            disintegrate()
         }
     }
 }

@@ -1,6 +1,6 @@
 //
 //  GameCenterHelper.swift
-//  Triple Bomb
+//  Torus Neon
 //
 //  Created by Moses Harding on 1/4/22.
 //
@@ -17,7 +17,6 @@ class GameCenterHelper: NSObject {
         guard let match = currentMatch else {
             return true
         }
-
         return match.currentParticipant?.player == GKLocalPlayer.local
     }
     
@@ -30,6 +29,7 @@ class GameCenterHelper: NSObject {
     var currentMatchmakerVC: GKTurnBasedMatchmakerViewController?
     var viewController: GameViewController?
     var scene: GameScene?
+    var startScene: StartingScene?
     
     static var isAuthenticated: Bool {
         return GKLocalPlayer.local.isAuthenticated
@@ -37,6 +37,9 @@ class GameCenterHelper: NSObject {
     
     var player: GKTurnBasedParticipant?
     var opponent: GKTurnBasedParticipant?
+    
+    var notificationTitle = "Torus Neon"
+    var notificationMessage = "It's your turn"
     
     override init() {
         super.init()
@@ -91,7 +94,7 @@ class GameCenterHelper: NSObject {
             
             print()
             print(model)
-
+            
             match.endTurn(
                 withNextParticipants: [opponent],
                 turnTimeout: GKExchangeTimeoutDefault,
@@ -123,16 +126,128 @@ class GameCenterHelper: NSObject {
             completion(GameCenterHelperError.matchNotFound)
             return
         }
-
-        match.currentParticipant?.matchOutcome = .won
+        
+        //var others = [GKTurnBasedParticipant]()
+        
+        
         match.participants.forEach { other in
             other.matchOutcome = .lost
+            //others.append(other)
+        }
+        match.currentParticipant?.matchOutcome = .won
+        
+        guard let data = match.matchData else { fatalError("GameCenterHelper - Quit - No data found for match") }
+        
+        //match.participantQuitInTurn(with: GKTurnBasedMatch.Outcome.quit, nextParticipants: others, turnTimeout: 0, match: data, completionHandler: completion)
+        
+        match.endMatchInTurn(withMatch: data, completionHandler: completion)
+        
+        /*
+        let completion = {         match.remove { e in
+            if let error = e {
+                print("Error deleting match - \(error)")
+            } else {
+                print("Match removed")
+            }
+        }
+            
+        }
+         */
+        
+        let completion = { print("Complete") }
+        
+        
+        scene?.gameOver(.won)
+    }
+    
+    func quit(completion: @escaping CompletionBlock) {
+        
+        guard let match = currentMatch else {
+            completion(GameCenterHelperError.matchNotFound)
+            return
         }
         
-        match.endMatchInTurn(
-            withMatch: match.matchData ?? Data(),
-            completionHandler: completion
-        )
+        var others = [GKTurnBasedParticipant]()
+        
+        match.currentParticipant?.matchOutcome = .lost
+        match.participants.forEach { other in
+            other.matchOutcome = .won
+            others.append(other)
+        }
+        
+        guard let data = match.matchData else { fatalError("GameCenterHelper - Quit - No data found for match") }
+        
+        match.participantQuitInTurn(with: GKTurnBasedMatch.Outcome.quit, nextParticipants: others, turnTimeout: 0, match: data, completionHandler: completion)
+        
+        /*
+        let completion = {         match.remove { e in
+            if let error = e {
+                print("Error deleting match - \(error)")
+            } else {
+                print("Match removed")
+            }
+        }
+            
+        }
+            */
+        
+        scene?.gameOver(.lost)
+    }
+    
+    func defeat(completion: @escaping CompletionBlock) {
+        
+        guard let match = currentMatch else {
+            completion(GameCenterHelperError.matchNotFound)
+            return
+        }
+        
+        //var others = [GKTurnBasedParticipant]()
+        
+       
+        match.participants.forEach { other in
+            other.matchOutcome = .won
+            //others.append(other)
+        }
+        match.currentParticipant?.matchOutcome = .lost
+        
+        guard let data = match.matchData else { fatalError("GameCenterHelper - Quit - No data found for match") }
+        
+        //match.participantQuitInTurn(with: GKTurnBasedMatch.Outcome.quit, nextParticipants: others, turnTimeout: 0, match: data, completionHandler: completion)
+        
+        match.endMatchInTurn(withMatch: data, completionHandler: completion)
+        
+        /*
+        let completion = {         match.remove { e in
+            if let error = e {
+                print("Error deleting match - \(error)")
+            } else {
+                print("Match removed")
+            }
+        }
+            
+        }
+            */
+        
+        scene?.gameOver(.lost)
+    }
+    
+    func rematch(completion: @escaping CompletionBlock) {
+        
+        guard let match = currentMatch else {
+            completion(GameCenterHelperError.matchNotFound)
+            return
+        }
+        
+        match.rematch() { match, error in
+            if let error = error {
+                print(error)
+            }
+            if let match = match {
+                self.scene?.backToStartScreen()
+                self.currentMatch = match
+                NotificationCenter.default.post(name: .presentGame, object: match)
+            }
+        }
     }
 }
 
@@ -151,8 +266,6 @@ extension GameCenterHelper: GKLocalPlayerListener {
     
     func player(_ player: GKPlayer, wantsToQuitMatch match: GKTurnBasedMatch) {
         
-        //print("Wants to quit match")
-        
         let activeOthers = match.participants.filter { other in
             return other.status == .active && other != player
         }
@@ -161,7 +274,7 @@ extension GameCenterHelper: GKLocalPlayerListener {
         activeOthers.forEach { $0.matchOutcome = .won }
         
         match.endMatchInTurn( withMatch: match.matchData ?? Data() )
- 
+        
         match.remove { e in
             if let error = e {
                 print("Error deleting match - \(error)")
@@ -174,8 +287,8 @@ extension GameCenterHelper: GKLocalPlayerListener {
     //Turn was taken and other player is notified
     func player(_ player: GKPlayer, receivedTurnEventFor match: GKTurnBasedMatch, didBecomeActive: Bool) {
         
-        //print("Received turn event")
-
+        
+        guard match.status != .ended else { return }
         //If matchmaker vc is active (i.e. if user just created a game) then dismiss the vc
         if let vc = currentMatchmakerVC {
             currentMatchmakerVC = nil
@@ -183,6 +296,7 @@ extension GameCenterHelper: GKLocalPlayerListener {
         }
         
         if didBecomeActive {
+            
             //The user tapped on notification banner and was not in the app
             self.currentMatch = match
             NotificationCenter.default.post(name: .presentGame, object: match)
@@ -191,10 +305,10 @@ extension GameCenterHelper: GKLocalPlayerListener {
             
             guard let scene = scene else { fatalError("Scene not passed to GameCenterHelper") }
             //The match that the user is currently playing is already on the screen
-            GKNotificationBanner.show(withTitle: "Time for your turn", message: "Time for your turn", completionHandler: {})
+            GKNotificationBanner.show(withTitle: notificationTitle, message: notificationMessage, completionHandler: {})
             
             match.loadMatchData { data, error in
-
+                
                 //Load or create a model if one does not exist
                 var model: GameModel
                 
@@ -231,12 +345,15 @@ extension GameCenterHelper: GKLocalPlayerListener {
                 scene.gameManager.beginTurn(matchAlreadyOpen: true)
             }
         } else {
-            print("Player had game open but not in the right match")
+            self.currentMatch = match
+            GKNotificationBanner.show(withTitle: notificationTitle, message: notificationMessage, completionHandler: {})
+            //NotificationCenter.default.post(name: .presentGame, object: match)
         }
     }
 }
 
 extension Notification.Name {
-    static let presentGame = Notification.Name(rawValue: "presentGame")
     static let authenticationChanged = Notification.Name(rawValue: "authenticationChanged")
+    static let canTakeTurn = Notification.Name(rawValue: "canTakeTurn")
+    static let presentGame = Notification.Name(rawValue: "presentGame")
 }

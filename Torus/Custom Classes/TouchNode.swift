@@ -1,6 +1,6 @@
 //
 //  TouchNode.swift
-//  Torus
+//  Torus Neon
 //
 //  Created by Moses Harding on 2/22/22.
 //
@@ -24,11 +24,7 @@ class TouchNode: SKNode {
     }
     
     
-    var isEnabled: Bool = true {
-        didSet {
-            alpha = isEnabled ? 1 : 0.5
-        }
-    }
+    var isEnabled: Bool = true
     
     override var isUserInteractionEnabled: Bool {
         get {
@@ -40,6 +36,7 @@ class TouchNode: SKNode {
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard isEnabled else { return }
         if let block = actionBlock, isEnabled {
             block()
         }
@@ -73,9 +70,28 @@ class ImageNode: TouchNode {
 
     var image: SKSpriteNode
     
-    init(_ imageNamed: String, actionBlock: ActionBlock? = nil) {
+    var primaryImage: String
+    var secondaryImage: String?
+    
+    override var isEnabled: Bool {
+        didSet {
+            guard let secondaryImage = secondaryImage else {
+                return
+            }
+            if isEnabled {
+                self.image.texture = SKTexture(imageNamed: primaryImage)
+            } else if !isEnabled {
+                self.image.texture = SKTexture(imageNamed: secondaryImage)
+            }
+        }
+    }
+    
+    init(_ imageNamed: String, secondaryImage: String? = nil, actionBlock: ActionBlock? = nil) {
         
-        image = SKSpriteNode(imageNamed: imageNamed)
+        self.primaryImage = imageNamed
+        self.secondaryImage = secondaryImage
+        
+        image = SKSpriteNode(imageNamed: primaryImage)
 
         super.init(actionBlock: actionBlock)
         

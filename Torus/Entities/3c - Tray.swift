@@ -1,6 +1,6 @@
 //
 //  2 - Tray.swift
-//  Triple Bomb
+//  Torus Neon
 //
 //  Created by Moses Harding on 10/12/21.
 //
@@ -21,6 +21,9 @@ class Tray: Entity {
     
     var redLabelBackground: TrayItemSprite!
     var blueLabelBackground: TrayItemSprite!
+    
+    var redLabelTouched = false
+    var blueLabelTouched = false
     
     var turnIndicator: OverlaySprite!
     
@@ -61,14 +64,26 @@ class Tray: Entity {
         let labelSize = CGSize(width: leftArea.size.height / 3, height: leftArea.size.height / 3)
         let labelY = leftArea.size.height / 4
         
-        redLabelBackground = TrayItemSprite(primaryTexture: SKTexture(imageNamed: BackgroundLabelAsset.redHighlighted.rawValue), secondaryTexture: SKTexture(imageNamed: BackgroundLabelAsset.redUnhighlighted.rawValue), color: UIColor.clear, size: labelSize, parentSprite: leftArea)
-        blueLabelBackground = TrayItemSprite(primaryTexture: SKTexture(imageNamed: BackgroundLabelAsset.blueUnhighlighted.rawValue), secondaryTexture: SKTexture(imageNamed: BackgroundLabelAsset.blueHighlighted.rawValue), color: UIColor.clear, size: labelSize, parentSprite: leftArea)
+        redLabelBackground = TrayItemSprite(primaryTexture: SKTexture(imageNamed: BackgroundLabelAsset.redHighlighted.rawValue), secondaryTexture: SKTexture(imageNamed: BackgroundLabelAsset.redUnhighlighted.rawValue), color: UIColor.clear, size: labelSize, parentSprite: leftArea) {
+            self.redLabelTouched = true
+            self.debugActivated()
+        }
+        blueLabelBackground = TrayItemSprite(primaryTexture: SKTexture(imageNamed: BackgroundLabelAsset.blueUnhighlighted.rawValue), secondaryTexture: SKTexture(imageNamed: BackgroundLabelAsset.blueHighlighted.rawValue), color: UIColor.clear, size: labelSize, parentSprite: leftArea){
+            self.blueLabelTouched = true
+            self.debugActivated()
+        }
         
         redLabelBackground.position = CGPoint(x: 0, y: labelY)
         blueLabelBackground.position = CGPoint(x: 0, y: -labelY)
         
-        redLabel = LabelSprite(parentSprite: redLabelBackground)
-        blueLabel = LabelSprite(parentSprite: blueLabelBackground)
+        redLabel = LabelSprite(parentSprite: redLabelBackground) {
+            self.redLabelTouched = true
+            self.debugActivated()
+        }
+        blueLabel = LabelSprite(parentSprite: blueLabelBackground) {
+            self.blueLabelTouched = true
+            self.debugActivated()
+        }
         
         redLabel.fontSize = 24
         blueLabel.fontSize = 24
@@ -76,5 +91,56 @@ class Tray: Entity {
         // Text Area
         let textBoxSize = rightSize.scaled(by: 0.9)
         powerList = PowerList(scene: scene, position: self.position.move(.right, by: redLabelBackground.size.width), size: textBoxSize)
+    }
+    
+    func resetTouches() {
+        redLabelTouched = false
+        blueLabelTouched = false
+    }
+    
+    func debugActivated() {
+        print("Activate debug")
+        print(redLabelTouched, blueLabelTouched)
+        if redLabelTouched && blueLabelTouched {
+            if let tile = manager.lastTile {
+                var description = ""
+                description += "Tile - " + tile.boardPosition.name
+                description += " Status - " + tile.status.rawValue
+                let tileNode = TextNode(description, size: self.sprite.size)
+                tileNode.zPosition = SpriteLevel.label.rawValue
+                tileNode.position = CGPoint(x: 10, y: 50)
+                tileNode.label.numberOfLines = 0
+                tileNode.label.lineBreakMode = .byWordWrapping
+                tileNode.label.preferredMaxLayoutWidth = self.sprite.size.width
+                tileNode.label.fontName = "Courier - Bold"
+                scene.addChild(tileNode)
+                
+                scene.run(SKAction.wait(forDuration: 2)) {
+                    tileNode.removeFromParent()
+                }
+            }
+            
+            if let torus = manager.lastTorus {
+                
+                var description = ""
+                description += torus.name + "\n"
+                description += torus.powers.description + "\n"
+                description += torus.activatedAttributes.description
+                
+                print(description)
+                let torusNode = TextNode(description, size: self.sprite.size)
+                torusNode.zPosition = SpriteLevel.label.rawValue
+                torusNode.position = CGPoint(x: 10, y: scene.size.height / 2)
+                torusNode.label.numberOfLines = 0
+                torusNode.label.lineBreakMode = .byWordWrapping
+                torusNode.label.preferredMaxLayoutWidth = self.sprite.size.width
+                torusNode.label.fontName = "Courier - Bold"
+                scene.addChild(torusNode)
+                
+                scene.run(SKAction.wait(forDuration: 2)) {
+                    torusNode.removeFromParent()
+                }
+            }
+        }
     }
 }

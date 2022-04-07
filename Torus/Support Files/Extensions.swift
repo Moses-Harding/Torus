@@ -1,6 +1,6 @@
 //
 //  Extensions.swift
-//  Triple Bomb
+//  Torus Neon
 //
 //  Created by Moses Harding on 11/15/21.
 //
@@ -114,7 +114,7 @@ extension Bool {
 
 
 extension SKLabelNode {
-    func adjustLabelFontSizeToFitRect(rect:CGRect) {
+    func adjustLabelFontSizeToFitRect(rect: CGRect) {
         
         // Determine the font scaling factor that should let the label text fit in the given rectangle.
         let scalingFactor = min(rect.width / self.frame.width, rect.height / self.frame.height)
@@ -134,5 +134,34 @@ extension Int {
         } else {
             return "0\(self)"
         }
+    }
+}
+
+extension UIColor {
+    
+    static func convertSCSS(_ string: String) -> [UIColor] {
+        
+        var colors = [UIColor]()
+        
+        let lines = string.split(separator: ";")
+        
+        for line in lines {
+            var colorNumbers = [CGFloat]()
+            let second = line.split(separator: "(")[1]
+            let secondItems = second.split(separator: ",")
+            for eachItem in secondItems {
+                var number = eachItem
+                number.removeAll { $0 == ")" || $0 == " " }
+                colorNumbers.append(CGFloat(Int(number) ?? 0))
+            }
+            let color = UIColor(red: colorNumbers[0] / 256, green: colorNumbers[1] / 256, blue: colorNumbers[2] / 256, alpha: colorNumbers[3])
+            colors.append(color)
+        }
+        
+        return colors
+    }
+
+    static func rgba(_ red: Int, _ green: Int, _ blue: Int, _ alpha: Int) -> UIColor {
+        return UIColor(red: CGFloat(red) / 256, green: CGFloat(green) / 256, blue: CGFloat(blue) / 256, alpha: CGFloat(alpha))
     }
 }

@@ -1,6 +1,6 @@
 //
 //  Entity.swift
-//  Triple Bomb
+//  Torus Neon
 //
 //  Created by Moses Harding on 9/27/21.
 //

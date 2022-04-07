@@ -1,6 +1,6 @@
 //
 //  Power Struct.swift
-//  Triple Bomb
+//  Torus Neon
 //
 //  Created by Moses Harding on 10/13/21.
 //
@@ -11,7 +11,7 @@ struct ActivatedAttributes: Codable {
     
     //GOOD
     var hasAmplify = false
-    var hasClimbTile = false
+    var hasWeightless = false
     var hasFlatToSphere = false
     var hasInvisibility = false
     var hasJumpProof = false
@@ -20,7 +20,7 @@ struct ActivatedAttributes: Codable {
     //BAD
     var isInhibited = false
     var isSpyTapped = false
-    var isTripWired = false
+    var isSnared = false
 }
 
 extension ActivatedAttributes: CustomStringConvertible {
@@ -29,8 +29,8 @@ extension ActivatedAttributes: CustomStringConvertible {
         if hasAmplify {
             description += ": Amplified"
         }
-        if hasClimbTile {
-            description += ": ClimbTile"
+        if hasWeightless {
+            description += ": Weightless"
         }
         if hasFlatToSphere {
             description += ": FlatToSphere"
@@ -51,8 +51,8 @@ extension ActivatedAttributes: CustomStringConvertible {
         if isSpyTapped {
             description += ": SpyTapped"
         }
-        if isTripWired {
-            description += ": Tripwired"
+        if isSnared {
+            description += ": Snared"
         }
 
         return description

@@ -1,6 +1,6 @@
 //
 //  Enums.swift
-//  Triple Bomb
+//  Torus Neon
 //
 //  Created by Moses Harding on 10/12/21.
 //
@@ -9,7 +9,7 @@ import Foundation
 import SpriteKit
 
 enum DeathType {
-    case acidic, destroy, fadeOut, normal, tripwire
+    case disintegrate, obliterate, fadeOut, normal, snare
 }
 
 enum MoveType {
@@ -29,8 +29,8 @@ enum TorusOverlaySpriteLevel: CGFloat {
     case moveDiagonal
     case amplify
     case jumpProof
-    case climbTile
-    case tripwire
+    case weightless
+    case snare
 }
 
 enum TeamColor {
@@ -41,8 +41,8 @@ enum TileHeight: Int, Codable {
     case l1 = -2, l2, l3, l4, l5
 }
 
-enum TileStatus: Codable {
-    case normal, acid, base
+enum TileStatus: String, Codable {
+    case normal, disintegrated, base
 }
 
 enum TorusColor: Codable {

@@ -1,6 +1,6 @@
 //
 //  AuthenticationScene.swift
-//  Torus
+//  Torus Neon
 //
 //  Created by Moses Harding on 2/22/22.
 //
@@ -33,14 +33,18 @@ class StartingScene: SKScene {
         GameCenterHelper.helper.currentMatch = nil
         viewController!.gameScene = nil
         
+        if let timer = AnimationManager.helper.timer {
+            timer.invalidate()
+        }
+        
         if firstLoad {
+            
+            GameCenterHelper.helper.startScene = self
             
             let frame = view.safeAreaLayoutGuide.layoutFrame
             
             var buttonHeight: CGFloat
             var buttonWidth: CGFloat
-            
-            
             
             logo = ImageNode("Torus Neon Logo V2.png") { print("Logo") }
             buttonWidth = frame.width * 0.9
@@ -59,12 +63,8 @@ class StartingScene: SKScene {
             startButton.zPosition = 2
             self.addChild(startButton)
             
-            background = ImageNode("Background Design V2.png") { print("Logo") }
-            //buttonWidth = frame.width
+            background = ImageNode("Background Design V3.png") { print("Logo") }
             background.image.size.scale(proportionateTo: .width, with: frame.width)
-            //background.image.size = frame.size
-            //logo.image.size = CGSize(width: buttonWidth, height: buttonHeight)
-            //background.image.size = CGSize(width: frame.width, height: frame.height * 0.9)
             background.position = CGPoint(x: frame.midX, y: frame.midY)
             background.zPosition = 1
             self.addChild(background)
@@ -132,7 +132,6 @@ class StartingScene: SKScene {
             
             if let data = data {
                 do {
-                    
                     model = try JSONDecoder().decode(GameModel.self, from: data)
                 } catch {
                     model = GameModel()

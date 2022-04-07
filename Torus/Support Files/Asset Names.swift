@@ -1,6 +1,6 @@
 //
 //  Asset Names.swift
-//  Triple Bomb
+//  Torus Neon
 //
 //  Created by Moses Harding on 10/25/21.
 //
@@ -36,21 +36,23 @@ public enum OrbAsset: String, CaseIterable {
 
 public enum PowerConsoleAssets: String {
     case powerConsole = "PowerConsole V2"
-    case powerConsoleFilled = "PowerConsole - Filled"
-    case powerConsoleNoEffect = "PowerConsole - No Effect"
+    case filled = "PowerConsole - Filled"
+    case noEffect = "PowerConsole - No Effect"
     case powerConsoleOverHeat = "PowerConsole - OverHeat"
+    case opponentTurn = "PowerConsole - Opponent Turn In Progress"
+    case onlyPink = "PowerConsole - Can Only Select Pink"
+    case onlyBlue = "PowerConsole - Can Only Select Blue"
 }
 
 public enum TorusOverlayAssets: String {
     case amplify = "Amplify"
-    case climbTile = "Climb Tile"
+    case weightless = "Weightless"
     case flatToSphere = "Flat To Sphere"
     case inhibited = "Inhibited"
     case invisible = "Invisible"
     case jumpProof = "Jump Proof"
     case moveDiagonal = "Move Diagonal"
-    case tripwireBlue = "Tripwire - Blue"
-    case tripwireRed = "Tripwire"
+    case snare = "Snare"
 }
 
 public enum TileAssets: String {
@@ -61,5 +63,20 @@ public enum TileAssets: String {
     case l5 = "Tile - L5"
     case selectedTile = "Tile - Selected"
     case attackTile = "Tile - Attack"
-    case acidTile = "Tile - Acid"
+    case disintegrateTile = "Tile - Disintegrate"
+}
+
+public enum ButtonAssets: String {
+    case back = "Back Button"
+    case endTurn = "End Turn Button"
+    case endTurnDisabled = "End Turn Button - Disabled"
+    case forfeit = "Forfeit Button"
+    case rematch = "Rematch Button"
+    case quit = "Quit Button"
+}
+
+public enum LabelAssets: String {
+    case gameStart = "Game Start Label"
+    case defeat = "Defeat Label V2"
+    case victory = "Victory Label V2"
 }

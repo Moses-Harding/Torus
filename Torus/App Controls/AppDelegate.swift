@@ -1,6 +1,6 @@
 //
 //  AppDelegate.swift
-//  Torus
+//  Torus Neon
 //
 //  Created by Moses Harding on 1/8/22.
 //

@@ -1,6 +1,6 @@
 //
 //  Torus.swift
-//  Triple Bomb
+//  Torus Neon
 //
 //  Created by Moses Harding on 9/27/21.
 //
@@ -22,11 +22,8 @@ class Torus: Entity {
         didSet {
             if powers.isEmpty {
                 sprite.texture = SKTexture(imageNamed: baseName)
-                //if !ChangeDecoder.helper.currentlyDecoding { ChangeManager.register.removePowers(for: self) }
             } else {
                 sprite.texture = SKTexture(imageNamed: poweredUpName)
-                //if oldValue == powers { print("No Change") }
-                //if !ChangeDecoder.helper.currentlyDecoding { ChangeManager.register.addPower(for: self) }
             }
         }
     }
@@ -45,18 +42,14 @@ class Torus: Entity {
     var selectedName: String
     var poweredUpName: String
     var poweredUpSelectedName: String
-    var tripwireName: String
     
     //Status indicators
     var amplifySprite: OverlaySprite?
-    var climbTileSprite: OverlaySprite?
-    var flatToSphereSprite: OverlaySprite?
-    var invisibleSprite: OverlaySprite?
+    var weightlessSprite: OverlaySprite?
     var jumpProofSprite: OverlaySprite?
     var moveDiagonalSprite: OverlaySprite?
-
     var inhibitedSprite: OverlaySprite?
-    var tripwireSprite: OverlaySprite?
+    var snareSprite: OverlaySprite?
     
     init(scene: GameScene, number: Int, team: Team, color: TorusColor, currentTile: Tile, size: CGSize) {
         
@@ -71,63 +64,57 @@ class Torus: Entity {
             selectedName = TorusAsset.blueSelected.rawValue
             poweredUpName = TorusAsset.bluePoweredUp.rawValue
             poweredUpSelectedName = TorusAsset.bluePoweredUpSelected.rawValue
-            
-            tripwireName = TorusOverlayAssets.tripwireBlue.rawValue
         default:
             baseName = TorusAsset.redBase.rawValue
             selectedName = TorusAsset.redSelected.rawValue
             poweredUpName = TorusAsset.redPoweredUp.rawValue
             poweredUpSelectedName = TorusAsset.redPoweredUpSelected.rawValue
-            
-            tripwireName = TorusOverlayAssets.tripwireRed.rawValue
         }
         
         let sprite = TorusSprite(textureName: baseName, size: CGSize(width: size.width, height: size.width))
-        
-        sprite.position = currentTile.boardPosition.getPoint()
-        
         let name = "Torus - \(team.teamNumber) - \(torusNumber)"
         
         super.init(scene: scene, sprite: sprite, position: currentTile.boardPosition.point, spriteLevel: .torusOrScrollView, name: name, size: size)
         
         self.currentTile.occupy(with: self)
         
+        sprite.position = currentTile.boardPosition.getPoint()
+        
         //TESTING
         if TestingManager.helper.toriiStartWithPowers {
             
+            /*
             if torusNumber % 2 == 0 { return }
             for _ in 0 ... Int.random(in: 0 ... 3) {
-                
-                //self.powerUp(with: PowerType.random())
-                //self.powerUp(with: PowerType(.jumpProof))
-                //self.powerUp(with: PowerType(.tripwire, .column))
-                //self.powerUp(with: PowerType(.purify, .column))
-                //self.powerUp(with: PowerType(.relocate))
-                //self.powerUp(with: PowerType(.doublePowers))
-                //self.powerUp(with: PowerType(.recruit, .column))
-                //self.powerUp(with: PowerType(.swap, .column))
-                //self.powerUp(with: PowerType(.learn, .column))
-                //self.powerUp(with: PowerType(.snakeTunnelling, .column))
-                //self.powerUp(with: PowerType(.wall, .column))
-                //self.powerUp(with: PowerType(.trench, .column))
-                //self.powerUp(with: PowerType(.raiseTile))
-                //self.powerUp(with: PowerType(.lowerTile))
-                
-                /*
-                self.powerUp(with: PowerType(.moat, .column))
-                self.powerUp(with: PowerType(.moat, .row))
-                self.powerUp(with: PowerType(.invert, .row))
-                self.powerUp(with: PowerType(.invert, .column))
-                self.powerUp(with: PowerType(.respawnOrbs))
-                self.powerUp(with: PowerType(.beneficiary))
-                self.powerUp(with: PowerType(.kamikaze, .row))
-                self.powerUp(with: PowerType(.kamikaze, .column))
-                */
-                //self.powerUp(with: PowerType(.scramble, .row))
+                self.powerUp(with: PowerType(.scramble, .row))
                 self.powerUp(with: PowerType(.scramble, .column))
-                //self.powerUp(with: PowerType(.scramble, .radius))
+                self.powerUp(with: PowerType(.scramble, .radius))
                 self.powerUp(with: PowerType(.amplify))
+                //self.powerUp(with: PowerType(.defect, .column))
+                self.powerUp(with: PowerType(.respawnOrbs))
+                //self.powerUp(with: .moveDiagonal)
+                //self.powerUp(with: .missileStrike)
+                //self.powerUp(with: .disintegrate, .column)
+                self.powerUp(with: .relocate)
+                self.powerUp(with: .burrow)
+                self.powerUp(with: .wall, .column)
+                self.powerUp(with: .wall, .radius)
+                self.powerUp(with: .defect, .column)
+                self.powerUp(with: .trench, .column)
             }
+            //for _ in 0 ... Int.random(in: 0 ... 3) { self.powerUp(with: PowerType.random()) }
+            //for _ in 0 ... Int.random(in: 0 ... 3) { self.powerUp(with: PowerType.random()) }
+            //for _ in 0 ... Int.random(in: 0 ... 3) { self.powerUp(with: PowerType.random()) }
+             */
+            /*
+            let allPowers = Power.allCases
+            for power in allPowers {
+                self.powerUp(with: power, .column)
+                self.powerUp(with: power, .row)
+            }
+             */
+            self.amplify()
+            self.powerUp(with: .defect, .column)
         }
     }
     
@@ -143,8 +130,6 @@ class Torus: Entity {
         
         manager.select(self, triggeredBy: "Torus was touched")
         manager.select(self.currentTile)
-        
-        print("Touched torus \(self) at \(currentTile.boardPosition)")
     }
     
 }
@@ -202,13 +187,14 @@ extension Torus {
         }
 
         if exceeds20 {
-            manager.powerList.displayPowerConsole(message: .powerConsoleOverHeat)
-            AnimationManager.helper.kill(torus: self, deathType: .acidic, calledBy: "Learn - Overheat") {}
+            manager.powerList.displayPowerConsole(message: .powerConsoleOverHeat, calledBy: "Torus - Learn - OverHeat")
+            AnimationManager.helper.kill(torus: self, deathType: .disintegrate, calledBy: "Learn - Overheat") {}
         }
         
         return exceeds20
     }
     
+    @discardableResult
     func powerUp(with power: PowerType) -> Bool {
         
         powers[power] = (powers[power] ?? 0) + 1
@@ -218,8 +204,26 @@ extension Torus {
         powers.forEach { if $0.value > 20 { exceeds20 = true} }
         
         if exceeds20 {
-            manager.powerList.displayPowerConsole(message: .powerConsoleOverHeat)
-            AnimationManager.helper.kill(torus: self, deathType: .acidic, calledBy: "Power Up - Overheat") {}
+            manager.powerList.displayPowerConsole(message: .powerConsoleOverHeat, calledBy: "Torus - PowerUp - OverHeat")
+            AnimationManager.helper.kill(torus: self, deathType: .disintegrate, calledBy: "Power Up - Overheat") {}
+        }
+        return exceeds20
+    }
+
+    @discardableResult
+    func powerUp(with powerType: Power, _ direction: PowerDirection? = nil) -> Bool {
+        
+        let power = PowerType(powerType, direction)
+        
+        powers[power] = (powers[power] ?? 0) + 1
+        
+        var exceeds20 = false
+        
+        powers.forEach { if $0.value > 20 { exceeds20 = true} }
+        
+        if exceeds20 {
+            manager.powerList.displayPowerConsole(message: .powerConsoleOverHeat, calledBy: "Torus - Power Up - OverHeat")
+            AnimationManager.helper.kill(torus: self, deathType: .disintegrate, calledBy: "Power Up - Overheat") {}
         }
         return exceeds20
     }
@@ -239,10 +243,10 @@ extension Torus {
                 wasEffective = true
             }
 
-            if let climbTile = climbTileSprite {
-                activatedAttributes.hasClimbTile = false
-                climbTile.removeFromParent()
-                climbTileSprite = nil
+            if let weightless = weightlessSprite {
+                activatedAttributes.hasWeightless = false
+                weightless.removeFromParent()
+                weightlessSprite = nil
                 wasEffective = true
             }
             
@@ -259,7 +263,7 @@ extension Torus {
                 moveDiagonalSprite = nil
                 wasEffective = true
             }
-            
+            /*
             if let flatToSphere = flatToSphereSprite {
                 activatedAttributes.hasFlatToSphere = false
                 flatToSphere.removeFromParent()
@@ -273,6 +277,7 @@ extension Torus {
                 invisibleSprite = nil
                 wasEffective = true
             }
+             */
             
         } else {
 
@@ -283,10 +288,10 @@ extension Torus {
                 wasEffective = true
             }
             
-            if let tripWire = tripwireSprite {
-                activatedAttributes.isTripWired = false
-                tripWire.removeFromParent()
-                tripwireSprite = nil
+            if let snare = snareSprite {
+                activatedAttributes.isSnared = false
+                snare.removeFromParent()
+                snareSprite = nil
                 wasEffective = true
             }
         }
@@ -313,17 +318,17 @@ extension Torus { // Change Status
         amplifySprite?.zPosition = TorusOverlaySpriteLevel.amplify.rawValue
     }
     
-    func climbTile() {
+    func weightless() {
         
         //SPECIAL
-        AnimationManager.helper.climbTileAnimation(for: self)
+        AnimationManager.helper.weightlessAnimation(for: self)
         
-        activatedAttributes.hasClimbTile = true
+        activatedAttributes.hasWeightless = true
         
-        let texture = SKTexture(imageNamed: TorusOverlayAssets.climbTile.rawValue)
+        let texture = SKTexture(imageNamed: TorusOverlayAssets.weightless.rawValue)
         
-        climbTileSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
-        climbTileSprite?.zPosition = TorusOverlaySpriteLevel.climbTile.rawValue
+        weightlessSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
+        weightlessSprite?.zPosition = TorusOverlaySpriteLevel.weightless.rawValue
     }
     
     func flatToSphere() {
@@ -332,7 +337,7 @@ extension Torus { // Change Status
         
         let texture = SKTexture(imageNamed: TorusOverlayAssets.flatToSphere.rawValue)
         
-        flatToSphereSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
+        //flatToSphereSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
         
     }
 
@@ -342,7 +347,7 @@ extension Torus { // Change Status
         
         let texture = SKTexture(imageNamed: TorusOverlayAssets.invisible.rawValue)
         
-        invisibleSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
+        //invisibleSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
     }
     
     func jumpProof() {
@@ -376,14 +381,14 @@ extension Torus { // Change Status
         inhibitedSprite?.zPosition = TorusOverlaySpriteLevel.inhibited.rawValue
     }
     
-    func tripwired() {
+    func snared() {
         
-        activatedAttributes.isTripWired = true
+        activatedAttributes.isSnared = true
         
-        let texture = SKTexture(imageNamed: tripwireName)
+        let texture = SKTexture(imageNamed: TorusOverlayAssets.snare.rawValue)
         
-        tripwireSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
-        tripwireSprite?.zPosition = TorusOverlaySpriteLevel.tripwire.rawValue
+        snareSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
+        snareSprite?.zPosition = TorusOverlaySpriteLevel.snare.rawValue
     }
 }
 
@@ -398,8 +403,8 @@ extension Torus { //Load Description
         if attributes.hasAmplify {
             amplify()
         }
-        if attributes.hasClimbTile {
-            climbTile()
+        if attributes.hasWeightless {
+            weightless()
         }
         if attributes.hasFlatToSphere {
             //
@@ -419,8 +424,8 @@ extension Torus { //Load Description
         if attributes.isSpyTapped {
             //
         }
-        if attributes.isTripWired {
-            tripwired()
+        if attributes.isSnared {
+            snared()
         }
     }
     

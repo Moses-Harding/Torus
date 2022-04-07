@@ -1,6 +1,6 @@
 //
 //  MovementManager.swift
-//  Triple Bomb
+//  Torus Neon
 //
 //  Created by Moses Harding on 10/13/21.
 //
@@ -35,7 +35,7 @@ class MovementManager {
     
     private func heightIsValid(from torus: Torus, to tile: Tile) -> Bool {
         
-        return torus.activatedAttributes.hasClimbTile || (torus.currentTile.height.rawValue - tile.height.rawValue >= -1)
+        return torus.activatedAttributes.hasWeightless || (torus.currentTile.height.rawValue - tile.height.rawValue >= -1)
     }
     
     private func moveType(for torus: Torus, to tile: Tile) -> MoveType {
@@ -47,7 +47,7 @@ class MovementManager {
     
     private func statusIsValid(for tile: Tile) -> Bool {
         
-        return tile.status == .acid ? false : true
+        return tile.status == .disintegrated ? false : true
     }
 }
 
@@ -105,7 +105,6 @@ extension MovementManager { //Torus Movement
             
             print("Iterating through assignment list")
             for tileAssignment in tileAssignments {
-                //print("\n\(tileAssignment.0), which is currently at \(tileAssignment.0.currentTile), will move to \(tileAssignment.1).\n\(tileAssignment.0.currentTile)'s current occupant is \(String(describing: tileAssignment.0.currentTile.occupiedBy)), and \(tileAssignment.1)'s current occupant is \(tileAssignment.1.occupiedBy)")
                 waitDuration = AnimationManager.helper.scramble(torus: tileAssignment.0, to: tileAssignment.1, takeOrb: tileAssignment.1.hasOrb)
             }
         }
@@ -138,7 +137,7 @@ extension MovementManager { //Torus Movement
         firstTorus.sprite.run(SKAction.wait(forDuration: fadeDuration)) {
             while torusList.count > 0 && tileList.count > 0 {
                 guard let tile = tileList.popLast() else { fatalError("PowerManager - Scramble - No Tile Found") }
-                if tile.status != .acid {
+                if tile.status != .disintegrated {
                     guard let currentTorus = torusList.popLast() else { fatalError("PowerManager - Scramble - No Torus Found")  }
                     tileAssignments.append((currentTorus, tile))
                     currentTorus.die(calledBy: "Scramble")
@@ -169,15 +168,14 @@ extension MovementManager { //Torus Movement
         let opponent: Torus? = newTile.occupiedBy
         
         
-        let absoluteDistance = abs((torus.currentTile.boardPosition.column - newTile.boardPosition.column) + (torus.currentTile.boardPosition.row - newTile.boardPosition.row))
+        let absoluteDistance = abs((torus.currentTile.boardPosition.column - newTile.boardPosition.column)) + abs((torus.currentTile.boardPosition.row - newTile.boardPosition.row))
         
-        let oldTile = torus.currentTile
-        
-        print("Movement Start - \(torus), Old Tile: \(oldTile), New Tile: \(newTile), MovementType: \(movementType)")
+
+        //print("Movement Start - \(torus), Old Tile: \(oldTile), New Tile: \(newTile), MovementType: \(movementType)")
         
         torus.changeOccupancy(to: newTile)
         
-        let finalAnimation = torus.activatedAttributes.isTripWired ? { AnimationManager.helper.kill(torus: torus, deathType: .tripwire, calledBy: "AnimationManager - Move", completion: completion) } : completion
+        let finalAnimation = torus.activatedAttributes.isSnared ? { AnimationManager.helper.kill(torus: torus, deathType: .snare, calledBy: "AnimationManager - Move", completion: completion) } : completion
         
         if movementType == .attack {
             waitDuration = AnimationManager.helper.attack(torus: torus, to: newTile, against: opponent!) { finalAnimation() }
@@ -191,7 +189,7 @@ extension MovementManager { //Torus Movement
         
         torus.deselect()
         
-        if !decoding {
+        if !decoding && !relocating {
             ChangeManager.register.move(torus, to: newTile)
         }
         

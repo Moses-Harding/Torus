@@ -1,6 +1,6 @@
 //
 //  GameModal.swift
-//  Torus
+//  Torus Neon
 //
 //  Created by Moses Harding on 2/23/22.
 //
@@ -31,16 +31,23 @@ struct GameModel: Codable {
     var tiles = [TileDescription]()
     var team1Torii = [TorusDescription]()
     var team2Torii = [TorusDescription]()
+    var team1LastNumber = 0
+    var team2LastNumber = 0
+    
+    var postTurnTiles = [TileDescription]()
+    var postTurnTeam1Torii = [TorusDescription]()
+    var postTurnTeam2Torii = [TorusDescription]()
+    var postTurnTeam1LastNumber = 0
+    var postTurnTeam2LastNumber = 0
     
     //Changes
-    var tileChanges = [TileChange]()
-    var torusChanges = [TorusChange]()
+    var changes = [Change]()
     
     mutating func savePreTurnData(from scene: GameScene) {
         
-        print("Saving Pre-Turn Data")
+        print("\nSaving Pre-Turn Data")
         
-        guard let manager = scene.gameManager else { fatalError("Save PreTurnData - Game manager not passed") }
+        guard let manager = scene.gameManager else { fatalError("GameModel - SavePreTurnData - Game manager not passed") }
         
         tiles = []
         team1Torii = []
@@ -60,11 +67,43 @@ struct GameModel: Codable {
             let torusDescription = TorusDescription(color: torus.torusColor, teamNumber: torus.team.teamNumber, torusNumber: torus.torusNumber, powers: torus.powers, attributes: torus.activatedAttributes, currentTile: torus.currentTile.boardPosition)
             team2Torii.append(torusDescription)
         }
+        
+        team1LastNumber = manager.team1.lastNumber
+        team2LastNumber = manager.team2.lastNumber
+    }
+    
+    mutating func savePostTurnData(from scene: GameScene) {
+        
+        print("\nSaving Post-Turn Data")
+        
+        guard let manager = scene.gameManager else { fatalError("GameModel - SavePreTurnData - Game manager not passed") }
+        
+        postTurnTiles = []
+        postTurnTeam1Torii = []
+        postTurnTeam2Torii = []
+        
+        for tile in manager.gameBoard.tiles {
+            let tileDescription = TileDescription(position: tile.boardPosition, height: tile.height, status: tile.status, hasOrb: tile.hasOrb, nextPower: tile.nextPower)
+            postTurnTiles.append(tileDescription)
+        }
+        
+        for torus in manager.team1.torii {
+            let torusDescription = TorusDescription(color: torus.torusColor, teamNumber: torus.team.teamNumber, torusNumber: torus.torusNumber, powers: torus.powers, attributes: torus.activatedAttributes, currentTile: torus.currentTile.boardPosition)
+            postTurnTeam1Torii.append(torusDescription)
+        }
+        
+        for torus in manager.team2.torii {
+            let torusDescription = TorusDescription(color: torus.torusColor, teamNumber: torus.team.teamNumber, torusNumber: torus.torusNumber, powers: torus.powers, attributes: torus.activatedAttributes, currentTile: torus.currentTile.boardPosition)
+            postTurnTeam2Torii.append(torusDescription)
+        }
+        
+        postTurnTeam1LastNumber = manager.team1.lastNumber
+        postTurnTeam2LastNumber = manager.team2.lastNumber
     }
     
     mutating func loadPreTurnData(to scene: GameScene) {
         
-        print("Loading Pre-Turn Data")
+        print("\nLoading Pre-Turn Data")
         
         guard let manager = scene.gameManager else { fatalError("Load PreTurnData - Game manager not passed") }
         
@@ -72,37 +111,52 @@ struct GameModel: Codable {
             guard let foundTile = manager.gameBoard.getTile(from: tile.position) else { fatalError("Load PreTurnData - Tile not found") }
             foundTile.loadDescription(tile)
         }
-        
+
         manager.team1.loadTeam(from: team1Torii)
         manager.team2.loadTeam(from: team2Torii)
+        manager.team1.lastNumber = team1LastNumber
+        manager.team2.lastNumber = team2LastNumber
+    }
+
+    
+    mutating func loadPostTurnData(to scene: GameScene) {
+        
+        print("\nLoading Post-Turn Data")
+
+        guard let manager = scene.gameManager else { fatalError("Load PreTurnData - Game manager not passed") }
+        
+        for tile in postTurnTiles {
+            guard let foundTile = manager.gameBoard.getTile(from: tile.position) else { fatalError("Load PreTurnData - Tile not found") }
+            foundTile.loadDescription(tile)
+        }
+        manager.team1.loadTeam(from: postTurnTeam1Torii)
+        manager.team2.loadTeam(from: postTurnTeam2Torii)
+        manager.team1.lastNumber = postTurnTeam1LastNumber
+        manager.team2.lastNumber = postTurnTeam2LastNumber
     }
     
     mutating func loadData(to scene: GameScene, matchAlreadyOpen: Bool) {
         
-        print("Loading Data")
+        print("\nLoading Data")
+        
+        print(self)
         
         guard let manager = scene.gameManager else { fatalError("Load Data - Game manager not passed") }
         
         manager.turnNumber = turnNumber
         manager.changeTeam(to: currentTeam)
-        
+
         if !matchAlreadyOpen { loadPreTurnData(to: scene) }
         
-        ChangeDecoder.helper.decode(tileChanges: tileChanges)
-        ChangeDecoder.helper.decode(torusChanges: torusChanges)
-        
-        print(tileChanges, torusChanges)
-        
-        savePreTurnData(from: scene)
-        
-        torusChanges = []
-        tileChanges = []
+        ChangeDecoder.helper.decode(changes) //NOTE: PRE TURN DATA SAVED AFTER THIS
+
+        changes = []
         ChangeManager.register.refresh()
     }
     
     mutating func saveData(from scene: GameScene) {
         
-        print("Saving Data")
+        print("\nSaving Data")
         
         guard let manager = scene.gameManager else { fatalError("Save Data - Game manager not passed") }
         
@@ -112,8 +166,7 @@ struct GameModel: Codable {
         team1Score = manager.team1.teamCount
         team2Score = manager.team2.teamCount
         
-        tileChanges = ChangeManager.register.tileChanges
-        torusChanges = ChangeManager.register.torusChanges
+        changes = ChangeManager.register.changes
         
         ChangeManager.register.refresh()
     }
@@ -136,16 +189,16 @@ struct TorusDescription: Codable {
     var currentTile: TilePosition
 }
 
-extension TorusChange: CustomStringConvertible {
+extension Change: CustomStringConvertible {
     var description: String {
         let description = "\(self.torus) - \(self.type)"
         return description
     }
 }
 
-extension TileChange: CustomStringConvertible {
+extension OrbAssignment: CustomStringConvertible {
     var description: String {
-        let description = "\(self.tile.name) - \(self.type)"
+        let description = "\(self.tile.name) - \(self.nextPower)"
         return description
     }
 }
@@ -170,8 +223,7 @@ extension GameModel: CustomStringConvertible {
         description += "Score - \(team1Score) and \(team2Score)\n"
         description += "Turn - \(turnNumber); Current Team - \(currentTeam), Winner - \(winner)\n"
         description += "Tiles And Torii Accounted for - \(tiles.count), \(team1Torii.count), and \(team2Torii.count)\n"
-        description += "Tile Changes - \(tileChanges)\n"
-        description += "Torus Changes - \(torusChanges)\n"
+        description += "Changes - \(changes)\n"
         return description
     }
 }

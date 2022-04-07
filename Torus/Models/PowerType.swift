@@ -1,6 +1,6 @@
 //
 //  PowerType.swift
-//  Triple Bomb
+//  Torus Neon
 //
 //  Created by Moses Harding on 11/29/21.
 //
@@ -32,12 +32,14 @@ import SpriteKit
  */
 
 enum Power: String, CaseIterable, Codable {
-    case acidic = "Acidic"
+    case disintegrate = "Disintegrate"
     case amplify = "Amplify"
-    case beneficiary = "Beneficiary"
-    case bombs = "Bombs"
-    case climbTile = "Climb Tile"
-    case destroy = "Destroy"
+    case missileStrike = "Missile Strike"
+    case burrow = "Burrow"
+    case weightless = "Weightless"
+    case consolidate = "Consolidate"
+    case defect = "Defect"
+    case obliterate = "Obliterate"
     case doublePowers = "Double Powers"
     case inhibit = "Inhibit"
     case invert = "Invert"
@@ -50,16 +52,14 @@ enum Power: String, CaseIterable, Codable {
     case pilfer = "Pilfer"
     case purify = "Purify"
     case raiseTile = "Raise Tile"
-    case recruit = "Recruit"
     case relocate = "Relocate"
     case respawnOrbs = "Respawn Orbs"
     case scramble = "Scramble"
-    case smartBombs = "Smart Bombs"
-    case snakeTunnelling = "Snake Tunnelling"
+    case targetedStrike = "Targeted Strike"
     case swap = "Swap"
     case teach = "Teach"
     case trench = "Trench"
-    case tripwire = "Tripwire"
+    case snare = "Snare"
     case wall = "Wall"
 }
 
@@ -87,7 +87,7 @@ struct PowerType: Hashable, Codable {
         
         self.power = power
         
-        let exceptions: [Power] = [.amplify, .beneficiary, .bombs, .climbTile, .doublePowers, .jumpProof, .lowerTile, .moveDiagonal, .raiseTile, .relocate, .respawnOrbs, .snakeTunnelling, .smartBombs]
+        let exceptions: [Power] = [.amplify, .consolidate, .missileStrike, .weightless, .doublePowers, .jumpProof, .lowerTile, .moveDiagonal, .raiseTile, .relocate, .respawnOrbs, .burrow, .targetedStrike]
         
         self.direction = exceptions.contains(where: { $0 == power }) ? nil : direction
     }

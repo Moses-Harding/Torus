@@ -1,6 +1,6 @@
 //
 //  Team.swift
-//  Triple Bomb
+//  Torus Neon
 //
 //  Created by Moses Harding on 9/27/21.
 //
@@ -30,6 +30,8 @@ class Team {
         return torii.count
     }
     
+    var lastNumber: Int = 0
+    
     init(teamNumber: TeamNumber, teamColor: TorusColor?, gameManager: GameManager) {
         
         self.teamNumber = teamNumber
@@ -43,7 +45,7 @@ class Team {
         
         guard let tile = gameManager.gameBoard.getTile(from: position), tile.occupiedBy == nil else { fatalError("Team - Add Torus - Cannot Add To Tile") }
         
-        let lastNumber = torii.last?.torusNumber ?? 1
+        lastNumber += 1
 
         let torus = Torus(scene: gameManager.scene, number: lastNumber, team: self, color: teamColor, currentTile: tile, size: tile.size)
         torii.append(torus)
@@ -61,14 +63,25 @@ class Team {
         
         guard tile.occupiedBy == nil else { fatalError("Team - Add Torus - Trying to add \(torus) but \(tile) is occupied by \(String(describing: tile.occupiedBy))") }
         
-        let lastNumber = keepNumber ? torus.torusNumber : torii.last?.torusNumber ?? 1
+        var torusNumber = 1
         
-        let description = TorusDescription(color: self.teamColor, teamNumber: self.teamNumber, torusNumber: lastNumber, powers: torus.powers, attributes: torus.activatedAttributes, currentTile: boardPosition)
+        if keepNumber {
+            torusNumber = torus.torusNumber
+        } else {
+            torusNumber = lastNumber
+            lastNumber += 1
+        }
+        
+        //let lastNumber = keepNumber ? torus.torusNumber : torii.last?.torusNumber ?? 1
+        
+        let description = TorusDescription(color: self.teamColor, teamNumber: self.teamNumber, torusNumber: torusNumber, powers: torus.powers, attributes: torus.activatedAttributes, currentTile: boardPosition)
 
         
-        let torus = Torus(scene: gameManager.scene, number: lastNumber, team: self, color: teamColor, currentTile: tile, size: tile.size)
+        let torus = Torus(scene: gameManager.scene, number: torusNumber, team: self, color: teamColor, currentTile: tile, size: tile.size)
         torus.loadDescription(description: description)
         torii.append(torus)
+        
+        if TestingManager.helper.verboseTiles { print("Team - Add Torus - Added \(torus) to \(tile)") }
         
         return torus
     }
@@ -78,8 +91,6 @@ class Team {
 
         var currentRow = 0
         var currentCol = 0
-        
-        var torusNumber = 0
         
         let numberOfOccupiedRowsPerTeam = 3
         
@@ -97,9 +108,9 @@ class Team {
                     fatalError("Attempting to get tile that does not exist")
                 }
                 
-                let torus = Torus(scene: gameManager.scene, number: torusNumber, team: self, color: teamColor, currentTile: tile, size: tile.size)
+                let torus = Torus(scene: gameManager.scene, number: lastNumber, team: self, color: teamColor, currentTile: tile, size: tile.size)
                 torii.append(torus)
-                torusNumber += 1
+                lastNumber += 1
                 
                 currentCol += 1
             }

@@ -1,6 +1,6 @@
 //
 //  GameBoard.swift
-//  Triple Bomb
+//  Torus Neon
 //
 //  Created by Moses Harding on 9/27/21.
 //
@@ -8,7 +8,19 @@
 import Foundation
 import SpriteKit
 
-struct TilePosition: Equatable, Codable, CustomStringConvertible {
+struct TilePosition: Equatable, Codable, CustomStringConvertible, Comparable {
+    static func < (lhs: TilePosition, rhs: TilePosition) -> Bool {
+        if lhs.column < rhs.column {
+            return true
+        } else if lhs.column > rhs.column {
+            return false
+        } else if lhs.row < rhs.row {
+            return true
+        } else {
+            return false
+        }
+    }
+    
     
     var name: String {
         return "(\(column),\(row))"
@@ -20,7 +32,7 @@ struct TilePosition: Equatable, Codable, CustomStringConvertible {
     
     var tileHeight: TileHeight
     var tileSize: CGSize
-    
+
     var xDistance: CGFloat {
         return (tileSize.width / CGFloat(29)) * CGFloat(tileHeight.rawValue)
     }
@@ -33,7 +45,7 @@ struct TilePosition: Equatable, Codable, CustomStringConvertible {
         
         var xDistance: CGFloat = 0
         var yDistance: CGFloat = 0
-
+        
         xDistance = (tileSize.width / CGFloat(29)) * CGFloat(tileHeight.rawValue)
         yDistance = (tileSize.height / CGFloat(31)) * CGFloat(tileHeight.rawValue)
         
@@ -57,6 +69,16 @@ class GameBoard: Entity {
     
     var cellSize: CGSize?
     
+    
+    var unoccupiedTiles: Int {
+        var count = 0
+        for tile in self.tiles {
+            if tile.validForOrb { count += 1 }
+        }
+        return count
+    }
+    
+    
     var highlightedTiles: [(tile: Tile, moveType: MoveType)]  = []
     
     init(scene: GameScene, playScreen: PlayScreen) {
@@ -71,7 +93,7 @@ class GameBoard: Entity {
         print(" --- GameBoard ---")
         var gameBoardString = ""
         
-        for row in 0 ..< scene.numberOfRows {
+        for row in (0 ..< scene.numberOfRows).reversed() {
             for column in 0 ..< scene.numberOfColumns {
                 
                 let tile = getTile(column: column, row: row)
@@ -90,21 +112,22 @@ class GameBoard: Entity {
         print(gameBoardString)
         
         print(" --- Torus Directory --- ")
-        manager.team1.torii.forEach { print($0.name, $0.currentTile)}
-        manager.team2.torii.forEach { print($0.name, $0.currentTile)}
+        var torii = manager.team1.torii + manager.team2.torii
+        torii.sort { $0.name < $1.name }
+        torii.forEach { print($0.name, $0.currentTile)}
         print()
     }
 }
- 
+
 extension GameBoard { //Setup functions
     
-     func setUpTiles() {
+    func setUpTiles() {
         
         let cellSize = getCellSize()
         
         var currentX: CGFloat = frame.origin.x
         var currentY: CGFloat = frame.origin.y
-
+        
         for row in 0 ..< scene.numberOfRows {
             for column in 0 ..< scene.numberOfColumns {
                 
@@ -112,7 +135,7 @@ extension GameBoard { //Setup functions
                 let newTile = Tile(scene: self.scene, boardPosition: position, size: cellSize)
                 
                 tiles.append(newTile)
-
+                
                 currentX += cellSize.width
             }
             
@@ -127,12 +150,12 @@ extension GameBoard { //Setup functions
         let cellHeight = frame.height / CGFloat(scene.numberOfRows)
         return(CGSize(width: cellWidth, height: cellHeight))
     }
-               
+    
     private func getCellPosition(_ x: CGFloat, _ y: CGFloat, _ cellSize: CGSize) -> CGPoint {
         
-            let midX = x + (cellSize.width / 2)
-            let midY = y + (cellSize.height / 2)
-            return CGPoint(x: midX, y: midY)
+        let midX = x + (cellSize.width / 2)
+        let midY = y + (cellSize.height / 2)
+        return CGPoint(x: midX, y: midY)
     }
 }
 
@@ -147,7 +170,7 @@ extension GameBoard { // Retrieval Functions
     }
     
     func getRandomNeighboringTile(from currentTile: Tile) -> Tile {
-
+        
         var validTiles = [Tile]()
         
         let adjacentPairs = [(-1,0), (1,0), (0,1), (0,-1)]
@@ -190,8 +213,8 @@ extension GameBoard { // Retrieval Functions
     func getTileForOrb(from index: Int) -> Tile? {
         
         let tile = tiles[index]
-
-        if tile.hasOrb || tile.occupiedBy != nil || tile.status == .acid {
+        
+        if tile.hasOrb || tile.occupiedBy != nil || tile.status == .disintegrated {
             return nil
         } else {
             return tile

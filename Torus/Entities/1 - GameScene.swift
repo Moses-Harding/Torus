@@ -1,6 +1,6 @@
 //
 //  GameScene.swift
-//  Triple Bomb
+//  Torus Neon
 //
 //  Created by Moses Harding on 9/27/21.
 //
@@ -24,8 +24,8 @@ class GameScene: SKScene {
     
     var playScreen: PlayScreen!
     var gameManager: GameManager!
-
-    //var scrollView: ScrollView!
+    
+    var defeated = false
     
     var viewController: GameViewController?
     
@@ -74,7 +74,6 @@ class GameScene: SKScene {
         self.gameManager = GameManager(scene: self)
         
         setUpManagers()
-        setUpScrollView()
     }
     
     func setUpManagers() {
@@ -84,20 +83,6 @@ class GameScene: SKScene {
         PowerManager.helper.scene = self
         ChangeDecoder.helper.gameScene = self
         GameCenterHelper.helper.scene = self
-    }
-    
-    func setUpScrollView() {
-        
-        /*
-        let frame = playScreen.tray.textBoxArea.frame
-        
-        let point = self.convert(frame.origin, from: playScreen.tray.textBoxArea)
-        let convertedPoint = self.convertPoint(toView: point)
-        let origin = CGPoint(x: convertedPoint.x, y: convertedPoint.y - frame.height + frame.height / 10)
-        
-        scrollView = ScrollView(scene: self, frame: CGRect(origin: origin, size: frame.size.scaled(x: 0.95, y: 0.8)))
-        view?.addSubview(scrollView)
-         */
     }
     
     //Game Updates
@@ -120,6 +105,7 @@ class GameScene: SKScene {
         } else {
             GameCenterHelper.helper.endTurn(model) { error in
                 defer { self.isSendingTurn = false }
+                self.toggleWaitingScreen()
                 
                 if let e = error {
                     print("Error ending turn: \(e)")
@@ -129,27 +115,68 @@ class GameScene: SKScene {
             print("Turn is ended\n____________")
         }
     }
-
+    
     //Move To Views
     
     func backToStartScreen() {
+        
         guard let viewController = viewController else { fatalError("No view controller passed to game view scene") }
-        if viewController.currentScene == .main {
-            viewController.switchScene()
-        }
+        
+        if viewController.currentScene == .main { viewController.switchScene() }
     }
     
-   @objc func toggleWaitingScreen() {
-       //print("IMPLEMENT THIS FEATURE")
-       /*
+    @objc func toggleWaitingScreen() {
+
         if waitingScreen == nil {
-            waitingScreen = SKSpriteNode(imageNamed: "Waiting Label")
+            waitingScreen = SKSpriteNode(imageNamed: "Waiting For Opponent Label")
             self.addChild(waitingScreen!)
-            waitingScreen?.position = midPoint
+            waitingScreen?.position = midPoint.move(.up, by: frame.height / 4)
             waitingScreen?.size.scale(proportionateTo: .width, of: self.frame.size)
             waitingScreen?.zPosition = SpriteLevel.topLevel.rawValue + 10
         }
-       waitingScreen?.isHidden = GameCenterHelper.helper.canTakeTurnForCurrentMatch
-            */
+
+        waitingScreen?.isHidden = GameCenterHelper.helper.canTakeTurnForCurrentMatch
+        playScreen.buttonTray.endTurnButton.isEnabled = GameCenterHelper.helper.canTakeTurnForCurrentMatch
+    }
+    
+    func gameStart() {
+        
+        let gameStart = SKSpriteNode(imageNamed: LabelAssets.gameStart.rawValue)
+        self.addChild(gameStart)
+        gameStart.position = midPoint.move(.up, by: frame.height / 4)
+        gameStart.size.scale(proportionateTo: .width, of: self.frame.size)
+        gameStart.zPosition = SpriteLevel.topLevel.rawValue + 10
+        
+        gameStart.run(SKAction.sequence([SKAction.wait(forDuration: 0.25), SKAction.fadeOut(withDuration: 2)])) {
+            gameStart.removeFromParent()
+        }
+    }
+    
+    enum GameResult {
+        case won, lost
+    }
+    
+    func gameOver(_ result: GameResult) {
+        
+        
+        let resultLabel = SKSpriteNode(imageNamed: result == .won ? LabelAssets.victory.rawValue : LabelAssets.defeat.rawValue)
+        self.addChild(resultLabel)
+        resultLabel.position = midPoint.move(.up, by: frame.height / 4)
+        resultLabel.size.scale(proportionateTo: .width, of: self.frame.size)
+        resultLabel.zPosition = SpriteLevel.topLevel.rawValue + 10
+        
+        AnimationManager.helper.finalAnimation()
+        
+        let rematchButton = ImageNode(ButtonAssets.rematch.rawValue) { GameCenterHelper.helper.rematch { if let error = $0 { print(error) } } }
+        rematchButton.position = midPoint
+        rematchButton.zPosition = SpriteLevel.topLevel.rawValue + 10
+        rematchButton.image.size.scale(proportionateTo: .width, with: frame.size.width * 0.65)
+        addChild(rematchButton)
+        
+        let quitButton = ImageNode(ButtonAssets.quit.rawValue) { self.backToStartScreen() }
+        quitButton.position = midPoint.move(.down, by: rematchButton.image.size.height)
+        quitButton.zPosition = SpriteLevel.topLevel.rawValue + 10
+        quitButton.image.size.scale(proportionateTo: .width, with: frame.size.width * 0.65)
+        addChild(quitButton)
     }
 }
