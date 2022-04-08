@@ -106,7 +106,7 @@ class PowerList: Entity {
     func updateView(with powerList: [PowerType:Int], from torus: Torus? = nil, calledBy: String) {
         
         if TestingManager.helper.verbosePowerList {
-            print("Updating powerlist view with \(torus) at \(torus?.currentTile)")
+            print("Updating powerlist view with \(String(describing: torus)) at \(String(describing: torus?.currentTile))")
         }
         
         scrollPos = 0
@@ -148,7 +148,7 @@ class PowerList: Entity {
             return
         }
 
-        if TestingManager.helper.verbosePowerList { print("Activating \(button.label.text) with duration \(duration)") }
+        if TestingManager.helper.verbosePowerList { print("Activating \(String(describing: button.label.text)) with duration \(duration)") }
         
         guard isEffective else {
             self.displayPowerConsole(message: .noEffect, calledBy: "PowerList - ButtonPushed - Power Not Effective")

@@ -73,7 +73,6 @@ extension GameManager { //Taking Turn
             }
         } else {
             scene.model.loadData(to: scene, matchAlreadyOpen: matchAlreadyOpen)
-            //updateTurnLogic()
             scene.toggleWaitingScreen()
             updateUI()
         }
@@ -158,7 +157,6 @@ extension GameManager { //Taking Turn
         while numberOfOrbs > 0 && randomIndices.count > 0 {
             guard let randomIndex = randomIndices.popLast() else { fatalError("No index when trying to generate orb") }
             if let tile = gameBoard.getTileForOrb(from: randomIndex) {
-                //print("Generating orb on \(tile), has orb already - \(tile.hasOrb), occupied by \(tile.occupiedBy)")
                 tile.populateOrb()
                 numberOfOrbs -= 1
             }
@@ -220,7 +218,7 @@ extension GameManager { //User Touch Interaction / Selection
         
         //Make sure team is correct
         guard torus.team == currentTeam else {
-            var message: PowerConsoleAssets = currentTeam.teamNumber == .one ? .onlyPink : .onlyBlue
+            let message: PowerConsoleAssets = currentTeam.teamNumber == .one ? .onlyPink : .onlyBlue
             self.powerList.displayPowerConsole(message: message, calledBy: "GameManager - Select Torus - Incorrect Team")
             print("Game Manager - Select Torus - Cannot select because not current team")
             return
@@ -256,8 +254,6 @@ extension GameManager { //User Touch Interaction / Selection
         currentTeam.currentlySelected?.select()
         
         gameBoard.highlightValidTiles(surrounding: currentTeam.currentlySelected!)
-        
-        // scene.scrollView.updateView(with: currentTeam.currentlySelected!.powers, from: torus.team.teamNumber)
         tray.powerList.updateView(with: currentTeam.currentlySelected!.powers, from: torus, calledBy: "Selecting Torus")
     }
     
@@ -268,7 +264,7 @@ extension GameManager { //User Touch Interaction / Selection
         
         if let torus = currentTeam.currentlySelected, torus.team == currentTeam, tile.validForMovement == true, powerList.powerIsActivating == false  {
             
-            MovementManager.helper.move(torus, to: tile) { self.takeTurn() }
+            _ = MovementManager.helper.move(torus, to: tile) { self.takeTurn() }
             
         }
     }

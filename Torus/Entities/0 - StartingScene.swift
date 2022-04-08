@@ -26,6 +26,28 @@ class StartingScene: SKScene {
     
     var firstLoad = true
     
+    var selfPlayUnlocked: TextNode?
+    var registeredTaps = [TestTapType]() {
+        didSet {
+            if registeredTaps == [.logo, .background, .logo, .background, .logo, .background] {
+                TestingManager.helper.startWithoutGameCenter = true
+                selfPlayUnlocked = TextNode("Self-play mode unlocked", size: CGSize(width: frame.width * 0.7, height: frame.height * 0.2))
+                selfPlayUnlocked?.position = CGPoint(x: frame.midX - ((selfPlayUnlocked?.label.frame.width)! / 2), y: 50)
+                selfPlayUnlocked?.zPosition = 100
+                selfPlayUnlocked?.label.fontName = "Courier"
+                selfPlayUnlocked?.label.preferredMaxLayoutWidth = frame.width * 0.7
+                selfPlayUnlocked?.label.numberOfLines = -1
+                addChild(selfPlayUnlocked!)
+            } else {
+                TestingManager.helper.startWithoutGameCenter = false
+                if let label = selfPlayUnlocked {
+                    label.removeFromParent()
+                    selfPlayUnlocked = nil
+                }
+            }
+        }
+    }
+    
     override func didMove(to view: SKView) {
         
         //set up occurs in setUp after GameViewController calls viewDidLoad
@@ -36,6 +58,8 @@ class StartingScene: SKScene {
         if let timer = AnimationManager.helper.timer {
             timer.invalidate()
         }
+
+        registeredTaps = []
         
         if firstLoad {
             
@@ -43,27 +67,19 @@ class StartingScene: SKScene {
             
             let frame = view.safeAreaLayoutGuide.layoutFrame
             
-            var buttonHeight: CGFloat
-            var buttonWidth: CGFloat
-            
-            logo = ImageNode("Torus Neon Logo V2.png") { print("Logo") }
-            buttonWidth = frame.width * 0.9
-            buttonHeight = logo.image.size.height * (buttonWidth / logo.image.size.width)
-            logo.image.size = CGSize(width: buttonWidth, height: buttonHeight)
+            logo = ImageNode(LabelAssets.logo.rawValue) { self.registeredTaps.append(.logo) }
+            logo.image.size.scale(proportionateTo: .width, with: frame.width * 0.9)
             logo.position = CGPoint(x: frame.midX, y: (frame.height * 0.95) - logo.image.size.height)
             logo.zPosition = 2
             self.addChild(logo)
             
-            //Set Up Start Button
-            startButton = ImageNode("Start Button V2.png") { self.startOrAuthenticate() }
-            buttonWidth = frame.width * 0.65
-            buttonHeight = startButton.image.size.height * (buttonWidth / startButton.image.size.width)
-            startButton.image.size = CGSize(width: buttonWidth, height: buttonHeight)
+            startButton = ImageNode(ButtonAssets.start.rawValue) { self.startOrAuthenticate() }
+            startButton.image.size.scale(proportionateTo: .width, with: frame.width * 0.65)
             startButton.position = logo.position.move(.down, by: logo.image.size.height)
             startButton.zPosition = 2
             self.addChild(startButton)
             
-            background = ImageNode("Background Design V3.png") { print("Logo") }
+            background = ImageNode(LabelAssets.background.rawValue) { self.registeredTaps.append(.background) }
             background.image.size.scale(proportionateTo: .width, with: frame.width)
             background.position = CGPoint(x: frame.midX, y: frame.midY)
             background.zPosition = 1

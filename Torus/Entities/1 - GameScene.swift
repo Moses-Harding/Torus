@@ -25,8 +25,6 @@ class GameScene: SKScene {
     var playScreen: PlayScreen!
     var gameManager: GameManager!
     
-    var defeated = false
-    
     var viewController: GameViewController?
     
     var model: GameModel
@@ -137,6 +135,7 @@ class GameScene: SKScene {
 
         waitingScreen?.isHidden = GameCenterHelper.helper.canTakeTurnForCurrentMatch
         playScreen.buttonTray.endTurnButton.isEnabled = GameCenterHelper.helper.canTakeTurnForCurrentMatch
+        playScreen.buttonTray.forfeitButton.isEnabled = GameCenterHelper.helper.canTakeTurnForCurrentMatch
     }
     
     func gameStart() {
@@ -158,7 +157,6 @@ class GameScene: SKScene {
     
     func gameOver(_ result: GameResult) {
         
-        
         let resultLabel = SKSpriteNode(imageNamed: result == .won ? LabelAssets.victory.rawValue : LabelAssets.defeat.rawValue)
         self.addChild(resultLabel)
         resultLabel.position = midPoint.move(.up, by: frame.height / 4)
@@ -178,5 +176,9 @@ class GameScene: SKScene {
         quitButton.zPosition = SpriteLevel.topLevel.rawValue + 10
         quitButton.image.size.scale(proportionateTo: .width, with: frame.size.width * 0.65)
         addChild(quitButton)
+        
+        playScreen.buttonTray.endTurnButton.isEnabled = false
+        playScreen.buttonTray.forfeitButton.isEnabled = false
+        playScreen.buttonTray.backButton.isEnabled = false
     }
 }

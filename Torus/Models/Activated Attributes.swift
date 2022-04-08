@@ -12,14 +12,10 @@ struct ActivatedAttributes: Codable {
     //GOOD
     var hasAmplify = false
     var hasWeightless = false
-    var hasFlatToSphere = false
-    var hasInvisibility = false
-    var hasJumpProof = false
-    var hasMoveDiagonal = false
+    var hasArmor = false
+    var hasFreeMovement = false
     
     //BAD
-    var isInhibited = false
-    var isSpyTapped = false
     var isSnared = false
 }
 
@@ -32,24 +28,11 @@ extension ActivatedAttributes: CustomStringConvertible {
         if hasWeightless {
             description += ": Weightless"
         }
-        if hasFlatToSphere {
-            description += ": FlatToSphere"
+        if hasArmor {
+            description += ": Armor"
         }
-        if hasInvisibility {
-            description += ": Invisible"
-        }
-        if hasJumpProof {
-            description += ": JumpProof"
-        }
-        if hasMoveDiagonal {
-            description += ": MoveDiagonal"
-        }
-        
-        if isInhibited {
-            description += ": Inhibited"
-        }
-        if isSpyTapped {
-            description += ": SpyTapped"
+        if hasFreeMovement {
+            description += ": Free Movement"
         }
         if isSnared {
             description += ": Snared"

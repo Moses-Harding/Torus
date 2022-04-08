@@ -3,7 +3,7 @@
 //  Torus Neon
 //
 //  Created by Moses Harding on 9/27/21.
-//
+// 
 
 import Foundation
 import SpriteKit
@@ -37,6 +37,8 @@ class Torus: Entity {
     
     var verbose = true
     
+    var leaping = false
+    
     //Sprite Names
     var baseName: String
     var selectedName: String
@@ -46,9 +48,8 @@ class Torus: Entity {
     //Status indicators
     var amplifySprite: OverlaySprite?
     var weightlessSprite: OverlaySprite?
-    var jumpProofSprite: OverlaySprite?
-    var moveDiagonalSprite: OverlaySprite?
-    var inhibitedSprite: OverlaySprite?
+    var armorSprite: OverlaySprite?
+    var freeMovementSprite: OverlaySprite?
     var snareSprite: OverlaySprite?
     
     init(scene: GameScene, number: Int, team: Team, color: TorusColor, currentTile: Tile, size: CGSize) {
@@ -82,30 +83,7 @@ class Torus: Entity {
         
         //TESTING
         if TestingManager.helper.toriiStartWithPowers {
-            
-            /*
-            if torusNumber % 2 == 0 { return }
-            for _ in 0 ... Int.random(in: 0 ... 3) {
-                self.powerUp(with: PowerType(.scramble, .row))
-                self.powerUp(with: PowerType(.scramble, .column))
-                self.powerUp(with: PowerType(.scramble, .radius))
-                self.powerUp(with: PowerType(.amplify))
-                //self.powerUp(with: PowerType(.defect, .column))
-                self.powerUp(with: PowerType(.respawnOrbs))
-                //self.powerUp(with: .moveDiagonal)
-                //self.powerUp(with: .missileStrike)
-                //self.powerUp(with: .disintegrate, .column)
-                self.powerUp(with: .relocate)
-                self.powerUp(with: .burrow)
-                self.powerUp(with: .wall, .column)
-                self.powerUp(with: .wall, .radius)
-                self.powerUp(with: .defect, .column)
-                self.powerUp(with: .trench, .column)
-            }
-            //for _ in 0 ... Int.random(in: 0 ... 3) { self.powerUp(with: PowerType.random()) }
-            //for _ in 0 ... Int.random(in: 0 ... 3) { self.powerUp(with: PowerType.random()) }
-            //for _ in 0 ... Int.random(in: 0 ... 3) { self.powerUp(with: PowerType.random()) }
-             */
+            for _ in 0 ... Int.random(in: 0 ... 3) { self.powerUp(with: PowerType.random()) }
             /*
             let allPowers = Power.allCases
             for power in allPowers {
@@ -113,8 +91,6 @@ class Torus: Entity {
                 self.powerUp(with: power, .row)
             }
              */
-            self.amplify()
-            self.powerUp(with: .defect, .column)
         }
     }
     
@@ -228,11 +204,9 @@ extension Torus {
         return exceeds20
     }
     
-    func purify(isEnemy: Bool) -> Bool {
+    func cleanse(isEnemy: Bool) -> Bool {
         
         var wasEffective = false
-        
-        print("Purify \(self.name) - isEnemy is \(isEnemy)")
         
         if isEnemy {
             
@@ -250,43 +224,20 @@ extension Torus {
                 wasEffective = true
             }
             
-            if let jumpProof = jumpProofSprite {
-                activatedAttributes.hasJumpProof = false
-                jumpProof.removeFromParent()
-                jumpProofSprite = nil
+            if let armor = armorSprite {
+                activatedAttributes.hasArmor = false
+                armor.removeFromParent()
+                armorSprite = nil
                 wasEffective = true
             }
             
-            if let moveDiagonal = moveDiagonalSprite {
-                activatedAttributes.hasMoveDiagonal = false
-                moveDiagonal.removeFromParent()
-                moveDiagonalSprite = nil
+            if let freeMove = freeMovementSprite {
+                activatedAttributes.hasFreeMovement = false
+                freeMove.removeFromParent()
+                freeMovementSprite = nil
                 wasEffective = true
             }
-            /*
-            if let flatToSphere = flatToSphereSprite {
-                activatedAttributes.hasFlatToSphere = false
-                flatToSphere.removeFromParent()
-                flatToSphereSprite = nil
-                wasEffective = true
-            }
-            
-            if let invisible = invisibleSprite {
-                activatedAttributes.hasInvisibility = false
-                invisible.removeFromParent()
-                invisibleSprite = nil
-                wasEffective = true
-            }
-             */
-            
         } else {
-
-            if let inhibited = inhibitedSprite {
-                activatedAttributes.isInhibited = false
-                inhibited.removeFromParent()
-                inhibitedSprite = nil
-                wasEffective = true
-            }
             
             if let snare = snareSprite {
                 activatedAttributes.isSnared = false
@@ -331,56 +282,27 @@ extension Torus { // Change Status
         weightlessSprite?.zPosition = TorusOverlaySpriteLevel.weightless.rawValue
     }
     
-    func flatToSphere() {
+    func armor() {
         
-        activatedAttributes.hasFlatToSphere = true
+        activatedAttributes.hasArmor = true
         
-        let texture = SKTexture(imageNamed: TorusOverlayAssets.flatToSphere.rawValue)
+        let texture = SKTexture(imageNamed: TorusOverlayAssets.armor.rawValue)
         
-        //flatToSphereSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
-        
-    }
-
-    func invisible() {
-        
-        activatedAttributes.hasInvisibility = true
-        
-        let texture = SKTexture(imageNamed: TorusOverlayAssets.invisible.rawValue)
-        
-        //invisibleSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
+        armorSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
+        armorSprite?.zPosition = TorusOverlaySpriteLevel.armor.rawValue
     }
     
-    func jumpProof() {
+    func freeMovement() {
         
-        activatedAttributes.hasJumpProof = true
+        activatedAttributes.hasFreeMovement = true
         
-        let texture = SKTexture(imageNamed: TorusOverlayAssets.jumpProof.rawValue)
+        let texture = SKTexture(imageNamed: TorusOverlayAssets.freeMovement.rawValue)
         
-        jumpProofSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
-        jumpProofSprite?.zPosition = TorusOverlaySpriteLevel.jumpProof.rawValue
-    }
-    
-    func moveDiagonal() {
-        
-        activatedAttributes.hasMoveDiagonal = true
-        
-        let texture = SKTexture(imageNamed: TorusOverlayAssets.moveDiagonal.rawValue)
-        
-        moveDiagonalSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
-        moveDiagonalSprite?.zPosition = TorusOverlaySpriteLevel.moveDiagonal.rawValue
+        freeMovementSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
+        freeMovementSprite?.zPosition = TorusOverlaySpriteLevel.freeMovement.rawValue
     }
     
     // BAD STUFF
-    func inhibited() {
-        
-        activatedAttributes.isInhibited = true
-        
-        let texture = SKTexture(imageNamed: TorusOverlayAssets.inhibited.rawValue)
-        
-        inhibitedSprite = OverlaySprite(primaryTexture: texture, color: UIColor.white, size: sprite.size, parentSprite: sprite)
-        inhibitedSprite?.zPosition = TorusOverlaySpriteLevel.inhibited.rawValue
-    }
-    
     func snared() {
         
         activatedAttributes.isSnared = true
@@ -406,23 +328,11 @@ extension Torus { //Load Description
         if attributes.hasWeightless {
             weightless()
         }
-        if attributes.hasFlatToSphere {
-            //
+        if attributes.hasArmor {
+            armor()
         }
-        if attributes.hasInvisibility {
-            //
-        }
-        if attributes.hasJumpProof {
-            jumpProof()
-        }
-        if attributes.hasMoveDiagonal {
-            moveDiagonal()
-        }
-        if attributes.isInhibited {
-            inhibited()
-        }
-        if attributes.isSpyTapped {
-            //
+        if attributes.hasFreeMovement {
+            freeMovement()
         }
         if attributes.isSnared {
             snared()

@@ -103,7 +103,6 @@ class GameBoard: Entity {
                 } else {
                     torusName = "       "
                 }
-                let torus = tile?.occupiedBy
                 gameBoardString += "[\(column),\(row) (\(torusName))]  -  "
             }
             gameBoardString += "\n\n"

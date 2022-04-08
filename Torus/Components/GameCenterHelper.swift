@@ -49,7 +49,6 @@ class GameCenterHelper: NSObject {
             NotificationCenter.default.post(name: .authenticationChanged, object: GKLocalPlayer.local.isAuthenticated)
             
             if GKLocalPlayer.local.isAuthenticated {
-                //Allows user to receive GKInviteEventListener callbacks
                 GKLocalPlayer.local.register(self)
             } else if let vc = gcAuthVC {
                 self.viewController?.present(vc, animated: true)
@@ -126,37 +125,13 @@ class GameCenterHelper: NSObject {
             completion(GameCenterHelperError.matchNotFound)
             return
         }
-        
-        //var others = [GKTurnBasedParticipant]()
-        
-        
-        match.participants.forEach { other in
-            other.matchOutcome = .lost
-            //others.append(other)
-        }
+
+        match.participants.forEach { $0.matchOutcome = .lost }
         match.currentParticipant?.matchOutcome = .won
         
         guard let data = match.matchData else { fatalError("GameCenterHelper - Quit - No data found for match") }
-        
-        //match.participantQuitInTurn(with: GKTurnBasedMatch.Outcome.quit, nextParticipants: others, turnTimeout: 0, match: data, completionHandler: completion)
-        
         match.endMatchInTurn(withMatch: data, completionHandler: completion)
-        
-        /*
-        let completion = {         match.remove { e in
-            if let error = e {
-                print("Error deleting match - \(error)")
-            } else {
-                print("Match removed")
-            }
-        }
-            
-        }
-         */
-        
-        let completion = { print("Complete") }
-        
-        
+
         scene?.gameOver(.won)
     }
     
@@ -169,7 +144,6 @@ class GameCenterHelper: NSObject {
         
         var others = [GKTurnBasedParticipant]()
         
-        match.currentParticipant?.matchOutcome = .lost
         match.participants.forEach { other in
             other.matchOutcome = .won
             others.append(other)
@@ -178,19 +152,7 @@ class GameCenterHelper: NSObject {
         guard let data = match.matchData else { fatalError("GameCenterHelper - Quit - No data found for match") }
         
         match.participantQuitInTurn(with: GKTurnBasedMatch.Outcome.quit, nextParticipants: others, turnTimeout: 0, match: data, completionHandler: completion)
-        
-        /*
-        let completion = {         match.remove { e in
-            if let error = e {
-                print("Error deleting match - \(error)")
-            } else {
-                print("Match removed")
-            }
-        }
-            
-        }
-            */
-        
+
         scene?.gameOver(.lost)
     }
     
@@ -200,34 +162,14 @@ class GameCenterHelper: NSObject {
             completion(GameCenterHelperError.matchNotFound)
             return
         }
-        
-        //var others = [GKTurnBasedParticipant]()
-        
-       
-        match.participants.forEach { other in
-            other.matchOutcome = .won
-            //others.append(other)
-        }
+
+        match.participants.forEach { $0.matchOutcome = .won }
         match.currentParticipant?.matchOutcome = .lost
         
         guard let data = match.matchData else { fatalError("GameCenterHelper - Quit - No data found for match") }
         
-        //match.participantQuitInTurn(with: GKTurnBasedMatch.Outcome.quit, nextParticipants: others, turnTimeout: 0, match: data, completionHandler: completion)
-        
         match.endMatchInTurn(withMatch: data, completionHandler: completion)
-        
-        /*
-        let completion = {         match.remove { e in
-            if let error = e {
-                print("Error deleting match - \(error)")
-            } else {
-                print("Match removed")
-            }
-        }
-            
-        }
-            */
-        
+
         scene?.gameOver(.lost)
     }
     
@@ -242,6 +184,7 @@ class GameCenterHelper: NSObject {
             if let error = error {
                 print(error)
             }
+            
             if let match = match {
                 self.scene?.backToStartScreen()
                 self.currentMatch = match
@@ -258,7 +201,7 @@ extension GameCenterHelper: GKTurnBasedMatchmakerViewControllerDelegate {
     }
     
     func turnBasedMatchmakerViewController(_ viewController: GKTurnBasedMatchmakerViewController, didFailWithError error: Error) {
-        print("Matchmaker vc did fail with error: \(error.localizedDescription).")
+        print("Matchmaker vc failed with error: \(error.localizedDescription).")
     }
 }
 
@@ -278,8 +221,6 @@ extension GameCenterHelper: GKLocalPlayerListener {
         match.remove { e in
             if let error = e {
                 print("Error deleting match - \(error)")
-            } else {
-                print("Match removed")
             }
         }
     }
@@ -347,7 +288,6 @@ extension GameCenterHelper: GKLocalPlayerListener {
         } else {
             self.currentMatch = match
             GKNotificationBanner.show(withTitle: notificationTitle, message: notificationMessage, completionHandler: {})
-            //NotificationCenter.default.post(name: .presentGame, object: match)
         }
     }
 }

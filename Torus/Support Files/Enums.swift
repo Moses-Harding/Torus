@@ -3,7 +3,7 @@
 //  Torus Neon
 //
 //  Created by Moses Harding on 10/12/21.
-//
+// 
 
 import Foundation
 import SpriteKit
@@ -13,28 +13,31 @@ enum DeathType {
 }
 
 enum MoveType {
-    case invalid, normal, attack, orb, relocate
+    case invalid, normal, attack, orb, float
 }
 
 enum MovePointDirection {
     case left, right, up, down
 }
 
+enum ScaleDirection {
+    case width, height
+}
+
 enum SpriteLevel: CGFloat {
     case playScreen = 0, boardOrTray = 1, tileOrTrayItem = 2, torusOrScrollView = 3, tileOverlay = 4, label = 5, userMessage = 6, topLevel = 100
 }
 
-enum TorusOverlaySpriteLevel: CGFloat {
-    case inhibited = 1
-    case moveDiagonal
-    case amplify
-    case jumpProof
-    case weightless
-    case snare
+enum TestTapType {
+    case logo, background
 }
 
-enum TeamColor {
-    case red, blue
+enum TorusOverlaySpriteLevel: CGFloat {
+    case freeMovement = 1
+    case amplify
+    case armor
+    case weightless
+    case snare
 }
 
 enum TileHeight: Int, Codable {
@@ -46,6 +49,6 @@ enum TileStatus: String, Codable {
 }
 
 enum TorusColor: Codable {
-    case red, blue, green, orange
+    case red, blue
 }
 

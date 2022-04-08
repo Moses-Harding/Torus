@@ -3,64 +3,47 @@
 //  Torus Neon
 //
 //  Created by Moses Harding on 11/29/21.
-//
+// 
 
 import Foundation
 import SpriteKit
 
-/*Remaing Power Types
- 
- Basic Powers
- - Create Base
- - Duplicate
-
- Maybe Powers
- - Invisibility
- - Spy Tapped
- - Parasite
- - Move Again
- - Flat To Sphere
- - Scavenger
- - Power Plant
- - Network bridge
- - Switch
- 
- New Powers
+/*
+ Ideas for new powers
  - Ram
  - Freeze
  - Leap
  */
 
 enum Power: String, CaseIterable, Codable {
-    case disintegrate = "Disintegrate"
     case amplify = "Amplify"
-    case missileStrike = "Missile Strike"
+    case armor = "Armor"
     case burrow = "Burrow"
-    case weightless = "Weightless"
+    case cleanse = "Cleanse"
     case consolidate = "Consolidate"
     case defect = "Defect"
-    case obliterate = "Obliterate"
+    case disintegrate = "Disintegrate"
     case doublePowers = "Double Powers"
-    case inhibit = "Inhibit"
+    case elevate = "Elevate"
+    case exchange = "Exchange"
+    case float = "Float"
+    case freeMovement = "Free Movement"
     case invert = "Invert"
-    case jumpProof = "Jump Proof"
-    case kamikaze = "Kamizake"
     case learn = "Learn"
-    case lowerTile = "Lower Tile"
+    case leech = "Leech"
+    case lower = "Lower"
+    case missileStrike = "Missile Strike"
     case moat = "Moat"
-    case moveDiagonal = "Move Diagonal"
-    case pilfer = "Pilfer"
-    case purify = "Purify"
-    case raiseTile = "Raise Tile"
-    case relocate = "Relocate"
+    case obliterate = "Obliterate"
+    case raise = "Raise"
     case respawnOrbs = "Respawn Orbs"
-    case scramble = "Scramble"
-    case targetedStrike = "Targeted Strike"
-    case swap = "Swap"
-    case teach = "Teach"
-    case trench = "Trench"
+    case selfDestruct = "Self Destruct"
+    case shuffle = "Shuffle"
+    case sink = "Sink"
     case snare = "Snare"
-    case wall = "Wall"
+    case targetedStrike = "Targeted Strike"
+    case teach = "Teach"
+    case weightless = "Weightless"
 }
 
 enum PowerDirection: String, CaseIterable, Codable {
@@ -87,7 +70,7 @@ struct PowerType: Hashable, Codable {
         
         self.power = power
         
-        let exceptions: [Power] = [.amplify, .consolidate, .missileStrike, .weightless, .doublePowers, .jumpProof, .lowerTile, .moveDiagonal, .raiseTile, .relocate, .respawnOrbs, .burrow, .targetedStrike]
+        let exceptions: [Power] = [.amplify, .consolidate, .missileStrike, .weightless, .doublePowers, .armor, .lower, .freeMovement, .raise, .float, .respawnOrbs, .burrow, .targetedStrike]
         
         self.direction = exceptions.contains(where: { $0 == power }) ? nil : direction
     }

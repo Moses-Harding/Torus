@@ -3,7 +3,7 @@
 //  Torus Neon
 //
 //  Created by Moses Harding on 11/15/21.
-//
+// 
 
 import SpriteKit
 
@@ -18,7 +18,7 @@ class AnimationManager {
     var isFirstTurn = true
 }
 
-extension AnimationManager { //Torus
+extension AnimationManager {
     
     func attack(torus: Torus, to newTile: Tile, against opponent: Torus, completion: @escaping () -> ()) -> CGFloat {
         
@@ -138,9 +138,7 @@ extension AnimationManager { //Torus
     
     func move(torus: Torus, to newTile: Tile, completion: @escaping () -> ()) -> CGFloat {
         
-        print("Triggering Move")
-        
-        var waitDuration =  0.25
+        let waitDuration =  0.25
         
         let moveToAction = SKAction.move(to: torus.currentTile.boardPosition.getPoint(), duration: 0.2)
         let grow = SKAction.scale(to: 1.75, duration: 0.125)
@@ -181,7 +179,7 @@ extension AnimationManager { //Torus
         return 0.5
     }
     
-    func relocate(torus: Torus, to newTile: Tile, absoluteDistance: Int, takeOrb: Bool = false, completion: @escaping () -> ()) -> CGFloat {
+    func float(torus: Torus, to newTile: Tile, absoluteDistance: Int, takeOrb: Bool = false, completion: @escaping () -> ()) -> CGFloat {
         
         let waitDuration: CGFloat = CGFloat(absoluteDistance) * 0.5
         
@@ -190,13 +188,13 @@ extension AnimationManager { //Torus
         let wait = SKAction.wait(forDuration: (waitDuration / 10) * 8)
         let shrink = SKAction.scale(to: 1, duration: (waitDuration / 10))
         let growAndShrink = SKAction.sequence([grow, wait, shrink])
-        let relocateGroup = SKAction.group([growAndShrink, moveToAction])
+        let floatGroup = SKAction.group([growAndShrink, moveToAction])
         
         torus.sprite.zPosition += 1
-        torus.sprite.run(relocateGroup)
+        torus.sprite.run(floatGroup)
 
         
-        torus.sprite.run(relocateGroup) {
+        torus.sprite.run(floatGroup) {
             if takeOrb {
                 guard let power = newTile.nextPower else { fatalError("TakeOrb - No power to assign to torus") }
                 newTile.removeOrb { torus.sprite.zPosition = SpriteLevel.torusOrScrollView.rawValue }
@@ -207,13 +205,11 @@ extension AnimationManager { //Torus
         return waitDuration
     }
     
-    func scramble(torus: Torus, to newTile: Tile, takeOrb: Bool = false) -> CGFloat {
+    func shuffle(torus: Torus, to newTile: Tile, takeOrb: Bool = false) -> CGFloat {
         
         var waitDuration = 0.5
         
         let capturedTorus = torus
-        
-        //print("Scramble -  Torus - \(torus)")
     
         let fadeIn = SKAction.fadeIn(withDuration: waitDuration)
         let grow = SKAction.scale(to: 1.2, duration: 0)
@@ -223,17 +219,17 @@ extension AnimationManager { //Torus
         newTorus.sprite.alpha = 0
         newTorus.sprite.run(grow)
         
-        let scrambleAnimationGroup = SKAction.group([fadeIn, shrink])
+        let shuffleAnimationGroup = SKAction.group([fadeIn, shrink])
         
 
-        newTorus.sprite.run(scrambleAnimationGroup) {
+        newTorus.sprite.run(shuffleAnimationGroup) {
             if takeOrb {
-                guard let power = newTile.nextPower else { fatalError("AnimationManager - Scramble - TakeOrb - No power to assign to torus") }
+                guard let power = newTile.nextPower else { fatalError("AnimationManager - Shuffle - TakeOrb - No power to assign to torus") }
                 newTile.removeOrb { newTorus.sprite.zPosition = SpriteLevel.torusOrScrollView.rawValue }
                 PowerManager.helper.assign(power: power, to: newTorus)
             }
             if newTorus.activatedAttributes.isSnared {
-                self.kill(torus: newTorus, deathType: .snare, calledBy: "Scramble - Snare", completion: {} )
+                self.kill(torus: newTorus, deathType: .snare, calledBy: "Shuffle - Snare", completion: {} )
                 waitDuration = 1
             }
         }
@@ -333,7 +329,7 @@ extension AnimationManager { //Powers
         torus.sprite.run(group)
     }
     
-    func pilferPowers(from torus: Torus) -> CGFloat {
+    func leechPowers(from torus: Torus) -> CGFloat {
         
         let fade = SKAction.fadeAlpha(to: 0.2, duration: 0.2)
         let fadeIn = SKAction.fadeIn(withDuration: 0.1)
@@ -346,7 +342,7 @@ extension AnimationManager { //Powers
         return 0.3
     }
     
-    func purify(_ torus: Torus, isEnemy: Bool) -> (CGFloat, Bool) {
+    func cleanse(_ torus: Torus, isEnemy: Bool) -> (CGFloat, Bool) {
         
         var waitDuration: CGFloat = 0
         
@@ -354,17 +350,14 @@ extension AnimationManager { //Powers
         let fadeIn = SKAction.fadeIn(withDuration: 0.1)
         var wasEffective = false
         
-        
-        wasEffective = torus.purify(isEnemy: isEnemy)
+        wasEffective = torus.cleanse(isEnemy: isEnemy)
         
         if wasEffective {
             torus.sprite.run(fade) {
-                
                 torus.sprite.run(fadeIn)
             }
             waitDuration = 0.3
         }
-        
         
         return (waitDuration, wasEffective)
     }

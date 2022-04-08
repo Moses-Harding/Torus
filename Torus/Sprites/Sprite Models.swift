@@ -140,9 +140,7 @@ class TrayItemSprite: SKSpriteNode {
         self.zPosition = parentSprite.zPosition + 1
         
         addToParent()
-        if blend {
-            self.colorBlendFactor = 1
-        }
+        if blend { self.colorBlendFactor = 1 }
     }
     
     func addToParent() {
@@ -151,11 +149,7 @@ class TrayItemSprite: SKSpriteNode {
     
     func switchTextures() {
         
-        if isPrimary {
-            self.texture = secondaryTexture
-        } else {
-            self.texture = primaryTexture
-        }
+        self.texture = isPrimary ? secondaryTexture : primaryTexture
         
         isPrimary = !isPrimary
     }
@@ -200,7 +194,6 @@ class UserMessage: SKNode {
     init(_ text: String, fontName: String = "KohinoorDevanagari-Medium", fontSize: CGFloat? = nil, size: CGSize, parent: SKNode, position: CGPoint, actionBlock: ActionBlock? = nil) {
         
         self.actionBlock = actionBlock ?? { print("Message to user - \(text)") }
-        //self.background = SKSpriteNode(texture: SKTexture.pillBackgroundTexture(of: size, color: nil), color: UIColor.clear, size: size)
         self.label = SKLabelNode(text: text)
         
         label.preferredMaxLayoutWidth = size.width

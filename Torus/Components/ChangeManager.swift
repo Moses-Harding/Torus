@@ -3,7 +3,7 @@
 //  Torus Neon
 //
 //  Created by Moses Harding on 3/7/22.
-//
+// 
 
 import Foundation
 import UIKit
@@ -16,15 +16,15 @@ enum ChangeType: Codable {
     case addPower
     case missileStrike
     case move
-    case relocate
+    case float
     case removePowers
     case respawn
-    case scramble
-    case snakeTunnelling
+    case shuffle
+    case burrow
 }
 
 
-struct ScrambledTileAssignment: Codable {
+struct ShuffledTileAssignment: Codable {
     var torusName: String
     var tilePosition: TilePosition
 }
@@ -42,8 +42,8 @@ struct Change: Codable  {
     var tile: TilePosition? = nil
     var orbAssignment: OrbAssignment? = nil
     var powerToActivate: PowerType? = nil
-    var scrambleDirection: PowerDirection? = nil
-    var scrambledList: [ScrambledTileAssignment]? = nil
+    var shuffleDirection: PowerDirection? = nil
+    var shuffledList: [ShuffledTileAssignment]? = nil
     var targeted: Bool? = nil
     var targetTiles: [TilePosition]? = nil
     var waitDuration: CGFloat? = nil
@@ -75,13 +75,13 @@ class ChangeManager: Codable {
         changes.append(change)
     }
     
-    func relocate(_ torus: Torus, targetTile: TilePosition, waitDuration: CGFloat) {
-        let change = Change(type: .relocate, torus: torus.name, tile: targetTile, waitDuration: waitDuration)
+    func float(_ torus: Torus, targetTile: TilePosition, waitDuration: CGFloat) {
+        let change = Change(type: .float, torus: torus.name, tile: targetTile, waitDuration: waitDuration)
         changes.append(change)
     }
     
     func burrow(for torus: Torus, targetTiles: [TilePosition], waitDuration: CGFloat) {
-        let change = Change(type: .snakeTunnelling, torus: torus.name, targetTiles: targetTiles, waitDuration: waitDuration)
+        let change = Change(type: .burrow, torus: torus.name, targetTiles: targetTiles, waitDuration: waitDuration)
         changes.append(change)
     }
     
@@ -110,8 +110,8 @@ class ChangeManager: Codable {
         changes.append(change)
     }
     
-    func scramble(_ tileAssignments: [ScrambledTileAssignment], direction: PowerDirection, for torus: Torus, waitDuration: CGFloat) {
-        let change = Change(type: .scramble, torus: torus.name, scrambleDirection: direction, scrambledList: tileAssignments, waitDuration: waitDuration)
+    func shuffle(_ tileAssignments: [ShuffledTileAssignment], direction: PowerDirection, for torus: Torus, waitDuration: CGFloat) {
+        let change = Change(type: .shuffle, torus: torus.name, shuffleDirection: direction, shuffledList: tileAssignments, waitDuration: waitDuration)
         changes.append(change)
     }
 }
@@ -147,7 +147,7 @@ class ChangeDecoder {
                     scene.run(SKAction.wait(forDuration: waitDuration)) {
                         guard let torus = scene.gameManager.getTorus(with: change.torus) else { fatalError("Change Decoder - Torus could not be located") }
                         
-                        if TestingManager.helper.verboseChanges { print("\nChange - \(change) - \(change.powerToActivate)") }
+                        if TestingManager.helper.verboseChanges { print("\nChange - \(change) - \(String(describing: change.powerToActivate))") }
                         if TestingManager.helper.verboseChanges { manager.gameBoard.printGameBoard() }
                         PowerManager.helper.activate(powerType, with: torus, decoding: true)
                         manager.updateUI()
@@ -160,7 +160,7 @@ class ChangeDecoder {
                     
                     scene.run(SKAction.wait(forDuration: waitDuration)) {
                         
-                        if TestingManager.helper.verboseChanges { print("\nChange - \(change) - \(change.powerToActivate)") }
+                        if TestingManager.helper.verboseChanges { print("\nChange - \(change) - \(String(describing: change.powerToActivate))") }
                         tile.populateOrb(decoding: true, nextPower: powerType)
                         manager.updateUI()
                     }
@@ -191,7 +191,7 @@ class ChangeDecoder {
                         if TestingManager.helper.verboseChanges { manager.gameBoard.printGameBoard() }
                         
                         PowerManager.helper.removePower(from: torus, targeted ? PowerType(.targetedStrike) : PowerType(.missileStrike))
-                        PowerManager.helper.missileStrike(activatedBy: torus, existingSet: targetTiles)
+                        _ = PowerManager.helper.missileStrike(activatedBy: torus, existingSet: targetTiles)
                         manager.updateUI()
                     }
                     waitDuration += duration
@@ -204,12 +204,12 @@ class ChangeDecoder {
                         if TestingManager.helper.verboseChanges { print("\nChange - \(change)") }
                         if TestingManager.helper.verboseChanges { manager.gameBoard.printGameBoard() }
                         
-                        MovementManager.helper.move(torus, to: tile, decoding: true) {}
+                        _ = MovementManager.helper.move(torus, to: tile, decoding: true) {}
                         manager.updateUI()
                     }
                     
                     waitDuration += 1
-                case .snakeTunnelling:
+                case .burrow:
                     guard let targetTiles = change.targetTiles else { fatalError("Change Decoder - SnakeTUnneling - No Target Tiles passed") }
                     guard let duration = change.waitDuration else { fatalError("Change Decoder - SnakeTUnneling - No wait duration passed") }
                     
@@ -220,14 +220,14 @@ class ChangeDecoder {
                         if TestingManager.helper.verboseChanges { manager.gameBoard.printGameBoard() }
                         
                         PowerManager.helper.removePower(from: torus, PowerType(.burrow))
-                        PowerManager.helper.burrow(activatedBy: torus, existingSet: targetTiles)
+                        _ = PowerManager.helper.burrow(activatedBy: torus, existingSet: targetTiles)
                         manager.updateUI()
                     }
                     
                     waitDuration += duration
-                case .relocate:
-                    guard let targetTile = change.tile else { fatalError("Change Decoder - Relocate - No Target Tile Passed")}
-                    guard let duration = change.waitDuration else { fatalError("Change Decoder - Relocate - No wait duration passed") }
+                case .float:
+                    guard let targetTile = change.tile else { fatalError("Change Decoder - Float - No Target Tile Passed")}
+                    guard let duration = change.waitDuration else { fatalError("Change Decoder - Float - No wait duration passed") }
                     
                     scene.run(SKAction.wait(forDuration: waitDuration)) {
                         guard let torus = scene.gameManager.getTorus(with: change.torus) else { fatalError("Change Decoder - Torus could not be located") }
@@ -235,16 +235,14 @@ class ChangeDecoder {
                         if TestingManager.helper.verboseChanges { print("\nChange - \(change), duration \(duration)") }
                         if TestingManager.helper.verboseChanges { manager.gameBoard.printGameBoard() }
                         
-                        PowerManager.helper.removePower(from: torus, PowerType(.relocate))
-                        PowerManager.helper.relocate(activatedBy: torus, existingTile: targetTile)
+                        PowerManager.helper.removePower(from: torus, PowerType(.float))
+                        PowerManager.helper.float(activatedBy: torus, existingTile: targetTile)
                         manager.updateUI()
                     }
                     
                     waitDuration += duration
                 case .respawn:
                     scene.run(SKAction.wait(forDuration: waitDuration)) {
-                        guard let torus = scene.gameManager.getTorus(with: change.torus) else { fatalError("Change Decoder - Torus could not be located") }
-                        
                         if TestingManager.helper.verboseChanges { print("\nChange - \(change)") }
                         
                         PowerManager.helper.respawnOrbs(decoding: true)
@@ -260,20 +258,19 @@ class ChangeDecoder {
                     }
                     
                     waitDuration += 0.25
-                case .scramble:
-                    guard let scrambledList = change.scrambledList else { fatalError("Change Decoder - Scramble - No Tiles passed") }
-                    guard let duration = change.waitDuration else { fatalError("Change Decoder - Scramble - No wait duration passed") }
+                case .shuffle:
+                    guard let shuffledList = change.shuffledList else { fatalError("Change Decoder - Shuffle - No Tiles passed") }
+                    guard let duration = change.waitDuration else { fatalError("Change Decoder - Shuffle - No wait duration passed") }
 
                     scene.run(SKAction.wait(forDuration: waitDuration)) {
                         guard let torus = scene.gameManager.getTorus(with: change.torus) else { fatalError("Change Decoder - Torus could not be located") }
-                        guard let direction = change.scrambleDirection else { fatalError("Change Decoder - Scramble - No Scrmable Direction paased") }
-                        //Just FYI - the torus that activates this is going to have an extra scramble. It won't matter because it's on the opposing team.
+                        guard let direction = change.shuffleDirection else { fatalError("Change Decoder - Shuffle - No Scrmable Direction paased") }
                         
                         if TestingManager.helper.verboseChanges { print("\nChange - \(change)") }
                         if TestingManager.helper.verboseChanges { manager.gameBoard.printGameBoard() }
                         
-                        PowerManager.helper.removePower(from: torus, PowerType(.scramble, direction))
-                        MovementManager.helper.decodedScramble(scrambledList: scrambledList)
+                        PowerManager.helper.removePower(from: torus, PowerType(.shuffle, direction))
+                        _ = MovementManager.helper.decodedShuffle(shuffledList: shuffledList)
                         manager.updateUI()
                     }
                     

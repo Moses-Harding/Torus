@@ -55,7 +55,7 @@ class Team {
     
     func addTorus(from torus: Torus, override boardPosition: TilePosition? = nil, keepNumber: Bool = false) -> Torus {
 
-        var boardPosition = boardPosition ?? torus.currentTile.boardPosition
+        let boardPosition = boardPosition ?? torus.currentTile.boardPosition
         
         guard let tile = gameManager.gameBoard.getTile(from: boardPosition) else { fatalError("Team - Add Torus - Cannot Get Tile") }
                 
@@ -71,8 +71,6 @@ class Team {
             torusNumber = lastNumber
             lastNumber += 1
         }
-        
-        //let lastNumber = keepNumber ? torus.torusNumber : torii.last?.torusNumber ?? 1
         
         let description = TorusDescription(color: self.teamColor, teamNumber: self.teamNumber, torusNumber: torusNumber, powers: torus.powers, attributes: torus.activatedAttributes, currentTile: boardPosition)
 

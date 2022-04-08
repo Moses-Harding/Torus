@@ -28,12 +28,10 @@ class Entity {
     init(scene: GameScene, sprite: EntitySprite, position: CGPoint, spriteLevel: SpriteLevel, name: String, size: CGSize) {
         
         self.scene = scene
-        
         self.sprite = sprite
         self.spriteLevel = spriteLevel
         self.size = size
         self.position = position
-        
         self.name = name
 
         addToParent()

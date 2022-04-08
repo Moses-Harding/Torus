@@ -12,12 +12,6 @@ import SpriteKit
 
 class TorusSprite: EntitySprite {
     
-    override var texture: SKTexture? {
-        didSet {
-            //print("Texture Changed to \(texture)")
-        }
-    }
-
     init(textureName: String, size: CGSize) {
         
         let texture = SKTexture(imageNamed: textureName)

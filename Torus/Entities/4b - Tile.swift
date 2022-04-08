@@ -36,12 +36,7 @@ final class Tile: Entity {
     var disintegrateTexture = TileAssets.disintegrateTile.rawValue
     
     var moveSelectionOverlay: MoveSelectionOverlay?
-    var orbOverlay: OrbOverlay? {
-        didSet {
-            //print("Orb Texture changed to \(orbOverlay) on \(self.name)")
-            //print("NOTE - associate individual powers with given orbs")
-        }
-    }
+    var orbOverlay: OrbOverlay?
     var nextPower: PowerType?
     
     init(scene: GameScene, boardPosition: TilePosition, size: CGSize) {
@@ -92,17 +87,15 @@ extension Tile { //Manipulation
         
         guard status != .disintegrated else { return }
         
-        if TestingManager.helper.verbose { print("Populating orb on \(self.boardPosition)") }
+        if TestingManager.helper.verbosePowers { print("Populating orb on \(self.boardPosition)") }
 
         hasOrb = true
         
         if AnimationManager.helper.isFirstTurn {
-            //print("Populating orb on tile \(self.name) - first turn")
             orbOverlay = OrbOverlay(parentSize: sprite.size, parentSprite: sprite)
             orbOverlay?.position = CGPoint(x: CGFloat(height.rawValue * 2), y: CGFloat(height.rawValue * 2))
             AnimationManager.helper.isFirstTurn = false
         } else if orbOverlay == nil {
-            //print("Populating orb on tile \(self.name) - not first turn")
             AnimationManager.helper.populateOrb(self)
         }
 
@@ -242,7 +235,6 @@ extension Tile { //Raise And Lower
         case .l4:
             changeHeight(to: .l5)
         case .l5:
-            //changeHeight(to: .l5)
             print("Max Height Reached")
         }
     }
@@ -252,7 +244,6 @@ extension Tile { //Raise And Lower
         switch height {
         case .l1:
             print("Max Depth Reached")
-            //changeHeight(to: .l1)
         case .l2:
             changeHeight(to: .l1)
         case .l3:

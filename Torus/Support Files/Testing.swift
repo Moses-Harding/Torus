@@ -9,30 +9,26 @@ import Foundation
 import SpriteKit
 
 class TestingManager {
-    
+
     static let helper = TestingManager()
-    
-    //
-    var verbose = false
-    
+
     var verboseTiles = false
-    var verboseChanges = true
+    var verboseChanges = false
     var verbosePowers = false
-    var verbosePowerList = true
+    var verbosePowerList = false
     var verboseTouch = false
     
     //Test Powers
     var testPowers = false
     var toriiStartWithPowers = true
-    
     var toriiStartWithStatuses = false
     
     //Start without gamecetner
     var startWithoutGameCenter = false
     
-    var heightList: [PowerType] = [PowerType(.raiseTile), PowerType(.lowerTile), PowerType(.wall, .row), PowerType(.wall, .radius), PowerType(.wall, .column), PowerType(.trench, .radius), PowerType(.trench, .row), PowerType(.trench, .column)]
+    var heightList: [PowerType] = [PowerType(.raise), PowerType(.lower), PowerType(.elevate, .row), PowerType(.elevate, .radius), PowerType(.elevate, .column), PowerType(.sink, .radius), PowerType(.sink, .row), PowerType(.sink, .column)]
 
-    var powersToTest: [PowerType] = [PowerType(.weightless), PowerType(.jumpProof), PowerType(.moveDiagonal), PowerType(.burrow)]
+    var powersToTest: [PowerType] = [PowerType(.weightless), PowerType(.armor), PowerType(.freeMovement), PowerType(.burrow)]
     
     //Test Number of orbs
     var testOrbs = false

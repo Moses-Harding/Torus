@@ -17,11 +17,6 @@ extension Array where Element: Equatable {
     }
 }
 
-
-enum ScaleDirection {
-    case width, height
-}
-
 extension CGSize {
     
     func scaled(by float: CGFloat) -> CGSize {
@@ -102,28 +97,6 @@ extension CGPoint {
         }
         
         return CGPoint(x: x, y: y)
-    }
-}
-
-extension Bool {
-    
-    mutating func switchState() {
-        self.toggle()
-    }
-}
-
-
-extension SKLabelNode {
-    func adjustLabelFontSizeToFitRect(rect: CGRect) {
-        
-        // Determine the font scaling factor that should let the label text fit in the given rectangle.
-        let scalingFactor = min(rect.width / self.frame.width, rect.height / self.frame.height)
-        
-        // Change the fontSize.
-        self.fontSize *= scalingFactor
-        
-        // Optionally move the SKLabelNode to the center of the rectangle.
-        //self.position = CGPoint(x: rect.midX, y: rect.midY - self.frame.height / 2.0)
     }
 }
 

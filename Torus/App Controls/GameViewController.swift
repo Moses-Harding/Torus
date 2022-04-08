@@ -25,7 +25,6 @@ class GameViewController: UIViewController {
         GameCenterHelper.helper.viewController = self
         
         if let view = self.view as! SKView? {
-            // Load the SKScene from 'GameScene.sks'
             
             startingScene = StartingScene(size: view.frame.size)
             startingScene.scaleMode = .aspectFill
@@ -45,15 +44,7 @@ class GameViewController: UIViewController {
         guard let view = self.view as? SKView, let gameScene = self.gameScene else { fatalError() }
         
         guard let filter = CIFilter(name: "CIRippleTransition") else { fatalError() }
-        
-        //filter.setValue(view.frame.width, forKey: "inputWidth")
-        //filter.setValue(CIVector(x: view.frame.width, y: view.frame.height), forKey: "inputExtent")
-        //filter.setValue(5, forKey: "inputTime")
-        //filter.setDefaults()
-        //filter.setValue(5.0, forKey: "inputScale")
-        
-       
-        
+
         let transition = SKTransition(ciFilter: filter, duration: 1)
         
         switch currentScene {

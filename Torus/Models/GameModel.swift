@@ -221,7 +221,7 @@ extension GameModel: CustomStringConvertible {
         var description = "Game Model Summary - \n"
         description += "Players - \(player1 ?? "None") and \(player2 ?? "None")\n"
         description += "Score - \(team1Score) and \(team2Score)\n"
-        description += "Turn - \(turnNumber); Current Team - \(currentTeam), Winner - \(winner)\n"
+        description += "Turn - \(turnNumber); Current Team - \(currentTeam), Winner - \(String(describing: winner))\n"
         description += "Tiles And Torii Accounted for - \(tiles.count), \(team1Torii.count), and \(team2Torii.count)\n"
         description += "Changes - \(changes)\n"
         return description

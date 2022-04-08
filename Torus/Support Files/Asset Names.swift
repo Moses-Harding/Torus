@@ -14,15 +14,24 @@ public enum BackgroundLabelAsset: String {
     case blueUnhighlighted = "Blue Label Background"
 }
 
-public enum TorusAsset: String {
-    case redBase = "Torus - Red"
-    case redPoweredUp = "Torus - Red - Powered Up"
-    case redSelected = "Torus - Red - Selected"
-    case redPoweredUpSelected = "Torus - Red - Powered Up - Selected"
-    case blueBase = "Torus - Blue"
-    case bluePoweredUp = "Torus - Blue - Powered Up"
-    case blueSelected = "Torus - Blue - Selected"
-    case bluePoweredUpSelected = "Torus - Blue - Powered Up - Selected"
+public enum ButtonAssets: String {
+    case back = "Back Button"
+    case backDisabled = "Back Button - Disabled"
+    case endTurn = "End Turn Button"
+    case endTurnDisabled = "End Turn Button - Disabled"
+    case forfeit = "Forfeit Button"
+    case forfeitDisabled = "Forfeit Button - Disabled"
+    case rematch = "Rematch Button"
+    case start = "Start Button V2"
+    case quit = "Quit Button"
+}
+
+public enum LabelAssets: String {
+    case background = "Background Design V3"
+    case defeat = "Defeat Label V2"
+    case gameStart = "Game Start Label"
+    case logo = "Torus Neon Logo V2"
+    case victory = "Victory Label V2"
 }
 
 public enum OrbAsset: String, CaseIterable {
@@ -44,17 +53,6 @@ public enum PowerConsoleAssets: String {
     case onlyBlue = "PowerConsole - Can Only Select Blue"
 }
 
-public enum TorusOverlayAssets: String {
-    case amplify = "Amplify"
-    case weightless = "Weightless"
-    case flatToSphere = "Flat To Sphere"
-    case inhibited = "Inhibited"
-    case invisible = "Invisible"
-    case jumpProof = "Jump Proof"
-    case moveDiagonal = "Move Diagonal"
-    case snare = "Snare"
-}
-
 public enum TileAssets: String {
     case l1 = "Tile - L1"
     case l2 = "Tile - L2"
@@ -66,17 +64,21 @@ public enum TileAssets: String {
     case disintegrateTile = "Tile - Disintegrate"
 }
 
-public enum ButtonAssets: String {
-    case back = "Back Button"
-    case endTurn = "End Turn Button"
-    case endTurnDisabled = "End Turn Button - Disabled"
-    case forfeit = "Forfeit Button"
-    case rematch = "Rematch Button"
-    case quit = "Quit Button"
+public enum TorusAsset: String {
+    case blueBase = "Torus - Blue"
+    case bluePoweredUp = "Torus - Blue - Powered Up"
+    case blueSelected = "Torus - Blue - Selected"
+    case bluePoweredUpSelected = "Torus - Blue - Powered Up - Selected"
+    case redBase = "Torus - Red"
+    case redPoweredUp = "Torus - Red - Powered Up"
+    case redSelected = "Torus - Red - Selected"
+    case redPoweredUpSelected = "Torus - Red - Powered Up - Selected"
 }
 
-public enum LabelAssets: String {
-    case gameStart = "Game Start Label"
-    case defeat = "Defeat Label V2"
-    case victory = "Victory Label V2"
+public enum TorusOverlayAssets: String {
+    case amplify = "Amplify"
+    case armor = "Armor"
+    case freeMovement = "Free Movement"
+    case snare = "Snare"
+    case weightless = "Weightless"
 }

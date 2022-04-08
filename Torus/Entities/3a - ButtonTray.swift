@@ -53,14 +53,13 @@ class ButtonTray: Entity {
         middleArea.position = CGPoint(x: 0, y: 0)
         rightArea.position = CGPoint(x: size.width * 1.2, y: 0)
         
-        backButton = ImageNode(ButtonAssets.back.rawValue) { self.scene.backToStartScreen() }
+        backButton = ImageNode(ButtonAssets.back.rawValue, secondaryImage: ButtonAssets.backDisabled.rawValue) { self.scene.backToStartScreen() }
         endTurnButton = ImageNode(ButtonAssets.endTurn.rawValue, secondaryImage: ButtonAssets.endTurnDisabled.rawValue) { self.manager.takeTurn() }
-        forfeitButton = ImageNode(ButtonAssets.forfeit.rawValue) { GameCenterHelper.helper.quit(completion: errorBlock) }
+        forfeitButton = ImageNode(ButtonAssets.forfeit.rawValue, secondaryImage: ButtonAssets.forfeitDisabled.rawValue) { GameCenterHelper.helper.quit(completion: errorBlock) }
         
         backButton.image.size.scale(proportionateTo: .height, of: size)
         endTurnButton.image.size.scale(proportionateTo: .height, of: size)
         forfeitButton.image.size.scale(proportionateTo: .height, of: size)
-        
         
         backButton.zPosition = leftArea.zPosition + 10
         endTurnButton.zPosition = middleArea.zPosition + 10
