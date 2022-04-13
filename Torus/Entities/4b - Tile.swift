@@ -83,11 +83,12 @@ extension Tile { //Manipulation
         occupiedBy = nil
     }
     
-    func populateOrb(decoding: Bool = false, nextPower: PowerType? = nil) {
+    func populateOrb(decoding: Bool = false, nextPower: PowerType? = nil, calledBy: String) {
         
         guard status != .disintegrated else { return }
         
         if TestingManager.helper.verbosePowers { print("Populating orb on \(self.boardPosition)") }
+        if TestingManager.helper.verbosePowers { print("Called by \(calledBy)") }
 
         hasOrb = true
         
@@ -263,7 +264,7 @@ extension Tile { //Populate Tile Based Off Of Description
         changeStatus(to: description.status)
         changeHeight(to: description.height)
         if description.hasOrb {
-            populateOrb(decoding: true, nextPower: description.nextPower)
+            populateOrb(decoding: true, nextPower: description.nextPower, calledBy: "loadDescription")
         }
         if description.status == .disintegrated {
             disintegrate()

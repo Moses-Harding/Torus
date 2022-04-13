@@ -84,13 +84,6 @@ class Torus: Entity {
         //TESTING
         if TestingManager.helper.toriiStartWithPowers {
             for _ in 0 ... Int.random(in: 0 ... 3) { self.powerUp(with: PowerType.random()) }
-            /*
-            let allPowers = Power.allCases
-            for power in allPowers {
-                self.powerUp(with: power, .column)
-                self.powerUp(with: power, .row)
-            }
-             */
         }
     }
     

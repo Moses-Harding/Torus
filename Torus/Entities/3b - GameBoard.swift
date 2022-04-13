@@ -25,6 +25,7 @@ struct TilePosition: Equatable, Codable, CustomStringConvertible, Comparable {
     var name: String {
         return "(\(column),\(row))"
     }
+
     
     var column: Int
     var row: Int
@@ -69,6 +70,10 @@ class GameBoard: Entity {
     
     var cellSize: CGSize?
     
+    
+    var midPoint: CGPoint {
+        return CGPoint(x: frame.midX, y: frame.midY)
+    }
     
     var unoccupiedTiles: Int {
         var count = 0

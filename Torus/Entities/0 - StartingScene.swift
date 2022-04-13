@@ -20,6 +20,8 @@ class StartingScene: SKScene {
     
     var warning: SKSpriteNode!
     
+    var notAuthenticated: UserMessage?
+    
     var startButton: ImageNode!
     var logo: ImageNode!
     var background: ImageNode!
@@ -79,6 +81,11 @@ class StartingScene: SKScene {
             startButton.zPosition = 2
             self.addChild(startButton)
             
+            
+            let resize = SKAction.scale(by: 1.025, duration: 1)
+            
+            startButton.run(SKAction.repeatForever(SKAction.sequence([resize, resize.reversed()])))
+            
             background = ImageNode(LabelAssets.background.rawValue) { self.registeredTaps.append(.background) }
             background.image.size.scale(proportionateTo: .width, with: frame.width)
             background.position = CGPoint(x: frame.midX, y: frame.midY)
@@ -116,10 +123,14 @@ class StartingScene: SKScene {
             }
         } else {
             if GameCenterHelper.isAuthenticated {
+                if let message = notAuthenticated {
+                    message.removeFromParent()
+                    notAuthenticated = nil
+                }
                 GameCenterHelper.helper.presentMatchmaker()
             } else {
-                let message = UserMessage("You need to be connected to GameCenter to play this game. Please go to your settings and sign in.", fontName: "Menlo-Regular", fontSize: 18, size: CGSize(width: frame.width * 0.8, height: 50), parent: self, position: midPoint)
-                message.position = message.position.move(.down, by: message.background.frame.height * 1.5)
+                notAuthenticated = UserMessage("You need to be connected to GameCenter to play this game. Please go to your settings and sign in.", fontName: "Menlo-Regular", fontSize: 18, size: CGSize(width: frame.width * 0.8, height: 50), parent: self, position: midPoint)
+                notAuthenticated!.position = notAuthenticated!.position.move(.down, by: notAuthenticated!.background.frame.height * 2)
             }
         }
     }

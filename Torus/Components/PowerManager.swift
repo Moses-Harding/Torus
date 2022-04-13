@@ -458,7 +458,7 @@ extension PowerManager { //Powers
                     targetTiles.append(tile)
                 }
             }
-            targetTiles.append(torus.currentTile)
+            //targetTiles.append(torus.currentTile)
         }
         
         

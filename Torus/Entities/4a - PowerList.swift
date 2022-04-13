@@ -31,6 +31,9 @@ class PowerList: Entity {
     var downArrow: ImageNode!
     
     var powerIsActivating = false
+    var consoleIsDisplaying: PowerConsoleAssets = .normal
+    
+    var powerLabel: UserMessage!
     
     var powerButtons: [PowerButton] = [] {
         didSet {
@@ -63,7 +66,7 @@ class PowerList: Entity {
 
         let sprite = PowerListSprite(size: size)
 
-        super.init(scene: scene, sprite: sprite, position: position, spriteLevel: .torusOrScrollView, name: PowerConsoleAssets.powerConsole.rawValue, size: size)
+        super.init(scene: scene, sprite: sprite, position: position, spriteLevel: .torusOrScrollView, name: PowerConsoleAssets.normal.rawValue, size: size)
         
         buttonSpacer = sprite.frame.size.height * 0.2
         buttonHeight = sprite.frame.size.height * 0.15
@@ -96,6 +99,9 @@ class PowerList: Entity {
         
         upArrow.zPosition = sprite.zPosition + 1
         downArrow.zPosition = sprite.zPosition + 1
+        
+        powerLabel = UserMessage("", fontSize: 18, size: scene.size.scaled(x: 0.8, y: 0.5), parent: scene, position: scene.midPoint.move(.up, by: scene.frame.height / 12.5))
+        powerLabel.clear()
     }
     
     required init?(coder: NSCoder) {
@@ -169,6 +175,8 @@ class PowerList: Entity {
 
         let waitDuration = duration > 0.5 ? duration : 0.5
         
+        consoleIsDisplaying = .filled
+        
         self.sprite.run(SKAction.wait(forDuration: waitDuration + 0.1)) {
             self.powerIsActivating = false
             closure()
@@ -176,6 +184,7 @@ class PowerList: Entity {
             if self.manager.currentTeam.currentlySelected == nil {
                 self.clear()
             }
+            self.consoleIsDisplaying = .normal
         }
     }
     
@@ -185,6 +194,8 @@ class PowerList: Entity {
     
     func displayPowerConsole(message: PowerConsoleAssets, duration: CGFloat = 0.75, calledBy: String) {
         
+        consoleIsDisplaying = message
+        
         if TestingManager.helper.verbosePowerList { print("Display \(message.rawValue) called by \(calledBy)") }
         
         let gateSprite = SKSpriteNode(imageNamed: message.rawValue)
@@ -193,8 +204,76 @@ class PowerList: Entity {
         gateSprite.zPosition = 20
         self.sprite.run(SKAction.wait(forDuration: duration)) {
             gateSprite.removeFromParent()
+            self.consoleIsDisplaying = .normal
         }
     }
+    
+    func getGuidance(for power: Power) -> String {
+        
+        var text = ""
+        
+        switch power {
+        case .amplify:
+            text = "Any power this piece uses has double the affected range"
+        case .armor:
+            text = "This piece will be protected from being jumped on by other pieces"
+        case .burrow:
+            text = "Randomly raises tiles to the highest level and kills enemies on affected tiles"
+        case .cleanse:
+            text = "Removes ‘snare’ from your pieces; removes ‘amplify’, ‘armor’, and ‘weightless’ from your opponent’s pieces in the affected range"
+        case .consolidate:
+            text = "Every power from all of your other pieces will be transferred to this piece"
+        case .defect:
+            text = "Enemies in the affected range join your team"
+        case .disintegrate:
+            text = "Enemies in the affected range die; the tile they were on becomes unusable"
+        case .doublePowers:
+            text = "Every power this piece has is doubled"
+        case .elevate:
+            text = "Raises the tiles in the affected range to the highest possible level"
+        case .exchange:
+            text = "Pieces in the affected range switch teams"
+        case .float:
+            text = "Randomly transports this piece to another open spot on the board"
+        case .freeMovement:
+            text = "This piece will be able to move in any direction"
+        case .invert:
+            text = "The elevation of tiles in the affected range are reversed (e.g. the highest becomes the lowest)"
+        case .learn:
+            text = "This piece learns the powers of your other pieces in the affected range"
+        case .leech:
+            text = "This piece steals the powers from any enemies in the affected range"
+        case .lower:
+            text = "Lowers the tile this piece is on by one increment"
+        case .missileStrike:
+            text = "Randomly strikes any tile on the board; will kill either team"
+        case .moat:
+            text = "Raises the tile that this piece is on to the highest level and lowers the other affected tiles to the lowest level"
+        case .obliterate:
+            text = "Enemies in the affected range are killed"
+        case .raise:
+            text = "Raises the tile this piece is on by one increment"
+        case .respawnOrbs:
+            text = "Existing orbs will disappear and reappear on different tiles"
+        case .selfDestruct:
+            text = "Any piece in the affected range is killed"
+        case .shuffle:
+            text = "Randomly moves each piece in the affected range to another tile in the affected range"
+        case .sink:
+            text = "Lowers the tiles in the affected range to the lowest possible level"
+        case .snare:
+            text = "Pieces in the affected range will be trapped; if they move, they die"
+        case .targetedStrike:
+            text = "Randomly strikes any tile on the board, except your pieces"
+        case .teach:
+            text = "Teaches the powers of this piece to your other pieces in the affected range"
+        case .weightless:
+            text = "This piece will be able to move to any elevation"
+        }
+        
+        return "\(power.rawValue):\n" + text
+    }
+
     
     func scrollUp() {
 
@@ -222,6 +301,11 @@ class PowerButton: TouchNode {
     var label: SKLabelNode
     var background: SKShapeNode
     var highlight: SKSpriteNode
+    
+    var startTouch: CGFloat = 0
+    var endTouch: CGFloat = 0
+    
+    var isBeingTouched = false
     
     init(powerList: PowerList, power: PowerType, cropNode: SKCropNode, powerCount: Int, position: CGPoint, buttonFrame: CGRect) {
         self.power = power
@@ -258,8 +342,49 @@ class PowerButton: TouchNode {
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         
-        guard !powerList.powerIsActivating else { return }
+        guard powerList.consoleIsDisplaying == .normal else { return }
 
-        powerList.buttonPushed(self)
+        guard let touch = touches.first else { return }
+        
+        startTouch = touch.timestamp
+        isBeingTouched = true
+        
+        Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { timer in
+            if self.isBeingTouched {
+                self.powerList.powerLabel.changeText(to: self.powerList.getGuidance(for: self.power.power))
+            } else {
+                self.powerList.powerLabel.clear()
+            }
+        }
+    }
+    
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        
+        guard let touch = touches.first else { return }
+        
+        if touch.timestamp - startTouch < 0.5 {
+            powerList.buttonPushed(self)
+        } else {
+            //powerList.displayGuidanceFor(power: self.power.power)
+        }
+        
+        isBeingTouched = false
+        self.powerList.powerLabel.clear()
+    }
+    
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        
+        guard let touch = touches.first else { return }
+        
+        endTouch = touch.timestamp
+        
+        if touch.timestamp - startTouch < 0.5 {
+            powerList.buttonPushed(self)
+        } else {
+            //powerList.displayGuidanceFor(power: self.power.power)
+        }
+        
+        isBeingTouched = false
+        self.powerList.powerLabel.clear()
     }
 }

@@ -25,7 +25,7 @@ enum ScaleDirection {
 }
 
 enum SpriteLevel: CGFloat {
-    case playScreen = 0, boardOrTray = 1, tileOrTrayItem = 2, torusOrScrollView = 3, tileOverlay = 4, label = 5, userMessage = 6, topLevel = 100
+    case playScreen = 0, boardOrTray = 1, tileOrTrayItem = 2, torusOrScrollView = 3, tileOverlay = 4, label = 5, userMessage = 80, topLevel = 100
 }
 
 enum TestTapType {

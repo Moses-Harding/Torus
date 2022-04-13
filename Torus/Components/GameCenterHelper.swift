@@ -128,11 +128,29 @@ class GameCenterHelper: NSObject {
 
         match.participants.forEach { $0.matchOutcome = .lost }
         match.currentParticipant?.matchOutcome = .won
+        match.message = "Game over! You lost."
         
-        guard let data = match.matchData else { fatalError("GameCenterHelper - Quit - No data found for match") }
+        guard let data = match.matchData else { fatalError("GameCenterHelper - Win - No data found for match") }
         match.endMatchInTurn(withMatch: data, completionHandler: completion)
 
         scene?.gameOver(.won)
+    }
+    
+    func opponentQuit(completion: @escaping CompletionBlock) {
+        
+        guard let match = currentMatch else {
+            completion(GameCenterHelperError.matchNotFound)
+            return
+        }
+
+        match.participants.forEach { $0.matchOutcome = .lost }
+        match.currentParticipant?.matchOutcome = .won
+        match.message = "Game over! You lost."
+        
+        guard let data = match.matchData else { fatalError("GameCenterHelper - Win - No data found for match") }
+        match.endMatchInTurn(withMatch: data, completionHandler: completion)
+
+        scene?.gameOver(.opponentQuit)
     }
     
     func quit(completion: @escaping CompletionBlock) {
@@ -148,6 +166,8 @@ class GameCenterHelper: NSObject {
             other.matchOutcome = .won
             others.append(other)
         }
+        
+        match.message = "Game over! Your opponent quit."
         
         guard let data = match.matchData else { fatalError("GameCenterHelper - Quit - No data found for match") }
         
@@ -165,6 +185,8 @@ class GameCenterHelper: NSObject {
 
         match.participants.forEach { $0.matchOutcome = .won }
         match.currentParticipant?.matchOutcome = .lost
+        
+        match.message = "Game over! Your won!"
         
         guard let data = match.matchData else { fatalError("GameCenterHelper - Quit - No data found for match") }
         
@@ -209,12 +231,15 @@ extension GameCenterHelper: GKLocalPlayerListener {
     
     func player(_ player: GKPlayer, wantsToQuitMatch match: GKTurnBasedMatch) {
         
+        print("Wants to quit match")
+        
         let activeOthers = match.participants.filter { other in
             return other.status == .active && other != player
         }
         
-        match.currentParticipant?.matchOutcome = .lost
+        match.currentParticipant?.matchOutcome = .quit
         activeOthers.forEach { $0.matchOutcome = .won }
+        match.message = "Game over! Your opponent quit."
         
         match.endMatchInTurn( withMatch: match.matchData ?? Data() )
         
@@ -225,9 +250,26 @@ extension GameCenterHelper: GKLocalPlayerListener {
         }
     }
     
+    func player(_ player: GKPlayer, matchEnded: GKTurnBasedMatch) {
+        
+        print("Match ended")
+        
+        guard let currentPlayer = matchEnded.participants.filter({ other in
+            return other == player
+        }).first else { return }
+        
+        if currentPlayer.matchOutcome == .won {
+            matchEnded.message = "You won!"
+        } else {
+            matchEnded.message = "You lost."
+        }
+        
+        
+    }
+
+    
     //Turn was taken and other player is notified
     func player(_ player: GKPlayer, receivedTurnEventFor match: GKTurnBasedMatch, didBecomeActive: Bool) {
-        
         
         guard match.status != .ended else { return }
         //If matchmaker vc is active (i.e. if user just created a game) then dismiss the vc
@@ -237,6 +279,10 @@ extension GameCenterHelper: GKLocalPlayerListener {
         }
         
         if didBecomeActive {
+            
+            if viewController?.currentScene == .main {
+                viewController?.switchScene()
+            }
             
             //The user tapped on notification banner and was not in the app
             self.currentMatch = match
@@ -282,12 +328,30 @@ extension GameCenterHelper: GKLocalPlayerListener {
                 scene.model = model
                 self.currentMatch = match
                 
-                //Move To view
-                scene.gameManager.beginTurn(matchAlreadyOpen: true)
+                print(match, model)
+                
+                guard let opponent = match.participants.filter({ other in
+                    return other != player
+                }).first else {
+                    print("No opponent found when loading match data")
+                    return
+                    
+                }
+                
+                if opponent.matchOutcome == .won {
+                    self.defeat { if let error = $0 { print(error) } }
+                } else if opponent.matchOutcome == .lost {
+                    self.win { if let error = $0 { print(error) } }
+                } else if opponent.matchOutcome == .quit {
+                    self.opponentQuit { if let error = $0 { print(error) } }
+                } else {
+                    //Move To view
+                    scene.gameManager.beginTurn(matchAlreadyOpen: true)
+                }
             }
         } else {
             self.currentMatch = match
-            GKNotificationBanner.show(withTitle: notificationTitle, message: notificationMessage, completionHandler: {})
+            GKNotificationBanner.show(withTitle: notificationTitle, message: match.message, completionHandler: {})
         }
     }
 }

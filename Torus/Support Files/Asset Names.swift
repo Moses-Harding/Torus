@@ -31,6 +31,7 @@ public enum LabelAssets: String {
     case defeat = "Defeat Label V2"
     case gameStart = "Game Start Label"
     case logo = "Torus Neon Logo V2"
+    case opponentQuit = "Opponent Quit Label"
     case victory = "Victory Label V2"
 }
 
@@ -44,7 +45,7 @@ public enum OrbAsset: String, CaseIterable {
 }
 
 public enum PowerConsoleAssets: String {
-    case powerConsole = "PowerConsole V2"
+    case normal = "PowerConsole V2"
     case filled = "PowerConsole - Filled"
     case noEffect = "PowerConsole - No Effect"
     case powerConsoleOverHeat = "PowerConsole - OverHeat"

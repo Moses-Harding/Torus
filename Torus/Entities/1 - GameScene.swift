@@ -131,9 +131,12 @@ class GameScene: SKScene {
             waitingScreen?.position = midPoint.move(.up, by: frame.height / 4)
             waitingScreen?.size.scale(proportionateTo: .width, of: self.frame.size)
             waitingScreen?.zPosition = SpriteLevel.topLevel.rawValue + 10
+            waitingScreen?.run(SKAction.repeatForever(
+                SKAction.sequence([SKAction.fadeOut(withDuration: 1.5), SKAction.fadeIn(withDuration: 1.5)])))
         }
 
         waitingScreen?.isHidden = GameCenterHelper.helper.canTakeTurnForCurrentMatch
+        waitingScreen?.isPaused = GameCenterHelper.helper.canTakeTurnForCurrentMatch
         playScreen.buttonTray.endTurnButton.isEnabled = GameCenterHelper.helper.canTakeTurnForCurrentMatch
         playScreen.buttonTray.forfeitButton.isEnabled = GameCenterHelper.helper.canTakeTurnForCurrentMatch
     }
@@ -152,12 +155,22 @@ class GameScene: SKScene {
     }
     
     enum GameResult {
-        case won, lost
+        case won, lost, opponentQuit
     }
     
     func gameOver(_ result: GameResult) {
         
-        let resultLabel = SKSpriteNode(imageNamed: result == .won ? LabelAssets.victory.rawValue : LabelAssets.defeat.rawValue)
+        var imageName: String
+        switch result {
+        case .won:
+            imageName = LabelAssets.victory.rawValue
+        case .lost:
+            imageName = LabelAssets.defeat.rawValue
+        case .opponentQuit:
+            imageName = LabelAssets.opponentQuit.rawValue
+        }
+        
+        let resultLabel = SKSpriteNode(imageNamed: imageName)
         self.addChild(resultLabel)
         resultLabel.position = midPoint.move(.up, by: frame.height / 4)
         resultLabel.size.scale(proportionateTo: .width, of: self.frame.size)

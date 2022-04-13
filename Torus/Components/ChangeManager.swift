@@ -158,10 +158,12 @@ class ChangeDecoder {
                     guard let tile = manager.gameBoard.getTile(from: change.orbAssignment?.tile) else { fatalError("Change Decoder - Add Orb - No Tile Passed") }
                     guard let powerType = change.orbAssignment?.nextPower else { fatalError("Change Decoder - Add Orb - No Power Passed") }
                     
+                    print(tile, powerType)
+                    
                     scene.run(SKAction.wait(forDuration: waitDuration)) {
                         
                         if TestingManager.helper.verboseChanges { print("\nChange - \(change) - \(String(describing: change.powerToActivate))") }
-                        tile.populateOrb(decoding: true, nextPower: powerType)
+                        tile.populateOrb(decoding: true, nextPower: powerType, calledBy: "ChangeDecorder - Add Orb")
                         manager.updateUI()
                     }
                     

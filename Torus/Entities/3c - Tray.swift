@@ -106,6 +106,7 @@ class Tray: Entity {
                 var description = ""
                 description += "Tile - " + tile.boardPosition.name
                 description += " Status - " + tile.status.rawValue
+                description += " Has Orb - " + String(tile.hasOrb)
                 let tileNode = TextNode(description, size: self.sprite.size)
                 tileNode.zPosition = SpriteLevel.label.rawValue
                 tileNode.position = CGPoint(x: 10, y: 50)

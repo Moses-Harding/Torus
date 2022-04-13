@@ -68,7 +68,7 @@ class PowerListSprite: EntitySprite {
     
     init(size: CGSize) {
         
-        let texture = SKTexture(imageNamed: PowerConsoleAssets.powerConsole.rawValue)
+        let texture = SKTexture(imageNamed: PowerConsoleAssets.normal.rawValue)
         super.init(texture: texture, color: UIColor.clear, size: size)
     }
     

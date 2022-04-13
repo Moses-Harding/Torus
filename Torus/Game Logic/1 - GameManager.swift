@@ -148,6 +148,8 @@ extension GameManager { //Taking Turn
     
     func generateOrbs(with respawnCount: Int? = nil) {
         
+        print("Generate Orbs")
+        
         guard turnNumber % 10 == 0 || respawnCount != nil else { return }
         
         var numberOfOrbs = respawnCount ?? Int(gameBoard.unoccupiedTiles / 5)
@@ -157,7 +159,7 @@ extension GameManager { //Taking Turn
         while numberOfOrbs > 0 && randomIndices.count > 0 {
             guard let randomIndex = randomIndices.popLast() else { fatalError("No index when trying to generate orb") }
             if let tile = gameBoard.getTileForOrb(from: randomIndex) {
-                tile.populateOrb()
+                tile.populateOrb(calledBy: "Generate Orbs")
                 numberOfOrbs -= 1
             }
         }
@@ -229,8 +231,8 @@ extension GameManager { //User Touch Interaction / Selection
             return
         }
         
-        guard !powerList.powerIsActivating else {
-            print("Game Manager - Select Torus - Cannot select because power is activating")
+        guard powerList.consoleIsDisplaying == .normal else {
+            print("Game Manager - Select Torus - Cannot select because power is not in correct mode")
             return
         }
         
