@@ -45,6 +45,7 @@ public enum OrbAsset: String, CaseIterable {
 }
 
 public enum PowerConsoleAssets: String {
+    case clear = "PowerConsole - Clear Gate"
     case normal = "PowerConsole V2"
     case filled = "PowerConsole - Filled"
     case noEffect = "PowerConsole - No Effect"

@@ -158,6 +158,7 @@ extension Tile { //Manipulation
         }
         
         if let orb = orbOverlay {
+            print(boardPosition.xDistance, boardPosition.yDistance)
             orb.position = orb.position.move(.right, by: boardPosition.xDistance).move(.up, by: boardPosition.yDistance)
         }
     }

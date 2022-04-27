@@ -27,6 +27,8 @@ class GameScene: SKScene {
     
     var viewController: GameViewController?
     
+    var gameOver = false
+    
     var model: GameModel
     var isSendingTurn = false
     
@@ -124,6 +126,11 @@ class GameScene: SKScene {
     }
     
     @objc func toggleWaitingScreen() {
+        
+        if gameOver {
+            waitingScreen?.isHidden = true
+            return
+        }
 
         if waitingScreen == nil {
             waitingScreen = SKSpriteNode(imageNamed: "Waiting For Opponent Label")
@@ -137,6 +144,7 @@ class GameScene: SKScene {
 
         waitingScreen?.isHidden = GameCenterHelper.helper.canTakeTurnForCurrentMatch
         waitingScreen?.isPaused = GameCenterHelper.helper.canTakeTurnForCurrentMatch
+        playScreen.tray.powerList.clearGate.isHidden = GameCenterHelper.helper.canTakeTurnForCurrentMatch
         playScreen.buttonTray.endTurnButton.isEnabled = GameCenterHelper.helper.canTakeTurnForCurrentMatch
         playScreen.buttonTray.forfeitButton.isEnabled = GameCenterHelper.helper.canTakeTurnForCurrentMatch
     }
@@ -160,6 +168,8 @@ class GameScene: SKScene {
     
     func gameOver(_ result: GameResult) {
         
+        gameOver = true
+        
         var imageName: String
         switch result {
         case .won:
@@ -182,7 +192,10 @@ class GameScene: SKScene {
         rematchButton.position = midPoint
         rematchButton.zPosition = SpriteLevel.topLevel.rawValue + 10
         rematchButton.image.size.scale(proportionateTo: .width, with: frame.size.width * 0.65)
-        addChild(rematchButton)
+        
+        if GameCenterHelper.helper.canTakeTurnForCurrentMatch {
+         addChild(rematchButton)
+        }
         
         let quitButton = ImageNode(ButtonAssets.quit.rawValue) { self.backToStartScreen() }
         quitButton.position = midPoint.move(.down, by: rematchButton.image.size.height)
@@ -193,5 +206,7 @@ class GameScene: SKScene {
         playScreen.buttonTray.endTurnButton.isEnabled = false
         playScreen.buttonTray.forfeitButton.isEnabled = false
         playScreen.buttonTray.backButton.isEnabled = false
+        
+        waitingScreen?.isHidden = true
     }
 }

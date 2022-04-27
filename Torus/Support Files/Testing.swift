@@ -22,6 +22,7 @@ class TestingManager {
     var testPowers = false
     var toriiStartWithPowers = false
     var toriiStartWithStatuses = false
+    var testShuffling = false
     
     //Start without gamecetner
     var startWithoutGameCenter = false

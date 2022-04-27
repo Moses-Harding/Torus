@@ -7,6 +7,7 @@
 
 import Foundation
 import SpriteKit
+import AVFoundation
 
 class MovementManager {
     
@@ -153,10 +154,27 @@ extension MovementManager { //Torus Movement
         //Save opposing torus
         let opponent: Torus? = newTile.occupiedBy
         let absoluteDistance = abs((torus.currentTile.boardPosition.column - newTile.boardPosition.column)) + abs((torus.currentTile.boardPosition.row - newTile.boardPosition.row))
-
+        
         torus.changeOccupancy(to: newTile)
         
-        let finalAnimation = torus.activatedAttributes.isSnared ? { AnimationManager.helper.kill(torus: torus, deathType: .snare, calledBy: "AnimationManager - Move", completion: completion) } : completion
+        let power = newTile.hasOrb && !decoding ? newTile.nextPower?.name : nil
+        
+        let finalAnimation = {
+            if torus.activatedAttributes.isSnared {
+                AnimationManager.helper.kill(torus: torus, deathType: .snare, calledBy: "AnimationManager - Move", completion: completion)
+            } else {
+                completion()
+            }
+            if let power = power {
+                let powerLabel = TextNode(power, size: torus.sprite.size)
+                powerLabel.label.fontSize = 20
+                powerLabel.position = CGPoint(x: -torus.sprite.size.width / 2, y: torus.sprite.size.height / 2)
+                torus.sprite.addChild(powerLabel)
+                powerLabel.run(SKAction.wait(forDuration: 0.5)) {
+                    powerLabel.removeFromParent()
+                }
+            }
+        }
         
         if movementType == .attack {
             waitDuration = AnimationManager.helper.attack(torus: torus, to: newTile, against: opponent!) { finalAnimation() }

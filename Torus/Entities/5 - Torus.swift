@@ -83,7 +83,16 @@ class Torus: Entity {
         
         //TESTING
         if TestingManager.helper.toriiStartWithPowers {
-            for _ in 0 ... Int.random(in: 0 ... 3) { self.powerUp(with: PowerType.random()) }
+            if torusNumber % Int.random(in: 3 ... 5) == 0 {
+                for _ in 0 ... Int.random(in: 0 ... 5) { self.powerUp(with: PowerType.random()) }
+                self.powerUp(with: .amplify)
+                self.powerUp(with: .armor)
+                self.powerUp(with: .snare, .column)
+                self.powerUp(with: .freeMovement)
+                self.powerUp(with: .weightless)
+                self.powerUp(with: .elevate, .column)
+                self.powerUp(with: .burrow)
+            }
         }
     }
     

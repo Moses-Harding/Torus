@@ -28,9 +28,7 @@ class PowerManager {
         
         let exceeds20 = torus.powerUp(with: power)
         
-        if !exceeds20 {
-            gameManager.tray.powerList.updateView(with: torus.powers, from: torus, calledBy: "PowerManager Assigning Power")
-        }
+        if !exceeds20 { gameManager.tray.powerList.updateView(with: torus.powers, from: torus, calledBy: "PowerManager Assigning Power") }
     }
     
     func removePower(from torus: Torus, _ power: PowerType) {
@@ -56,7 +54,7 @@ class PowerManager {
         
         let direction = powerType.direction ?? .radius //Radius doesn't matter, just unwrapping.
         
-        var waitDuration: CGFloat = 0.1
+        var waitDuration: CGFloat = 0.5
         var isEffective = true
         var killedSelf = false
         

@@ -71,6 +71,14 @@ extension GameManager { //Taking Turn
                     return
                 }
             }
+            
+            if TestingManager.helper.testShuffling {
+                for torus in team1.torii {
+                    if torus.torusNumber % 3 == 0 {
+                        PowerManager.helper.activate(PowerType(.shuffle, .column), with: torus)
+                    } 
+                }
+            }
         } else {
             scene.model.loadData(to: scene, matchAlreadyOpen: matchAlreadyOpen)
             scene.toggleWaitingScreen()
@@ -88,8 +96,6 @@ extension GameManager { //Taking Turn
     }
     
     func updateUI() {
-        
-        print("Update UI called")
         
         gameBoard.unhighlightTiles()
         updateLabels()
@@ -148,8 +154,6 @@ extension GameManager { //Taking Turn
     
     func generateOrbs(with respawnCount: Int? = nil) {
         
-        print("Generate Orbs")
-        
         guard turnNumber % 10 == 0 || respawnCount != nil else { return }
         
         var numberOfOrbs = respawnCount ?? Int(gameBoard.unoccupiedTiles / 5)
@@ -207,39 +211,37 @@ extension GameManager { //User Touch Interaction / Selection
         
         if TestingManager.helper.verboseTouch { print("Selecting torus triggered by \(triggeredBy)") }
         
+        //Make sure decoding is done
         guard !ChangeDecoder.helper.currentlyDecoding else {
             self.powerList.displayPowerConsole(message: .opponentTurn, calledBy: "GameManager - Select Torus - Currently Decoding")
             print("Game Manager - Select Torus - Cannot select because change decoder is decoding")
             return
         }
         
-        guard GameCenterHelper.helper.canTakeTurnForCurrentMatch else {
-            self.powerList.displayPowerConsole(message: .opponentTurn, calledBy: "GameManager - Select Torus - Opponent's Turn")
-            return
-        }
-        
         //Make sure team is correct
-        guard torus.team == currentTeam else {
-            let message: PowerConsoleAssets = currentTeam.teamNumber == .one ? .onlyPink : .onlyBlue
-            self.powerList.displayPowerConsole(message: message, calledBy: "GameManager - Select Torus - Incorrect Team")
+        guard (GameCenterHelper.helper.canTakeTurnForCurrentMatch && torus.team == currentTeam) || (!GameCenterHelper.helper.canTakeTurnForCurrentMatch && torus.team != currentTeam) else {
+            if GameCenterHelper.helper.canTakeTurnForCurrentMatch {
+                let message: PowerConsoleAssets = currentTeam.teamNumber == .one ? .onlyPink : .onlyBlue
+                self.powerList.displayPowerConsole(message: message, calledBy: "GameManager - Select Torus - Incorrect Team")
+            }
             print("Game Manager - Select Torus - Cannot select because not current team")
             return
         }
         
+        //Make sure turn isn't sending
         guard !scene.isSendingTurn else {
             print("Game Manager - Select Torus - Cannot select because currently sending turn")
             return
         }
         
+        //Make sure console state is normal
         guard powerList.consoleIsDisplaying == .normal else {
             print("Game Manager - Select Torus - Cannot select because power is not in correct mode")
             return
         }
         
-
-        
         guard scene.model.winner == nil else {
-            print("winner found")
+            print("Winner found")
             return
         }
         
@@ -263,6 +265,10 @@ extension GameManager { //User Touch Interaction / Selection
         //Selecting a tile (if valid) triggers movement / turn taking
         lastTile = tile
         scene.playScreen.tray.resetTouches()
+        
+        guard GameCenterHelper.helper.canTakeTurnForCurrentMatch else {
+            return
+        }
         
         if let torus = currentTeam.currentlySelected, torus.team == currentTeam, tile.validForMovement == true, powerList.powerIsActivating == false  {
             

@@ -150,6 +150,15 @@ class ChangeDecoder {
                         if TestingManager.helper.verboseChanges { print("\nChange - \(change) - \(String(describing: change.powerToActivate))") }
                         if TestingManager.helper.verboseChanges { manager.gameBoard.printGameBoard() }
                         PowerManager.helper.activate(powerType, with: torus, decoding: true)
+                        
+                        let powerLabel = TextNode(powerType.name, size: torus.sprite.size)
+                        powerLabel.label.fontSize = 20
+                        powerLabel.position = CGPoint(x: -torus.sprite.size.width / 2, y: torus.sprite.size.height / 2)
+                        torus.sprite.addChild(powerLabel)
+                        powerLabel.run(SKAction.wait(forDuration: 0.5)) {
+                            powerLabel.removeFromParent()
+                        }
+                        
                         manager.updateUI()
                     }
                     
@@ -157,8 +166,6 @@ class ChangeDecoder {
                 case .addOrb:
                     guard let tile = manager.gameBoard.getTile(from: change.orbAssignment?.tile) else { fatalError("Change Decoder - Add Orb - No Tile Passed") }
                     guard let powerType = change.orbAssignment?.nextPower else { fatalError("Change Decoder - Add Orb - No Power Passed") }
-                    
-                    print(tile, powerType)
                     
                     scene.run(SKAction.wait(forDuration: waitDuration)) {
                         
@@ -194,6 +201,16 @@ class ChangeDecoder {
                         
                         PowerManager.helper.removePower(from: torus, targeted ? PowerType(.targetedStrike) : PowerType(.missileStrike))
                         _ = PowerManager.helper.missileStrike(activatedBy: torus, existingSet: targetTiles)
+                        
+                        
+                        let powerLabel = TextNode(targeted ? "Targeted Missile Strike" : "Missile Strike", size: torus.sprite.size)
+                        powerLabel.label.fontSize = 20
+                        powerLabel.position = CGPoint(x: -torus.sprite.size.width / 2, y: torus.sprite.size.height / 2)
+                        torus.sprite.addChild(powerLabel)
+                        powerLabel.run(SKAction.wait(forDuration: 0.5)) {
+                            powerLabel.removeFromParent()
+                        }
+                        
                         manager.updateUI()
                     }
                     waitDuration += duration
@@ -223,6 +240,16 @@ class ChangeDecoder {
                         
                         PowerManager.helper.removePower(from: torus, PowerType(.burrow))
                         _ = PowerManager.helper.burrow(activatedBy: torus, existingSet: targetTiles)
+                        
+                        
+                        let powerLabel = TextNode("Burrow", size: torus.sprite.size)
+                        powerLabel.label.fontSize = 20
+                        powerLabel.position = CGPoint(x: -torus.sprite.size.width / 2, y: torus.sprite.size.height / 2)
+                        torus.sprite.addChild(powerLabel)
+                        powerLabel.run(SKAction.wait(forDuration: 0.5)) {
+                            powerLabel.removeFromParent()
+                        }
+                        
                         manager.updateUI()
                     }
                     
@@ -239,6 +266,16 @@ class ChangeDecoder {
                         
                         PowerManager.helper.removePower(from: torus, PowerType(.float))
                         PowerManager.helper.float(activatedBy: torus, existingTile: targetTile)
+                        
+                        
+                        let powerLabel = TextNode("Float", size: torus.sprite.size)
+                        powerLabel.label.fontSize = 20
+                        powerLabel.position = CGPoint(x: -torus.sprite.size.width / 2, y: torus.sprite.size.height / 2)
+                        torus.sprite.addChild(powerLabel)
+                        powerLabel.run(SKAction.wait(forDuration: 0.5)) {
+                            powerLabel.removeFromParent()
+                        }
+                        
                         manager.updateUI()
                     }
                     
@@ -248,6 +285,7 @@ class ChangeDecoder {
                         if TestingManager.helper.verboseChanges { print("\nChange - \(change)") }
                         
                         PowerManager.helper.respawnOrbs(decoding: true)
+                        
                         manager.updateUI()
                     }
                     
@@ -273,6 +311,16 @@ class ChangeDecoder {
                         
                         PowerManager.helper.removePower(from: torus, PowerType(.shuffle, direction))
                         _ = MovementManager.helper.decodedShuffle(shuffledList: shuffledList)
+                        
+                        
+                        let powerLabel = TextNode("Shuffle", size: torus.sprite.size)
+                        powerLabel.label.fontSize = 20
+                        powerLabel.position = CGPoint(x: -torus.sprite.size.width / 2, y: torus.sprite.size.height / 2)
+                        torus.sprite.addChild(powerLabel)
+                        powerLabel.run(SKAction.wait(forDuration: 0.5)) {
+                            powerLabel.removeFromParent()
+                        }
+                        
                         manager.updateUI()
                     }
                     

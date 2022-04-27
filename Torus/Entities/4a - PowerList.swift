@@ -32,6 +32,7 @@ class PowerList: Entity {
     
     var powerIsActivating = false
     var consoleIsDisplaying: PowerConsoleAssets = .normal
+    var clearGate: SKSpriteNode!
     
     var powerLabel: UserMessage!
     
@@ -102,6 +103,12 @@ class PowerList: Entity {
         
         powerLabel = UserMessage("", fontSize: 18, size: scene.size.scaled(x: 0.8, y: 0.5), parent: scene, position: scene.midPoint.move(.up, by: scene.frame.height / 12.5))
         powerLabel.clear()
+        
+        clearGate = SKSpriteNode(imageNamed: PowerConsoleAssets.clear.rawValue)
+        self.sprite.addChild(clearGate)
+        clearGate.size = self.sprite.size
+        clearGate.zPosition = 20
+        clearGate.isHidden = true
     }
     
     required init?(coder: NSCoder) {
@@ -181,9 +188,7 @@ class PowerList: Entity {
             self.powerIsActivating = false
             closure()
             gateSprite.removeFromParent()
-            if self.manager.currentTeam.currentlySelected == nil {
-                self.clear()
-            }
+            if self.manager.currentTeam.currentlySelected == nil { self.clear() }
             self.consoleIsDisplaying = .normal
         }
     }

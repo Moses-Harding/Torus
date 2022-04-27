@@ -121,13 +121,21 @@ class GameCenterHelper: NSObject {
     
     func win(completion: @escaping CompletionBlock) {
         
+        print("Win")
+        
         guard let match = currentMatch else {
             completion(GameCenterHelperError.matchNotFound)
             return
         }
 
-        match.participants.forEach { $0.matchOutcome = .lost }
-        match.currentParticipant?.matchOutcome = .won
+        match.participants.forEach {
+            if $0.player?.displayName == GKLocalPlayer.local.displayName {
+                $0.matchOutcome = .won
+            } else {
+                $0.matchOutcome = .lost
+            }
+        }
+        
         match.message = "Game over! You lost."
         
         guard let data = match.matchData else { fatalError("GameCenterHelper - Win - No data found for match") }
@@ -138,22 +146,37 @@ class GameCenterHelper: NSObject {
     
     func opponentQuit(completion: @escaping CompletionBlock) {
         
+        print("Opponent quit")
+        
         guard let match = currentMatch else {
             completion(GameCenterHelperError.matchNotFound)
             return
         }
 
-        match.participants.forEach { $0.matchOutcome = .lost }
-        match.currentParticipant?.matchOutcome = .won
+        match.participants.forEach {
+            if $0.player?.displayName == GKLocalPlayer.local.displayName {
+                $0.matchOutcome = .won
+            } else {
+                $0.matchOutcome = .quit
+            }
+        }
+        
         match.message = "Game over! You lost."
         
         guard let data = match.matchData else { fatalError("GameCenterHelper - Win - No data found for match") }
-        match.endMatchInTurn(withMatch: data, completionHandler: completion)
+        
+        print("Match status \(match.status)")
+        
+        //if match.status != .ended {
+            match.endMatchInTurn(withMatch: data, completionHandler: completion)
+        //}
 
         scene?.gameOver(.opponentQuit)
     }
-    
+
     func quit(completion: @escaping CompletionBlock) {
+        
+        print("Quit")
         
         guard let match = currentMatch else {
             completion(GameCenterHelperError.matchNotFound)
@@ -162,9 +185,13 @@ class GameCenterHelper: NSObject {
         
         var others = [GKTurnBasedParticipant]()
         
-        match.participants.forEach { other in
-            other.matchOutcome = .won
-            others.append(other)
+        match.participants.forEach {
+            if $0.player?.displayName == GKLocalPlayer.local.displayName {
+                $0.matchOutcome = .quit
+            } else {
+                others.append($0)
+                $0.matchOutcome = .won
+            }
         }
         
         match.message = "Game over! Your opponent quit."
@@ -176,7 +203,8 @@ class GameCenterHelper: NSObject {
         scene?.gameOver(.lost)
     }
     
-    func defeat(completion: @escaping CompletionBlock) {
+    /*
+    func quit(completion: @escaping CompletionBlock) {
         
         guard let match = currentMatch else {
             completion(GameCenterHelperError.matchNotFound)
@@ -184,7 +212,36 @@ class GameCenterHelper: NSObject {
         }
 
         match.participants.forEach { $0.matchOutcome = .won }
-        match.currentParticipant?.matchOutcome = .lost
+        match.currentParticipant?.matchOutcome = .quit
+        
+        match.message = "Game over! Your opponent quit."
+        
+        guard let data = match.matchData else { fatalError("GameCenterHelper - Quit - No data found for match") }
+        
+        match.endMatchInTurn(withMatch: data, completionHandler: completion)
+
+        scene?.gameOver(.lost)
+    }
+     */
+    
+    func defeat(completion: @escaping CompletionBlock) {
+        
+        print("Defeat")
+        
+        guard let match = currentMatch else {
+            completion(GameCenterHelperError.matchNotFound)
+            return
+        }
+
+        match.participants.forEach {
+            if $0.player?.displayName == GKLocalPlayer.local.displayName {
+                $0.matchOutcome = .lost
+            } else {
+                $0.matchOutcome = .won
+            }
+        }
+        //match.currentParticipant?.matchOutcome = .lost
+        
         
         match.message = "Game over! Your won!"
         
@@ -202,9 +259,13 @@ class GameCenterHelper: NSObject {
             return
         }
         
+        print("Participant turn states")
+        match.participants.forEach { print($0.status.rawValue) }
+        
         match.rematch() { match, error in
             if let error = error {
                 print(error)
+                self.scene?.backToStartScreen()
             }
             
             if let match = match {
@@ -255,21 +316,25 @@ extension GameCenterHelper: GKLocalPlayerListener {
         print("Match ended")
         
         guard let currentPlayer = matchEnded.participants.filter({ other in
-            return other == player
+            return other.player?.displayName == GKLocalPlayer.local.displayName
         }).first else { return }
         
         if currentPlayer.matchOutcome == .won {
+            print("You won")
             matchEnded.message = "You won!"
+            scene?.gameOver(.won)
         } else {
+            print("You lost")
             matchEnded.message = "You lost."
+            scene?.gameOver(.lost)
         }
-        
-        
     }
 
     
     //Turn was taken and other player is notified
     func player(_ player: GKPlayer, receivedTurnEventFor match: GKTurnBasedMatch, didBecomeActive: Bool) {
+        
+        print("Received match event")
         
         guard match.status != .ended else { return }
         //If matchmaker vc is active (i.e. if user just created a game) then dismiss the vc
@@ -331,12 +396,13 @@ extension GameCenterHelper: GKLocalPlayerListener {
                 print(match, model)
                 
                 guard let opponent = match.participants.filter({ other in
-                    return other != player
+                    return other.player?.displayName != GKLocalPlayer.local.displayName
                 }).first else {
                     print("No opponent found when loading match data")
                     return
-                    
                 }
+                
+                print("Match outcome - \(opponent.matchOutcome.rawValue)")
                 
                 if opponent.matchOutcome == .won {
                     self.defeat { if let error = $0 { print(error) } }
