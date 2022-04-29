@@ -348,8 +348,9 @@ class PowerButton: TouchNode {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         
         guard powerList.consoleIsDisplaying == .normal else { return }
-
-        guard let touch = touches.first else { return }
+        
+        //Check that touch is in view of the frame
+        guard let touch = touches.first, powerList.sprite.frame.contains(touch.location(in: powerList.scene)) else { return }
         
         startTouch = touch.timestamp
         isBeingTouched = true

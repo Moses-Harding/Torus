@@ -35,7 +35,7 @@ class Torus: Entity {
     
     var hasPowers: Bool { return !powers.isEmpty }
     
-    var verbose = true
+    var verbose = false
     
     var leaping = false
     
@@ -83,15 +83,31 @@ class Torus: Entity {
         
         //TESTING
         if TestingManager.helper.toriiStartWithPowers {
+            //
+            //self.powerUp(with: .shuffle, .radius)
+            //self.powerUp(with: .shuffle, .row)
+            //self.amplify()
             if torusNumber % Int.random(in: 3 ... 5) == 0 {
                 for _ in 0 ... Int.random(in: 0 ... 5) { self.powerUp(with: PowerType.random()) }
-                self.powerUp(with: .amplify)
-                self.powerUp(with: .armor)
-                self.powerUp(with: .snare, .column)
-                self.powerUp(with: .freeMovement)
-                self.powerUp(with: .weightless)
-                self.powerUp(with: .elevate, .column)
-                self.powerUp(with: .burrow)
+                
+                if torusNumber % 3 == 0  {
+                    self.powerUp(with: .amplify)
+                    self.powerUp(with: .shuffle, .column)
+                    self.powerUp(with: .elevate, .column)
+                    self.powerUp(with: .freeMovement)
+                    self.powerUp(with: .disintegrate, .row)
+                } else if torusNumber % 5 == 0 {
+                    self.powerUp(with: .armor)
+                    self.powerUp(with: .weightless)
+                    self.powerUp(with: .burrow)
+                    self.powerUp(with: .targetedStrike)
+                    self.powerUp(with: .exchange)
+                } else {
+                    self.powerUp(with: .selfDestruct, .row)
+                    self.powerUp(with: .defect, .column)
+                    self.powerUp(with: .leech, .radius)
+                    self.powerUp(with: .invert, .column)
+                }
             }
         }
     }

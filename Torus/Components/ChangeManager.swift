@@ -323,7 +323,6 @@ class ChangeDecoder {
                         
                         manager.updateUI()
                     }
-                    
                     waitDuration += duration + 0.1
                 }
                 waitDuration += 0.1
