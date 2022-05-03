@@ -96,7 +96,7 @@ class GameCenterHelper: NSObject {
             
             match.endTurn(
                 withNextParticipants: [opponent],
-                turnTimeout: GKExchangeTimeoutDefault,
+                turnTimeout: GKTurnTimeoutDefault,
                 match: try JSONEncoder().encode(model),
                 completionHandler: completion
             )
@@ -203,27 +203,6 @@ class GameCenterHelper: NSObject {
         scene?.gameOver(.lost)
     }
     
-    /*
-    func quit(completion: @escaping CompletionBlock) {
-        
-        guard let match = currentMatch else {
-            completion(GameCenterHelperError.matchNotFound)
-            return
-        }
-
-        match.participants.forEach { $0.matchOutcome = .won }
-        match.currentParticipant?.matchOutcome = .quit
-        
-        match.message = "Game over! Your opponent quit."
-        
-        guard let data = match.matchData else { fatalError("GameCenterHelper - Quit - No data found for match") }
-        
-        match.endMatchInTurn(withMatch: data, completionHandler: completion)
-
-        scene?.gameOver(.lost)
-    }
-     */
-    
     func defeat(completion: @escaping CompletionBlock) {
         
         print("Defeat")
@@ -240,9 +219,7 @@ class GameCenterHelper: NSObject {
                 $0.matchOutcome = .won
             }
         }
-        //match.currentParticipant?.matchOutcome = .lost
-        
-        
+
         match.message = "Game over! Your won!"
         
         guard let data = match.matchData else { fatalError("GameCenterHelper - Quit - No data found for match") }
@@ -258,9 +235,6 @@ class GameCenterHelper: NSObject {
             completion(GameCenterHelperError.matchNotFound)
             return
         }
-        
-        print("Participant turn states")
-        match.participants.forEach { print($0.status.rawValue) }
         
         match.rematch() { match, error in
             if let error = error {
@@ -315,18 +289,36 @@ extension GameCenterHelper: GKLocalPlayerListener {
         
         print("Match ended")
         
-        guard let currentPlayer = matchEnded.participants.filter({ other in
+        guard let scene = scene, let currentPlayer = matchEnded.participants.filter({ other in
             return other.player?.displayName == GKLocalPlayer.local.displayName
         }).first else { return }
+        
+        matchEnded.loadMatchData { data, error in
+            
+            //Load or create a model if one does not exist
+            var model: GameModel
+            
+            if let data = data {
+                do {
+                    model = try JSONDecoder().decode(GameModel.self, from: data)
+                } catch {
+                    model = GameModel()
+                }
+            } else {
+                model = GameModel()
+            }
+        
+            scene.gameManager.beginTurn(matchAlreadyOpen: true)
+        }
         
         if currentPlayer.matchOutcome == .won {
             print("You won")
             matchEnded.message = "You won!"
-            scene?.gameOver(.won)
+            //scene.gameOver(.won)
         } else {
             print("You lost")
             matchEnded.message = "You lost."
-            scene?.gameOver(.lost)
+            //scene.gameOver(.lost)
         }
     }
 
@@ -357,7 +349,7 @@ extension GameCenterHelper: GKLocalPlayerListener {
             
             guard let scene = scene else { fatalError("Scene not passed to GameCenterHelper") }
             //The match that the user is currently playing is already on the screen
-            GKNotificationBanner.show(withTitle: notificationTitle, message: notificationMessage, completionHandler: {})
+            //GKNotificationBanner.show(withTitle: notificationTitle, message: notificationMessage, completionHandler: {})
             
             match.loadMatchData { data, error in
                 

@@ -74,8 +74,10 @@ extension GameManager { //Taking Turn
             
             if TestingManager.helper.testShuffling {
                 for torus in team1.torii {
-                    if torus.torusNumber % 7 == 0 {
-                        PowerManager.helper.activate(PowerType(.shuffle, .column), with: torus)
+                    if torus.torusNumber % 9 == 0 {
+                        torus.powerUp(with: .missileStrike)
+                        torus.powerUp(with: .shuffle, .column)
+                        //PowerManager.helper.activate(PowerType(.shuffle, .column), with: torus)
                     } 
                 }
             }

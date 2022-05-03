@@ -23,6 +23,7 @@ class StartingScene: SKScene {
     var notAuthenticated: UserMessage?
     
     var startButton: ImageNode!
+    var tutorialButton: ImageNode!
     var logo: ImageNode!
     var background: ImageNode!
     
@@ -50,6 +51,10 @@ class StartingScene: SKScene {
         }
     }
     
+    // MARK: Tutorial
+    var tutorialStep = 0
+    var tutorialBackground: SKSpriteNode?
+    
     override func didMove(to view: SKView) {
         
         //set up occurs in setUp after GameViewController calls viewDidLoad
@@ -69,7 +74,10 @@ class StartingScene: SKScene {
             
             let frame = view.safeAreaLayoutGuide.layoutFrame
             
-            logo = ImageNode(LabelAssets.logo.rawValue) { self.registeredTaps.append(.logo) }
+            logo = ImageNode(LabelAssets.logo.rawValue) {
+                self.registeredTaps.append(.logo)
+                self.showNextTutorialStep()
+            }
             logo.image.size.scale(proportionateTo: .width, with: frame.width * 0.9)
             logo.position = CGPoint(x: frame.midX, y: (frame.height * 0.95) - logo.image.size.height)
             logo.zPosition = 2
@@ -85,6 +93,16 @@ class StartingScene: SKScene {
             let resize = SKAction.scale(by: 1.025, duration: 1)
             
             startButton.run(SKAction.repeatForever(SKAction.sequence([resize, resize.reversed()])))
+            
+            
+            tutorialButton = ImageNode(ButtonAssets.tutorial.rawValue) { self.showNextTutorialStep() }
+            tutorialButton.image.size.scale(proportionateTo: .width, with: frame.width * 0.65)
+            tutorialButton.position = startButton.position.move(.down, by: startButton.image.size.height)
+            tutorialButton.zPosition = 2
+            self.addChild(tutorialButton)
+            
+            tutorialButton.run(SKAction.repeatForever(SKAction.sequence([resize, resize.reversed()])))
+            
             
             background = ImageNode(LabelAssets.background.rawValue) { self.registeredTaps.append(.background) }
             background.image.size.scale(proportionateTo: .width, with: frame.width)
@@ -197,6 +215,69 @@ class StartingScene: SKScene {
             }
         }
     }
+    
+    // MARK: Tutorial
+    
+    func showNextTutorialStep() {
+        
+        guard let view = self.view else { return }
+        
+        if let tutorialBackground = tutorialBackground {
+            tutorialBackground.removeAllChildren()
+        }
+        
+        var imageName: String
+        var messageText: String
+        
+        if tutorialStep == 0 {
+            
+            // 1 - Add Background
+            tutorialBackground = SKSpriteNode(imageNamed: TutorialAssets.background.rawValue)
+            tutorialBackground?.size = background.image.size
+            tutorialBackground?.position = self.background.position
+            tutorialBackground?.zPosition = 100
+            self.addChild(tutorialBackground!)
+            
+            imageName = TutorialAssets.t1.rawValue
+            messageText = "1.    Tap on a piece to move. The tiles that the piece can move to are highlighted in green. Each piece can jump onto another piece to kill it or jump onto an orb to gain a power."
+        } else if tutorialStep == 1 {
+            imageName = TutorialAssets.t2.rawValue
+            messageText = "2.    Sometimes the elevation of tiles change, so pieces can’t move onto them. In this example, the piece can’t move to the right. You can change this by using powers that change the elevation of tiles."
+        } else if tutorialStep == 2 {
+            imageName = TutorialAssets.t3.rawValue
+            messageText = "3.    When you step on an orb, your piece gains a new power. Powers can do many different things – to find out what a certain power does, press and hold on it. Powers will usually affect an entire row, column, or radius (the tiles immediately surrounding the piece in question)."
+        } else if tutorialStep == 3 {
+            imageName = TutorialAssets.t4.rawValue
+            messageText = "4.    When you step on an orb, your piece gains a new power. Powers can do many different things – to find out what a certain power does, press and hold on it. Powers will usually affect an entire row, column, or radius (the tiles immediately surrounding the piece in question)."
+        } else {
+            tutorialStep = 0
+            tutorialBackground?.removeAllChildren()
+            tutorialBackground?.removeFromParent()
+            tutorialBackground = nil
+            return
+        }
+        
+        
+        // 2 - Add Tutorial Iamge
+        let image = ImageNode(imageName) { self.showNextTutorialStep() }
+        image.image.size.scale(proportionateTo: .width, with: tutorialBackground!.frame.width * 0.8)
+        image.zPosition = 101
+        image.image.position = CGPoint.zero.move(.up, by: image.image.size.height / 4)//midPoint.move(.up, by: image.image.size.height / 2)
+        tutorialBackground!.addChild(image)
+        
+
+        //let tutorialText = TextNode(tutorial1, size: CGSize(width: view.frame.width, height: view.frame.height / 2))
+        let position = CGPoint(x: 0, y: -image.image.frame.height / 2)
+        
+        let message = UserMessage(messageText, fontSize: 16, size: CGSize(width: view.frame.width * 0.9, height: view.frame.height / 2), parent: tutorialBackground!, position: position) { self.showNextTutorialStep() }
+        message.zPosition = 101
+        
+        let continueButton = ImageNode(ButtonAssets.continueButton.rawValue) { self.showNextTutorialStep() }
+        continueButton.image.size.scale(proportionateTo: .width, with: frame.width * 0.35)
+        continueButton.image.position = message.position.move(.down, by: message.label.frame.height)
+        continueButton.zPosition = 101
+        tutorialBackground!.addChild(continueButton)
+        
+        tutorialStep += 1
+    }
 }
-
-

@@ -17,12 +17,16 @@ public enum BackgroundLabelAsset: String {
 public enum ButtonAssets: String {
     case back = "Back Button"
     case backDisabled = "Back Button - Disabled"
+    case continueButton = "Continue Button"
     case endTurn = "End Turn Button"
     case endTurnDisabled = "End Turn Button - Disabled"
     case forfeit = "Forfeit Button"
+    case forfeitConfirmation = "Forfeit - Foreit Confirmation Button"
+    case forfeitNevermind = "Forfeit - Nevermind Button"
     case forfeitDisabled = "Forfeit Button - Disabled"
     case rematch = "Rematch Button"
     case start = "Start Button V2"
+    case tutorial = "Tutorial Button"
     case quit = "Quit Button"
 }
 
@@ -83,4 +87,12 @@ public enum TorusOverlayAssets: String {
     case freeMovement = "Free Movement"
     case snare = "Snare"
     case weightless = "Weightless"
+}
+
+public enum TutorialAssets: String {
+    case t1 = "Tutorial - 1"
+    case t2 = "Tutorial - 2"
+    case t3 = "Tutorial - 3"
+    case t4 = "Tutorial - 4"
+    case background = "Tutorial - Background"
 }

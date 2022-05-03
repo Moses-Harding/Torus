@@ -12,17 +12,21 @@ class TestingManager {
 
     static let helper = TestingManager()
 
-    var verboseTiles = false
-    var verboseChanges = false
-    var verbosePowers = false
-    var verbosePowerList = false
-    var verboseTouch = false
+    var verboseTiles = true
+    var verboseChanges = true
+    var verbosePowers = true
+    var verbosePowerList = true
+    var verboseTouch = true
     
     //Test Powers
     var testPowers = false
-    var toriiStartWithPowers = false
+    var toriiStartWithPowers = true
     var toriiStartWithStatuses = false
     var testShuffling = false
+    
+    //Test Team Size
+    var testRows: Int? = nil
+    var testCols: Int? = nil
     
     //Start without gamecetner
     var startWithoutGameCenter = false

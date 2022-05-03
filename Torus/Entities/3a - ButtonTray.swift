@@ -53,13 +53,9 @@ class ButtonTray: Entity {
         middleArea.position = CGPoint(x: 0, y: 0)
         rightArea.position = CGPoint(x: size.width * 1.2, y: 0)
         
-        backButton = ImageNode(ButtonAssets.back.rawValue, secondaryImage: ButtonAssets.backDisabled.rawValue) { self.scene.backToStartScreen() }
-        endTurnButton = ImageNode(ButtonAssets.endTurn.rawValue, secondaryImage: ButtonAssets.endTurnDisabled.rawValue) { self.manager.takeTurn() }
-        forfeitButton = ImageNode(ButtonAssets.forfeit.rawValue, secondaryImage: ButtonAssets.forfeitDisabled.rawValue) { [self] in
-            scene.model.winner = manager.getOtherTeam(from: manager.currentTeam).teamNumber
-            scene.model.saveData(from: scene)
-            GameCenterHelper.helper.quit(completion: errorBlock)
-        }
+        backButton = ImageNode(ButtonAssets.back.rawValue) { self.scene.backToStartScreen() }
+        endTurnButton = ImageNode(ButtonAssets.endTurn.rawValue) { self.manager.takeTurn() }
+        forfeitButton = ImageNode(ButtonAssets.forfeit.rawValue) { self.scene.forfeit() }
         
         backButton.image.size.scale(proportionateTo: .height, of: size)
         endTurnButton.image.size.scale(proportionateTo: .height, of: size)

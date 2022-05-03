@@ -75,13 +75,15 @@ class ImageNode: TouchNode {
     
     override var isEnabled: Bool {
         didSet {
-            guard let secondaryImage = secondaryImage else {
-                return
-            }
             if isEnabled {
+                isHidden = false
                 self.image.texture = SKTexture(imageNamed: primaryImage)
             } else if !isEnabled {
-                self.image.texture = SKTexture(imageNamed: secondaryImage)
+                if let secondaryImage = secondaryImage {
+                    self.image.texture = SKTexture(imageNamed: secondaryImage)
+                } else {
+                    isHidden = true
+                }
             }
         }
     }

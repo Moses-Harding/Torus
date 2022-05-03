@@ -7,6 +7,7 @@
 
 import SpriteKit
 import GameplayKit
+import GameKit
 
 class GameScene: SKScene {
     
@@ -17,8 +18,8 @@ class GameScene: SKScene {
     
     var waitingScreen: SKSpriteNode?
     
-    var numberOfRows = 9
-    var numberOfColumns = 7
+    var numberOfRows = TestingManager.helper.testRows ?? 9
+    var numberOfColumns = TestingManager.helper.testCols ?? 7
     
     var safeFrame: CGRect!
     
@@ -41,6 +42,7 @@ class GameScene: SKScene {
         
         viewController.gameScene = self
         scaleMode = .resizeFill
+        
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -53,6 +55,13 @@ class GameScene: SKScene {
         
         setUp()
         gameManager.beginTurn(matchAlreadyOpen: false)
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(authenticationChanged(_:)),
+            name: .authenticationChanged,
+            object: nil
+        )
     }
     
     func setUp() { //This is called after GameViewController calls viewDidLoad
@@ -99,6 +108,7 @@ class GameScene: SKScene {
                 
                 if let e = error {
                     print("Error winning match: \(e)")
+                    self.playScreen.showDisconnectedMessage()
                     return
                 }
             }
@@ -109,6 +119,8 @@ class GameScene: SKScene {
                 
                 if let e = error {
                     print("Error ending turn: \(e)")
+
+                    self.playScreen.showDisconnectedMessage()
                     return
                 }
             }
@@ -208,5 +220,63 @@ class GameScene: SKScene {
         playScreen.buttonTray.backButton.isEnabled = false
         
         waitingScreen?.isHidden = true
+    }
+    
+    func forfeit() {
+        
+        let background = ImageNode(TutorialAssets.background.rawValue)
+        background.image.size = view!.frame.size
+        background.position = midPoint
+        background.zPosition = 100
+        background.alpha = 0.2
+        addChild(background)
+
+        let forfeitText = UserMessage("Are you sure you want to forfeit?", size: CGSize(width: view!.frame.width * 0.8, height: view!.frame.height * 0.3), parent: self, position: midPoint.move(.up, by: frame.height / 4))
+        forfeitText.zPosition = 101
+        
+        let forfeitConfirmation = ImageNode(ButtonAssets.forfeitConfirmation.rawValue)
+        forfeitConfirmation.position = midPoint
+        forfeitConfirmation.zPosition = 101
+        forfeitConfirmation.image.size.scale(proportionateTo: .width, with: frame.size.width * 0.65)
+        addChild(forfeitConfirmation)
+
+        let nevermind = ImageNode(ButtonAssets.forfeitNevermind.rawValue)
+        nevermind.position = midPoint.move(.down, by: forfeitConfirmation.image.size.height)
+        nevermind.zPosition = 101
+        nevermind.image.size.scale(proportionateTo: .width, with: frame.size.width * 0.65)
+        addChild(nevermind)
+        
+        let removeAllForfeitAssets = { [self] in
+            background.removeFromParent()
+            forfeitText.removeFromParent()
+            forfeitConfirmation.removeFromParent()
+            nevermind.removeFromParent()
+            playScreen.buttonTray.endTurnButton.isEnabled = true
+            playScreen.buttonTray.forfeitButton.isEnabled = true
+            playScreen.buttonTray.backButton.isEnabled = true
+        }
+        nevermind.actionBlock = removeAllForfeitAssets
+        forfeitConfirmation.actionBlock =  { [self] in
+            removeAllForfeitAssets()
+            model.winner = gameManager.getOtherTeam(from: gameManager.currentTeam).teamNumber
+            model.saveData(from: self)
+            GameCenterHelper.helper.quit(completion: { if let error = $0 { print(error) } })
+        }
+        
+
+        
+        playScreen.buttonTray.endTurnButton.isEnabled = false
+        playScreen.buttonTray.forfeitButton.isEnabled = false
+        playScreen.buttonTray.backButton.isEnabled = false
+        
+        waitingScreen?.isHidden = true
+    }
+    
+    @objc private func authenticationChanged(_ notification: Notification) {
+        if notification.object as? Bool ?? false {
+            playScreen.hideDisconnectedMessage()
+        } else {
+            playScreen.showDisconnectedMessage()
+        }
     }
 }
