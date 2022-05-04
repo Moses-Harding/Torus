@@ -20,7 +20,7 @@ class TestingManager {
     
     //Test Powers
     var testPowers = false
-    var toriiStartWithPowers = true
+    var toriiStartWithPowers = false
     var toriiStartWithStatuses = false
     var testShuffling = false
     

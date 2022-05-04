@@ -54,7 +54,7 @@ public enum PowerConsoleAssets: String {
     case filled = "PowerConsole - Filled"
     case noEffect = "PowerConsole - No Effect"
     case powerConsoleOverHeat = "PowerConsole - OverHeat"
-    case opponentTurn = "PowerConsole - Opponent Turn In Progress"
+    case processing = "PowerConsole - Processing"
     case onlyPink = "PowerConsole - Can Only Select Pink"
     case onlyBlue = "PowerConsole - Can Only Select Blue"
 }

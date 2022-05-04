@@ -85,6 +85,7 @@ class Torus: Entity {
         if TestingManager.helper.toriiStartWithPowers {
             
             self.powerUp(with: .selfDestruct, .column)
+            self.powerUp(with: .selfDestruct, .row)
             self.powerUp(with: .shuffle, .column)
             self.amplify()
 

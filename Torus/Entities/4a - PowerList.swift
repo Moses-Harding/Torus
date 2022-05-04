@@ -30,7 +30,16 @@ class PowerList: Entity {
     var upArrow: ImageNode!
     var downArrow: ImageNode!
     
-    var powerIsActivating = false
+    var powerIsActivating: Bool {
+        willSet {
+            if newValue == true {
+                scene.playScreen.buttonTray.endTurnButton.isEnabled = false
+            } else {
+                scene.playScreen.buttonTray.endTurnButton.isEnabled = true
+            }
+        }
+    }
+    
     var consoleIsDisplaying: PowerConsoleAssets = .normal
     var clearGate: SKSpriteNode!
     
@@ -64,6 +73,8 @@ class PowerList: Entity {
     }
     
     init(scene: GameScene, position: CGPoint, size: CGSize) {
+        
+        powerIsActivating = false
 
         let sprite = PowerListSprite(size: size)
 
@@ -370,8 +381,6 @@ class PowerButton: TouchNode {
         
         if touch.timestamp - startTouch < 0.5 {
             powerList.buttonPushed(self)
-        } else {
-            //powerList.displayGuidanceFor(power: self.power.power)
         }
         
         isBeingTouched = false
@@ -386,8 +395,6 @@ class PowerButton: TouchNode {
         
         if touch.timestamp - startTouch < 0.5 {
             powerList.buttonPushed(self)
-        } else {
-            //powerList.displayGuidanceFor(power: self.power.power)
         }
         
         isBeingTouched = false

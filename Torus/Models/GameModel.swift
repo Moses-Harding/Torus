@@ -23,7 +23,7 @@ struct GameModel: Codable {
     
     //Teams
     var currentTeam: TeamNumber = .one
-    var winner: TeamNumber?
+    var winner: String?
     var team1Score = 0
     var team2Score = 0
     
@@ -162,7 +162,6 @@ struct GameModel: Codable {
         
         turnNumber = manager.turnNumber
         currentTeam = manager.currentTeam.teamNumber
-        winner = manager.winnerFound()
         team1Score = manager.team1.teamCount
         team2Score = manager.team2.teamCount
         

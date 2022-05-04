@@ -262,11 +262,9 @@ class StartingScene: SKScene {
         let image = ImageNode(imageName) { self.showNextTutorialStep() }
         image.image.size.scale(proportionateTo: .width, with: tutorialBackground!.frame.width * 0.8)
         image.zPosition = 101
-        image.image.position = CGPoint.zero.move(.up, by: image.image.size.height / 4)//midPoint.move(.up, by: image.image.size.height / 2)
+        image.image.position = CGPoint.zero.move(.up, by: image.image.size.height / 3)
         tutorialBackground!.addChild(image)
-        
 
-        //let tutorialText = TextNode(tutorial1, size: CGSize(width: view.frame.width, height: view.frame.height / 2))
         let position = CGPoint(x: 0, y: -image.image.frame.height / 2)
         
         let message = UserMessage(messageText, fontSize: 16, size: CGSize(width: view.frame.width * 0.9, height: view.frame.height / 2), parent: tutorialBackground!, position: position) { self.showNextTutorialStep() }
@@ -274,7 +272,7 @@ class StartingScene: SKScene {
         
         let continueButton = ImageNode(ButtonAssets.continueButton.rawValue) { self.showNextTutorialStep() }
         continueButton.image.size.scale(proportionateTo: .width, with: frame.width * 0.35)
-        continueButton.image.position = message.position.move(.down, by: message.label.frame.height)
+        continueButton.image.position = message.position.move(.down, by: message.label.frame.height / 1.25)
         continueButton.zPosition = 101
         tutorialBackground!.addChild(continueButton)
         

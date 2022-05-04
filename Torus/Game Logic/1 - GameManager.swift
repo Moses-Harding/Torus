@@ -36,6 +36,8 @@ class GameManager {
         return scene.playScreen.tray
     }
     
+    var matchEnded: Bool = false
+    
     //Init
     
     init(scene: GameScene) {
@@ -51,7 +53,9 @@ class GameManager {
 
 extension GameManager { //Taking Turn
     
-    func beginTurn(matchAlreadyOpen: Bool) {
+    func beginTurn(matchAlreadyOpen: Bool, matchEnded: Bool) {
+        
+        self.matchEnded = matchEnded
         
         print("\n______\nBegin turn")
         
@@ -103,15 +107,23 @@ extension GameManager { //Taking Turn
         updateLabels()
         tray.powerList.clear()
         
-        checkForWin()
+        if !self.matchEnded {
+            checkForWin()
+        }
     }
     
     func checkForWin() {
         
+        print("Check for win")
+        
         if getOtherTeam(from: currentTeam).teamCount == 0 {
-            GameCenterHelper.helper.win { if let error = $0 { print(error) } }
+            scene.model.winner = currentTeam.teamNumber == .one ? scene.model.player1 : scene.model.player2
+            scene.model.saveData(from: scene)
+            GameCenterHelper.helper.win(model: scene.model, endTurn: true) { if let error = $0 { print(error) } }
         } else if currentTeam.teamCount == 0 {
-            GameCenterHelper.helper.defeat { if let error = $0 { print(error) } }
+            scene.model.winner = getOtherTeam(from: currentTeam).teamNumber  == .one ? scene.model.player1 : scene.model.player2
+            scene.model.saveData(from: scene)
+            GameCenterHelper.helper.defeat(model: scene.model, endTurn: true) { if let error = $0 { print(error) } }
         }
     }
     
@@ -170,10 +182,6 @@ extension GameManager { //Taking Turn
             }
         }
     }
-    
-    func winnerFound() -> TeamNumber? {
-        currentTeam.teamCount == 0 ? getOtherTeam(from: currentTeam).teamNumber : nil
-    }
 }
 
 extension GameManager { //Set Up
@@ -215,7 +223,7 @@ extension GameManager { //User Touch Interaction / Selection
         
         //Make sure decoding is done
         guard !ChangeDecoder.helper.currentlyDecoding else {
-            self.powerList.displayPowerConsole(message: .opponentTurn, calledBy: "GameManager - Select Torus - Currently Decoding")
+            self.powerList.displayPowerConsole(message: .processing, calledBy: "GameManager - Select Torus - Currently Decoding")
             print("Game Manager - Select Torus - Cannot select because change decoder is decoding")
             return
         }

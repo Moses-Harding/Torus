@@ -333,7 +333,7 @@ class ChangeDecoder {
                 scene.gameManager.updateUI()
             }
             
-            manager.powerList.displayPowerConsole(message: .opponentTurn, duration: waitDuration ,calledBy: "ChangeManager - DecodeChanges")
+            manager.powerList.displayPowerConsole(message: .processing, duration: waitDuration ,calledBy: "ChangeManager - DecodeChanges")
         
             self.currentlyDecoding = false
         }

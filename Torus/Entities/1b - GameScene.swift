@@ -54,7 +54,8 @@ class GameScene: SKScene {
         self.backgroundColor = .black
         
         setUp()
-        gameManager.beginTurn(matchAlreadyOpen: false)
+    
+        gameManager.beginTurn(matchAlreadyOpen: false, matchEnded: model.winner != nil)
         
         NotificationCenter.default.addObserver(
             self,
@@ -101,18 +102,6 @@ class GameScene: SKScene {
         print("\nProcessing update\n____________")
         
         isSendingTurn = true
-        
-        if model.winner != nil {
-            GameCenterHelper.helper.win { error in
-                defer { self.isSendingTurn = false }
-                
-                if let e = error {
-                    print("Error winning match: \(e)")
-                    self.playScreen.showDisconnectedMessage()
-                    return
-                }
-            }
-        } else {
             GameCenterHelper.helper.endTurn(model) { error in
                 defer { self.isSendingTurn = false }
                 self.toggleWaitingScreen()
@@ -123,7 +112,6 @@ class GameScene: SKScene {
                     self.playScreen.showDisconnectedMessage()
                     return
                 }
-            }
             print("Turn is ended\n____________")
         }
     }
@@ -258,7 +246,7 @@ class GameScene: SKScene {
         nevermind.actionBlock = removeAllForfeitAssets
         forfeitConfirmation.actionBlock =  { [self] in
             removeAllForfeitAssets()
-            model.winner = gameManager.getOtherTeam(from: gameManager.currentTeam).teamNumber
+            model.winner = model.currentTeam == .one ? model.player2 : model.player1
             model.saveData(from: self)
             GameCenterHelper.helper.quit(completion: { if let error = $0 { print(error) } })
         }
