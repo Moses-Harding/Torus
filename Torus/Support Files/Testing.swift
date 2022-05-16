@@ -12,24 +12,25 @@ class TestingManager {
 
     static let helper = TestingManager()
 
-    var verboseTiles = true
-    var verboseChanges = true
-    var verbosePowers = true
-    var verbosePowerList = true
-    var verboseTouch = true
+    var verboseTiles = false
+    var verboseChanges = false
+    var verbosePowers = false
+    var verbosePowerList = false
+    var verboseTouch = false
     
-    //Test Powers
+    // Test Powers
     var testPowers = false
     var toriiStartWithPowers = false
     var toriiStartWithStatuses = false
     var testShuffling = false
     
-    //Test Team Size
+    // Test Team Size
     var testRows: Int? = nil
     var testCols: Int? = nil
     
-    //Start without gamecetner
+    // Debug
     var startWithoutGameCenter = false
+    var debuggingActivated = false
     
     var heightList: [PowerType] = [PowerType(.raise), PowerType(.lower), PowerType(.elevate, .row), PowerType(.elevate, .radius), PowerType(.elevate, .column), PowerType(.sink, .radius), PowerType(.sink, .row), PowerType(.sink, .column)]
 

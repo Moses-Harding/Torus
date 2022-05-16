@@ -85,6 +85,9 @@ class PlayScreen: Entity {
     }
     
     func showDisconnectedMessage() {
+        
+        guard !TestingManager.helper.startWithoutGameCenter else { return }
+        
         errorBackground.isHidden = false
         errorMessage.isHidden = false
     }

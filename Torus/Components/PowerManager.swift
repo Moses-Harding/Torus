@@ -292,6 +292,8 @@ extension PowerManager { //Powers
     
     func exchange(_ direction: PowerDirection, activatedBy torus: Torus) -> (CGFloat, Bool) {
         
+        removePower(from: torus, PowerType(.exchange, direction)) //This is here because power doesn't get removed (as torus is killed and re-added)
+        
         var waitDuration: CGFloat = 0
         
         let enemies = getEnemies(for: direction, from: torus)

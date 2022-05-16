@@ -76,7 +76,7 @@ class StartingScene: SKScene {
             
             logo = ImageNode(LabelAssets.logo.rawValue) {
                 self.registeredTaps.append(.logo)
-                self.showNextTutorialStep()
+                
             }
             logo.image.size.scale(proportionateTo: .width, with: frame.width * 0.9)
             logo.position = CGPoint(x: frame.midX, y: (frame.height * 0.95) - logo.image.size.height)
@@ -248,7 +248,7 @@ class StartingScene: SKScene {
             messageText = "3.    When you step on an orb, your piece gains a new power. Powers can do many different things – to find out what a certain power does, press and hold on it. Powers will usually affect an entire row, column, or radius (the tiles immediately surrounding the piece in question)."
         } else if tutorialStep == 3 {
             imageName = TutorialAssets.t4.rawValue
-            messageText = "4.    When you step on an orb, your piece gains a new power. Powers can do many different things – to find out what a certain power does, press and hold on it. Powers will usually affect an entire row, column, or radius (the tiles immediately surrounding the piece in question)."
+            messageText = "4.    Some powers enhance your pieces when activated. For example, the blue piece in the center has 'Free Movement', so it can move onto any space. Normally that would mean it could take the pink piece in the bottom right, but that piece has 'Armor' activated, so it can't be jumped on"
         } else {
             tutorialStep = 0
             tutorialBackground?.removeAllChildren()

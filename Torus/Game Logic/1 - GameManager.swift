@@ -114,8 +114,6 @@ extension GameManager { //Taking Turn
     
     func checkForWin() {
         
-        print("Check for win")
-        
         if getOtherTeam(from: currentTeam).teamCount == 0 {
             scene.model.winner = currentTeam.teamNumber == .one ? scene.model.player1 : scene.model.player2
             scene.model.saveData(from: scene)
@@ -170,7 +168,7 @@ extension GameManager { //Taking Turn
         
         guard turnNumber % 10 == 0 || respawnCount != nil else { return }
         
-        var numberOfOrbs = respawnCount ?? Int(gameBoard.unoccupiedTiles / 5)
+        var numberOfOrbs = respawnCount ?? Int(gameBoard.unoccupiedTiles / 5) > 6 ? 6 : Int(gameBoard.unoccupiedTiles / 5)
         
         var randomIndices = Set(0 ..< gameBoard.tiles.count).shuffled()
         

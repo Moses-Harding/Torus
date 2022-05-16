@@ -87,7 +87,9 @@ class Torus: Entity {
             self.powerUp(with: .selfDestruct, .column)
             self.powerUp(with: .selfDestruct, .row)
             self.powerUp(with: .shuffle, .column)
-            self.amplify()
+            self.powerUp(with: .exchange, .column)
+            self.powerUp(with: .exchange, .column)
+            //self.amplify()
 
             if torusNumber % Int.random(in: 3 ... 5) == 0 {
                 for _ in 0 ... Int.random(in: 0 ... 5) { self.powerUp(with: PowerType.random()) }
@@ -104,6 +106,7 @@ class Torus: Entity {
                     self.powerUp(with: .burrow)
                     self.powerUp(with: .targetedStrike)
                     self.powerUp(with: .exchange, .row)
+                    self.powerUp(with: .exchange, .column)
                 } else {
                     self.powerUp(with: .selfDestruct, .row)
                     self.powerUp(with: .defect, .column)

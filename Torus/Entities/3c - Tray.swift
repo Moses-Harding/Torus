@@ -99,6 +99,9 @@ class Tray: Entity {
     }
     
     func debugActivated() {
+        
+        guard TestingManager.helper.debuggingActivated else { return }
+        
         print("Activate debug")
         print(redLabelTouched, blueLabelTouched)
         if redLabelTouched && blueLabelTouched {
